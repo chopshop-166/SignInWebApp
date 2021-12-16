@@ -27,7 +27,7 @@ function populateUsers(userdata) {
 
 function updateUserData() {
     const event = "training"
-    fetch(`/users/${event}`, { method: "GET" })
+    fetch(`/users/${event}`)
         .then(data => data.json())
         .then(json => {
             populateUsers(json)
@@ -41,8 +41,12 @@ function onScanSuccess(decodedText, decodedResult) {
         setTimeout(function () { html5QrcodeScanner.resume() }, 2000);
     }
     const event = "training"
-    const b32name = encodeURIComponent(decodedText)
-    fetch(`/scan/${event}/${b32name}`, { method: "GET" })
+
+    let formData = new FormData();
+    formData.append('name', decodedText);
+    formData.append('event', event);
+
+    fetch(`/scan`, { method: "POST", body: formData})
         .then(data => data.json())
         .then(json => {
             toast(json['message'])

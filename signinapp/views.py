@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, jsonify
+from flask import jsonify, request
 from flask.templating import render_template
 
 from . import app
@@ -12,10 +12,11 @@ model = DictModel()
 def index():
     return render_template("index.html")
 
-@app.route("/scan/<event>/<name>")
-def scan(event, name):
+@app.route("/scan", methods=['POST'])
+def scan():
+    event = request.values['event']
+    name = request.values['name']
     (human, sign) = model.scan(event, name)
-    print(f"'{name}' signed {sign} to event '{event}'")
 
     return jsonify({
         'stamp': sign,
