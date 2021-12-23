@@ -18,10 +18,7 @@ class Config():
     mentor : bool = False
 
     def human_readable(self) -> str:
-        result = f"{self.first} {self.last}"
-        if self.mentor:
-            result += " (mentor)"
-        return result
+        return f"{'*' if self.mentor else ''}{self.first} {self.last}"
 
     def __hash__(self) -> int:
         return hash((self.first.lower(), self.last.lower(), self.mentor))
@@ -37,25 +34,22 @@ class Config():
 class DictModel(Model):
     def __init__(self) -> None:
         self.signed_in : DefaultDict[str, Dict[Config, datetime]] = defaultdict(dict)
+
+    def _get_preproc(self, items):
+        # Sort mentors first then students
+        items = sorted(items, key=lambda x: x[0].sortkey())
+        # Convert to human readable format
+        items = [(k.human_readable(), v, ev) for k,v,ev in items]
+        return items
     
     def get(self, event) -> List[Tuple[str, datetime]]:
-        # Get key-value pairs
-        items = self.signed_in[event].items()
-        # Sort mentors first then students
-        items = sorted(items, key=lambda x: x[0].sortkey())
-        # Convert to human readable format
-        items = [(k.human_readable(), v) for k,v in items]
-        return items
+        return self._get_preproc((k,v,event)
+                                 for k,v in self.signed_in[event].items())
     
     def get_all(self) -> List[Tuple[str, datetime, str]]:
-        # Get key-value pairs
-        items = chain.from_iterable([(k,v,ev) for k,v in e.items()]
-                                    for ev,e in self.signed_in.items())
-        # Sort mentors first then students
-        items = sorted(items, key=lambda x: x[0].sortkey())
-        # Convert to human readable format
-        items = [(k.human_readable(), v, e) for k,v,e in items]
-        return items
+        return self._get_preproc(
+            chain.from_iterable(((k,v,ev) for k,v in e.items())
+                                for ev,e in self.signed_in.items()))
     
     def scan(self, event, name) -> Tuple[str, str]:
         c = Config.make_from(name)
