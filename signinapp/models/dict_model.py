@@ -11,11 +11,12 @@ from typing import DefaultDict, Dict, List, Tuple
 
 from .base import Model, NAME_RE
 
+
 @dataclasses.dataclass(frozen=True)
 class Config():
-    first : str
-    last : str
-    mentor : bool = False
+    first: str
+    last: str
+    mentor: bool = False
 
     def human_readable(self) -> str:
         return f"{'*' if self.mentor else ''}{self.first} {self.last}"
@@ -25,32 +26,34 @@ class Config():
 
     def sortkey(self) -> Tuple[bool, str, str]:
         return (self.mentor, self.first, self.last)
-    
+
     @classmethod
     def make_from(cls, text) -> Config:
         m = NAME_RE.match(text)
         return Config(m['first'], m['last'], m['mentor'])
 
+
 class DictModel(Model):
     def __init__(self) -> None:
-        self.signed_in : DefaultDict[str, Dict[Config, datetime]] = defaultdict(dict)
+        self.signed_in: DefaultDict[str,
+                                    Dict[Config, datetime]] = defaultdict(dict)
 
     def _get_preproc(self, items):
         # Sort mentors first then students
         items = sorted(items, key=lambda x: x[0].sortkey())
         # Convert to human readable format
-        items = [(k.human_readable(), v, ev) for k,v,ev in items]
+        items = [(k.human_readable(), v, ev) for k, v, ev in items]
         return items
-    
+
     def get(self, event) -> List[Tuple[str, datetime]]:
-        return self._get_preproc((k,v,event)
-                                 for k,v in self.signed_in[event].items())
-    
+        return self._get_preproc((k, v, event)
+                                 for k, v in self.signed_in[event].items())
+
     def get_all(self) -> List[Tuple[str, datetime, str]]:
         return self._get_preproc(
-            chain.from_iterable(((k,v,ev) for k,v in e.items())
-                                for ev,e in self.signed_in.items()))
-    
+            chain.from_iterable(((k, v, ev) for k, v in e.items())
+                                for ev, e in self.signed_in.items()))
+
     def scan(self, event, name) -> Tuple[str, str]:
         c = Config.make_from(name)
         sign = "in"

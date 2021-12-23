@@ -57,7 +57,7 @@ function onScanSuccess(decodedText, decodedResult) {
     formData.append('name', decodedText);
     formData.append('event', event);
 
-    fetch(`/scan`, { method: "POST", body: formData})
+    fetch(`/scan`, { method: "POST", body: formData })
         .then(data => data.json())
         .then(json => {
             toast(json['message'])

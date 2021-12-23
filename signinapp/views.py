@@ -8,9 +8,11 @@ from .models.dict_model import DictModel
 
 model = DictModel()
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
 
 @app.route("/scan", methods=['POST'])
 def scan():
@@ -24,9 +26,11 @@ def scan():
         'users': model.get(event)
     })
 
+
 @app.route("/users")
 def users_all():
     return jsonify(model.get_all())
+
 
 @app.route("/users/<event>")
 def users(event):
