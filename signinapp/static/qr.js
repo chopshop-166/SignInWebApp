@@ -1,9 +1,19 @@
 function toast(texte) {
-    let elem = document.createElement("div");
-    elem.className = "toast";
-    elem.innerHTML = texte;
-    document.body.appendChild(elem);
-    setTimeout(function () { elem.remove() }, 3500);
+    var wrapper = document.createElement('div')
+    wrapper.className = "alert alert-success alert-dismissible fade show"
+    wrapper.role = "alert"
+    wrapper.textContent = texte
+    var btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "btn-close"
+    btn.setAttribute("data-bs-dismiss", "alert")
+    btn.setAttribute("aria-label", "Close")
+    wrapper.appendChild(btn)
+
+    var alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+    alertPlaceholder.append(wrapper)
+
+    setTimeout(function () { let alert = new bootstrap.Alert(wrapper); alert.close() }, 3500);
 }
 
 function populateUsers(userdata) {
