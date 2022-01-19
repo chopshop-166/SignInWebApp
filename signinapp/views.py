@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from flask import jsonify, request
+from http import HTTPStatus
+from flask import jsonify, request, Response
 from flask.templating import render_template
 
 from . import app
@@ -20,11 +21,14 @@ def scan():
     name = request.values['name']
     (human, sign) = model.scan(event, name)
 
-    return jsonify({
-        'stamp': sign,
-        'message': f"{human} signed {sign}",
-        'users': model.get(event)
-    })
+    if (human, sign) != ("", ""):
+        return jsonify({
+            'stamp': sign,
+            'message': f"{human} signed {sign}",
+            'users': model.get(event)
+        })
+    else:
+        return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
 
 
 @app.route("/users")

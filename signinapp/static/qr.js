@@ -58,10 +58,18 @@ function onScanSuccess(decodedText, decodedResult) {
     formData.append('event', event);
 
     fetch(`/scan`, { method: "POST", body: formData })
-        .then(data => data.json())
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw Error("Not a valid QR code");
+            }
+        })
         .then(json => {
             toast(json['message'])
             populateUsers(json['users'])
+        }).catch(data => {
+            toast(data)
         })
 }
 

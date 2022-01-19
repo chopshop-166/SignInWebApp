@@ -30,7 +30,8 @@ class Config():
     @classmethod
     def make_from(cls, text) -> Config:
         m = NAME_RE.match(text)
-        return Config(m['first'], m['last'], m['mentor'])
+        if m is not None:
+            return Config(m['first'], m['last'], bool(m['mentor']))
 
 
 class DictModel(Model):
@@ -38,7 +39,7 @@ class DictModel(Model):
         self.signed_in: DefaultDict[str,
                                     Dict[Config, datetime]] = defaultdict(dict)
 
-    def _get_preproc(self, items):
+    def _get_preproc(self, items: List[Tuple[str, datetime, str]]):
         # Sort mentors first then students
         items = sorted(items, key=lambda x: x[0].sortkey())
         # Convert to human readable format
@@ -57,11 +58,14 @@ class DictModel(Model):
     def scan(self, event, name) -> Tuple[str, str]:
         c = Config.make_from(name)
         sign = "in"
-        if c in self.signed_in[event]:
-            starttime = self.signed_in[event][c]
-            del self.signed_in[event][c]
-            elapsed_time = datetime.now() - starttime
-            sign = f"out after {elapsed_time}"
+        if c:
+            if c in self.signed_in[event]:
+                starttime = self.signed_in[event][c]
+                del self.signed_in[event][c]
+                elapsed_time = datetime.now() - starttime
+                sign = f"out after {elapsed_time}"
+            else:
+                self.signed_in[event][c] = datetime.now()
+            return c.human_readable(), sign
         else:
-            self.signed_in[event][c] = datetime.now()
-        return c.human_readable(), sign
+            return "", ""
