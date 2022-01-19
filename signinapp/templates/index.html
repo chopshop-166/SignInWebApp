@@ -16,14 +16,15 @@
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Chop Shop Sign In</a>
     </div>
-    <dib class="d-flex">
+    <div class="d-flex">
       <img src="{{ url_for('static', filename='logo.png')}}" height="48">
-    </dib>
+    </div>
   </nav>
   <div class="container">
     <div class="row">
       <div class="col">
-        <div id="reader" style="width: 500px; margin: auto"></div>
+        <div id="reader" style="width: 100%; margin: auto"></div>
+        <div id="liveAlertPlaceholder"></div>
       </div>
       <div class="col">
         <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">
@@ -35,7 +36,6 @@
           </thead>
           <tbody id="userbody"></tbody>
         </table>
-        <div id="liveAlertPlaceholder"></div>
       </div>
     </div>
   </div>
