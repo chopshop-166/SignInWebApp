@@ -24,15 +24,14 @@ function populateUsers(userdata) {
     }
     // Add new users
     userdata.forEach(element => {
-        let row = document.createElement("tr")
-        let item1 = document.createElement("th")
-        item1.innerText = element[0]
-        item1.setAttribute("scope", "row")
-        row.appendChild(item1)
-        let item2 = document.createElement("td")
-        item2.innerText = element[1]
-        row.appendChild(item2)
-        usersroot.appendChild(row)
+        let row = usersroot.insertRow()
+        let name = document.createElement("th")
+        name.innerText = element[0]
+        name.setAttribute("scope", "row")
+        row.appendChild(name)
+        let timestamp = document.createElement("td")
+        timestamp.innerText = new Date(element[1]).toLocaleString()
+        row.appendChild(timestamp)
     });
 }
 
