@@ -46,11 +46,11 @@ class DictModel(Model):
         items = [(k.human_readable(), v, ev) for k, v, ev in items]
         return items
 
-    def get(self, event) -> List[Tuple[str, datetime]]:
+    def get_active(self, event) -> List[Tuple[str, datetime]]:
         return self._get_preproc((k, v, event)
                                  for k, v in self.signed_in[event].items())
 
-    def get_all(self) -> List[Tuple[str, datetime, str]]:
+    def get_all_active(self) -> List[Tuple[str, datetime, str]]:
         return self._get_preproc(
             chain.from_iterable(((k, v, ev) for k, v in e.items())
                                 for ev, e in self.signed_in.items()))

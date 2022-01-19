@@ -27,17 +27,21 @@ def scan():
         return jsonify({
             'stamp': sign,
             'message': f"{human} signed {sign}",
-            'users': model.get(event)
+            'users': model.get_active(event)
         })
     else:
         return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
 
 
-@app.route("/users")
-def users_all():
-    return jsonify(model.get_all())
+@app.route("/active")
+def active_all():
+    return jsonify(model.get_all_active())
 
 
-@app.route("/users/<event>")
-def users(event):
-    return jsonify(model.get(event))
+@app.route("/active/<event>")
+def active(event):
+    return jsonify(model.get_active(event))
+
+@app.route("/stamps")
+def stamps():
+    return jsonify(model.get_all_stamps())

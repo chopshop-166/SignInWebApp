@@ -38,7 +38,7 @@ function populateUsers(userdata) {
 
 function updateUserData() {
     const event = "training"
-    fetch(`/users/${event}`)
+    fetch(`/active/${event}`)
         .then(data => data.json())
         .then(json => {
             populateUsers(json)

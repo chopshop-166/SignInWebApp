@@ -14,11 +14,11 @@ NAME_RE = re.compile(
 class Model(abc.ABC):
 
     @abc.abstractmethod
-    def get(self, event) -> List[Tuple[str, datetime]]:
+    def get_active(self, event) -> List[Tuple[str, datetime]]:
         pass
 
     @abc.abstractmethod
-    def get_all(self, event) -> List[Tuple[str, datetime, str]]:
+    def get_all_active(self, event) -> List[Tuple[str, datetime, str]]:
         pass
 
     @abc.abstractmethod

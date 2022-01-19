@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import List, Tuple
 
-from sqlalchemy import func
-from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.orm import relationship
 
 from .. import app
 from .base import NAME_RE, Model
@@ -29,7 +29,7 @@ class Person(db.Model):
     first = db.Column(db.String, nullable=False)
     last = db.Column(db.String, nullable=False)
     mentor = db.Column(db.Boolean, nullable=False)
-    
+
     stamps = relationship("Stamps", back_populates="person")
 
     @hybrid_method
@@ -64,7 +64,7 @@ class Event(db.Model):
     start = db.Column(db.DateTime)
     # End time
     end = db.Column(db.DateTime)
-    
+
     stamps = relationship("Stamps", back_populates="event")
 
 
@@ -94,16 +94,38 @@ class Stamps(db.Model):
     def elapsed(self):
         return self.end - self.start
 
+    @hybrid_method
+    def as_dict(self):
+        return {
+            "person": self.person.human_readable(),
+            "elapsed": str(self.elapsed),
+            "start": self.start,
+            "end": self.end,
+            "event": self.event.name
+        }
+
 
 class SqliteModel(Model):
     def __init__(self) -> None:
         db.create_all()
 
-    def get(self, event) -> List[Tuple[str, datetime]]:
+    def get_name_stamps(self, name):
+        m = NAME_RE.match(name)
+        if not m:
+            return []
+        return Stamps.query.filter(Stamps.person.matches(m)).all()
+
+    def get_event_stamps(self, event):
+        return Stamps.query.filter(Stamps.event.code == event).all()
+
+    def get_all_stamps(self):
+        return [s.as_dict() for s in Stamps.query.all()]
+
+    def get_active(self, event) -> List[Tuple[str, datetime]]:
         return [(active.person.human_readable(), active.start)
                 for active in Active.query.join(Event).filter(Event.code == event).all()]
 
-    def get_all(self) -> List[Tuple[str, datetime, str]]:
+    def get_all_active(self) -> List[Tuple[str, datetime, str]]:
         return [(active.person.human_readable(), active.start, active.event.code)
                 for active in Active.query.all()]
 
@@ -118,18 +140,21 @@ class SqliteModel(Model):
             db.session.add(person)
             db.session.commit()
 
-        ev = Event.query.filter(Event.code==event).one_or_none()
+        ev = Event.query.filter(Event.code == event).one_or_none()
         if not ev:
             ev = Event(name=event, code=event)
             db.session.add(ev)
             db.session.commit()
 
-        active = Active.query.join(Person).filter(Person.matches(m)).one_or_none()
+        active = Active.query.join(Person).filter(
+            Person.matches(m)).one_or_none()
         if active:
             stamp = Stamps(person=person, event=ev, start=active.start)
             db.session.delete(active)
             db.session.add(stamp)
             db.session.commit()
+            # Elapsed needs to be taken after committing to the DB
+            # otherwise it won't be populated
             sign = f"out after {stamp.elapsed}"
             return (person.human_readable(), sign)
         else:
@@ -137,4 +162,3 @@ class SqliteModel(Model):
             db.session.add(active)
             db.session.commit()
             return (person.human_readable(), "in")
-        return ("", "")
