@@ -6,8 +6,7 @@ from flask import Response, jsonify, request
 from flask.templating import render_template
 
 from . import app
-from .models.dict_model import DictModel
-from .models.sqlite_model import SqliteModel
+from .model import SqliteModel
 
 model = SqliteModel()
 

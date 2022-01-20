@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import abc
+import dataclasses
 import re
+from collections import defaultdict
 from datetime import datetime
-from typing import List, Tuple
+from typing import DefaultDict, Dict, List, Tuple
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 
-from .. import app
-from .base import NAME_RE, Model
+from . import app
+
+NAME_RE = re.compile(
+    r"^(?P<mentor>(?i)mentor[ -]*)?(?P<last>[a-zA-Z ']+),\s*(?P<first>[a-zA-Z ']+)$")
 
 #db_name = 'signin.db'
 db_name = ':memory:'
@@ -105,7 +110,7 @@ class Stamps(db.Model):
         }
 
 
-class SqliteModel(Model):
+class SqliteModel():
     def __init__(self) -> None:
         db.create_all()
 
