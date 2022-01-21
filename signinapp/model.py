@@ -83,6 +83,8 @@ class Event(db.Model):
     start = db.Column(db.DateTime)
     # End time
     end = db.Column(db.DateTime)
+    # Event type
+    type_ = db.Column(db.String)
 
     stamps = relationship("Stamps", back_populates="event")
 
@@ -123,6 +125,10 @@ class Stamps(db.Model):
             "event": self.event.name
         }
 
+    @hybrid_method
+    def as_list(self):
+        return [self.person.human_readable(), self.start, self.end, self.elapsed, self.event.name]
+
 
 class SqliteModel():
     def __init__(self) -> None:
@@ -150,6 +156,20 @@ class SqliteModel():
     def get_all_active(self) -> list[Tuple[str, datetime, str]]:
         return [(active.person.human_readable(), active.start, active.event.code)
                 for active in Active.query.all()]
+
+    def export(self, name: str = None, start: datetime = None, end: datetime = None, type_: str = None) -> list[list[str]]:
+        query = Stamps.query
+        if name:
+            code = mk_hash(name)
+            query = query.filter(Stamps.person.code == code)
+        if start:
+            query = query.filter(Stamps.start < start)
+        if end:
+            query = query.filter(Stamps.end > end)
+        if type_:
+            query = query.filter(Stamps.event.type_ == type_)
+        return [stamp.as_list()
+                for stamp in query.all()]
 
     def scan(self, event, name) -> StampEvent:
         code = canonical_name(name)
