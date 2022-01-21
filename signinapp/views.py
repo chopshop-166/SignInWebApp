@@ -5,7 +5,7 @@ from http import HTTPStatus
 import flask_excel as excel
 from flask import Blueprint, Response, jsonify, request
 from flask.templating import render_template
-
+from flask_login import current_user, login_required
 from .model import model
 
 qrbp = Blueprint("qr", __name__)
@@ -46,8 +46,12 @@ def stamps():
 
 
 @qrbp.route("/export")
+@login_required
 def export():
-    name = request.args.get("name", None)
+    if current_user.admin:
+        name = request.args.get("name", None)
+    else:
+        name = current_user.name
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)

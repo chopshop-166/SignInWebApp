@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 import os
-from http.client import HTTPException
 
 import flask_excel as excel
-from flask import Flask, render_template
+from flask import Flask
 from flask_bootstrap import Bootstrap5
 
 from .admin import admin

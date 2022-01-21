@@ -4,17 +4,15 @@ from __future__ import annotations
 
 import base64
 import dataclasses
-import hashlib
 import re
 from datetime import datetime, timedelta
-from typing import Tuple
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import generate_password_hash
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()

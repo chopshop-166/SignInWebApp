@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 from http import HTTPStatus
-from flask import Blueprint, flash, redirect, url_for, Response, request, abort
+
+from flask import Blueprint, Response, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import LoginManager, current_user, login_required
-from werkzeug.security import check_password_hash
 
-from .model import db
-from .model import Person, Role
+from .model import Person, Role, db
 
 login_manager = LoginManager()
 
