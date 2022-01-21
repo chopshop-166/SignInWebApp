@@ -87,6 +87,7 @@ class Event(db.Model):
     type_ = db.Column(db.String)
 
     stamps = relationship("Stamps", back_populates="event")
+    active = relationship("Active", back_populates="event")
 
 
 class Active(db.Model):
@@ -151,15 +152,15 @@ class SqliteModel():
         query = Stamps.query
         if name:
             code = canonical_name(name)
-            query = query.filter(Stamps.person.code == code)
+            query = query.join(Person).filter_by(code=code)
         if event:
-            query = query.filter(Stamps.event.code == event)
+            query = query.join(Event).filter_by(code=event)
         return [s.as_dict() for s in query.all()]
 
     def get_active(self, event=None) -> list[dict]:
         query = Active.query
         if event:
-            query = query.filter(Active.event.code == event)
+            query = query.join(Event).filter(Event.code == event)
         return [active.as_dict() for active in query.all()]
 
     def export(self, name: str = None,
@@ -168,13 +169,13 @@ class SqliteModel():
         query = Stamps.query
         if name:
             code = mk_hash(name)
-            query = query.filter(Stamps.person.code == code)
+            query = query.join(Person).filter_by(code=code)
         if start:
             query = query.filter(Stamps.start < start)
         if end:
             query = query.filter(Stamps.end > end)
         if type_:
-            query = query.filter(Stamps.event.type_ == type_)
+            query = query.join(Event).filter_by(type_=type_)
         result = [stamp.as_list() for stamp in query.all()]
         if headers:
             result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
@@ -185,18 +186,17 @@ class SqliteModel():
         if not code:
             return
 
-        person = Person.query.filter(Person.code == code).one_or_none()
+        person = Person.query.filter_by(code=code).one_or_none()
         if not person:
             return
 
-        ev = Event.query.filter(Event.code == event).one_or_none()
+        ev = Event.query.filter_by(code=event).one_or_none()
         if not ev:
             ev = Event(name=event, code=event)
             db.session.add(ev)
             db.session.commit()
 
-        active = Active.query.join(Person).filter(
-            Person.code == code).one_or_none()
+        active = Active.query.join(Person).filter_by(code=code).one_or_none()
         if active:
             stamp = Stamps(person=person, event=ev, start=active.start)
             db.session.delete(active)

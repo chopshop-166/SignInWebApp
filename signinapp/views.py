@@ -42,7 +42,9 @@ def active():
 
 @app.route("/stamps")
 def stamps():
-    return jsonify(model.get_all_stamps())
+    name = request.args.get("name", None)
+    event = request.args.get("event", None)
+    return jsonify(model.get_stamps(name=name, event=event))
 
 
 @app.route("/export")
