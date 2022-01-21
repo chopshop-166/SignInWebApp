@@ -49,19 +49,24 @@ class Person(UserMixin, db.Model):
     name = db.Column(db.String, nullable=False)
     password = db.Column(db.String)
     code = db.Column(db.String, nullable=False, unique=True)
-    mentor = db.Column(db.Boolean, nullable=False)
+    account_type_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
 
     stamps = relationship("Stamps", back_populates="person")
+    account_type = relationship("AccountType")
+
+    @hybrid_property
+    def mentor(self):
+        return self.account_type.mentor
 
     @hybrid_method
     def human_readable(self) -> str:
         return f"{'*' if self.mentor else ''}{self.name}"
 
     @classmethod
-    def make(cls, name, password, mentor=False):
+    def make(cls, name, password, role):
         the_hash = mk_hash(name)
         return Person(name=name, password=generate_password_hash(password),
-                      code=the_hash, mentor=mentor)
+                      code=the_hash, account_type_id=role.id)
 
     @classmethod
     def get_canonical(cls, name):
@@ -140,6 +145,13 @@ class Stamps(db.Model):
         return [self.person.human_readable(),
                 self.start, self.end,
                 self.elapsed, self.event.name]
+
+
+class AccountType(db.Model):
+    __tablename__ = "account_types"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    mentor = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class SqliteModel():
