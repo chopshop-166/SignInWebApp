@@ -14,22 +14,14 @@ from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 
-from . import app
+# this variable, db, will be used for all SQLAlchemy commands
+db = SQLAlchemy()
 
 NAME_RE = re.compile(
     r"^(?P<mentor>(?i)mentor[ -]*)?(?P<last>[a-zA-Z ']+),\s*(?P<first>[a-zA-Z ']+)$")
 
 HASH_RE = re.compile(
     r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
-
-
-#db_name = 'signin.db'
-db_name = ':memory:'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-
-# this variable, db, will be used for all SQLAlchemy commands
-db = SQLAlchemy(app)
 
 
 def mk_hash(name: str):
@@ -142,11 +134,6 @@ class Stamps(db.Model):
 
 
 class SqliteModel():
-    def __init__(self) -> None:
-        db.create_all()
-        p = Person.make("Matt Soucy", mentor=True)
-        db.session.add(p)
-        db.session.commit()
 
     def get_stamps(self, name=None, event=None):
         query = Stamps.query
@@ -211,3 +198,5 @@ class SqliteModel():
             db.session.add(active)
             db.session.commit()
             return StampEvent(person.human_readable(), "in")
+            
+model = SqliteModel()
