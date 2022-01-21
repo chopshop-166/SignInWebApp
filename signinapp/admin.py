@@ -6,11 +6,21 @@ from flask import Blueprint, Response, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import LoginManager, current_user, login_required
 
-from .model import Person, Role, db
+from .model import Event, Person, Role, db
 
 login_manager = LoginManager()
 
 admin = Blueprint("admin", __name__)
+
+
+@admin.route("/admin")
+@login_required
+def admin_main():
+    if current_user.admin:
+        users = Person.query.all()
+        roles = Role.query.all()
+        return render_template("admin_main.html")
+    return Response("You're not admin", HTTPStatus.FORBIDDEN)
 
 
 @admin.route("/admin/users", methods=["GET", "POST"])
@@ -22,17 +32,19 @@ def admin_users():
         return render_template("admin_user.html", users=users, roles=roles)
     return Response("You're not admin", HTTPStatus.FORBIDDEN)
 
+
 @admin.route("/admin/users/update_role", methods=["POST"])
 @login_required
 def update_role():
     if not current_user.admin:
         return Response("You're not admin", HTTPStatus.FORBIDDEN)
-        
+
     if user := Person.query.get(int(request.form["user_id"])):
         if role := Role.query.get(int(request.form["role"])):
             user.role_id = role.id
             db.session.commit()
-            print("Role for", user.name, "is", user.role_id, "should be", role.id)
+            print("Role for", user.name, "is",
+                  user.role_id, "should be", role.id)
             return redirect(url_for("admin.admin_users"))
         flash("Invalid role ID")
         return Response("Invalid role ID", HTTPStatus.BAD_REQUEST)
