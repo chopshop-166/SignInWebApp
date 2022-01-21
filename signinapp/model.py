@@ -10,9 +10,11 @@ from datetime import datetime
 from typing import Tuple
 
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -41,10 +43,11 @@ class StampEvent():
     event: str
 
 
-class Person(db.Model):
+class Person(UserMixin, db.Model):
     __tablename__ = "people"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+    password = db.Column(db.String)
     code = db.Column(db.String, nullable=False, unique=True)
     mentor = db.Column(db.Boolean, nullable=False)
 
@@ -55,9 +58,15 @@ class Person(db.Model):
         return f"{'*' if self.mentor else ''}{self.name}"
 
     @classmethod
-    def make(cls, name, mentor=False):
+    def make(cls, name, password, mentor=False):
         the_hash = mk_hash(name)
-        return Person(name=name, code=the_hash, mentor=mentor)
+        return Person(name=name, password=generate_password_hash(password),
+                      code=the_hash, mentor=mentor)
+
+    @classmethod
+    def get_canonical(cls, name):
+        code = mk_hash(name)
+        return Person.query.filter_by(code=code).one_or_none()
 
 
 class Event(db.Model):
@@ -198,5 +207,6 @@ class SqliteModel():
             db.session.add(active)
             db.session.commit()
             return StampEvent(person.human_readable(), "in")
-            
+
+
 model = SqliteModel()

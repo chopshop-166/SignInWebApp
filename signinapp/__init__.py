@@ -2,13 +2,17 @@
 
 from flask import Flask
 from flask_bootstrap import Bootstrap5
-from .model import SqliteModel, db, Person
 import flask_excel as excel
 
-from .model import model
+import os
+
+from .auth import auth, login_manager
+from .model import Person, SqliteModel, db, model
 from .views import qrbp
 
 app = Flask(__name__)
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "1234")
 
 #db_name = 'signin.db'
 db_name = ':memory:'
@@ -18,13 +22,27 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 excel.init_excel(app)
 
 bootstrap = Bootstrap5(app)
+login_manager.init_app(app)
+
 db.init_app(app)
 with app.app_context():
     db.create_all()
+
 app.register_blueprint(qrbp)
+
+app.register_blueprint(auth)
+login_manager.login_view = "auth.login"
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    # since the user_id is just the primary key of our user table, use it in the query for the user
+    return Person.query.get(int(user_id))
+
 
 if app.config["DEBUG"]:
     with app.app_context():
-        p = Person.make("Matt Soucy", mentor=True)
+        p = Person.make("admin", password="1234", mentor=True)
         db.session.add(p)
         db.session.commit()
