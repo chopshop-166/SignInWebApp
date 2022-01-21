@@ -58,6 +58,10 @@ class Person(UserMixin, db.Model):
     def mentor(self):
         return self.account_type.mentor
 
+    @hybrid_property
+    def can_display(self):
+        return self.account_type.can_display
+
     @hybrid_method
     def human_readable(self) -> str:
         return f"{'*' if self.mentor else ''}{self.name}"
@@ -152,6 +156,11 @@ class AccountType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     mentor = db.Column(db.Boolean, nullable=False, default=False)
+    can_display = db.Column(db.Boolean, nullable=False, default=False)
+
+    @classmethod
+    def from_name(cls, name):
+        return cls.query.filter_by(name=name).one_or_none()
 
 
 class SqliteModel():

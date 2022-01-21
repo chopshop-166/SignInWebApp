@@ -7,7 +7,7 @@ import flask_excel as excel
 import os
 
 from .auth import auth, login_manager
-from .model import AccountType, Person, SqliteModel, db, model
+from .model import Person, db, AccountType
 from .views import qrbp
 
 app = Flask(__name__)
@@ -45,11 +45,11 @@ def load_user(user_id):
 
 if app.config["DEBUG"]:
     with app.app_context():
-
-        ADMIN = AccountType(name="admin", mentor=True)
-        MENTOR = AccountType(name="mentor", mentor=True)
-        DISPLAY = AccountType(name="display")
+        ADMIN = AccountType(name="admin", mentor=True, can_display=True)
+        MENTOR = AccountType(name="mentor", mentor=True, can_display=True)
+        DISPLAY = AccountType(name="display", can_display=True)
         STUDENT = AccountType(name="student")
+
         db.session.add_all([ADMIN, MENTOR, DISPLAY, STUDENT])
         db.session.commit()
 
