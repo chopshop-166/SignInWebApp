@@ -127,7 +127,9 @@ class Stamps(db.Model):
 
     @hybrid_method
     def as_list(self):
-        return [self.person.human_readable(), self.start, self.end, self.elapsed, self.event.name]
+        return [self.person.human_readable(),
+                self.start, self.end,
+                self.elapsed, self.event.name]
 
 
 class SqliteModel():
@@ -157,7 +159,9 @@ class SqliteModel():
         return [(active.person.human_readable(), active.start, active.event.code)
                 for active in Active.query.all()]
 
-    def export(self, name: str = None, start: datetime = None, end: datetime = None, type_: str = None) -> list[list[str]]:
+    def export(self, name: str = None,
+               start: datetime = None, end: datetime = None,
+               type_: str = None, headers=True) -> list[list[str]]:
         query = Stamps.query
         if name:
             code = mk_hash(name)
@@ -168,8 +172,10 @@ class SqliteModel():
             query = query.filter(Stamps.end > end)
         if type_:
             query = query.filter(Stamps.event.type_ == type_)
-        return [stamp.as_list()
-                for stamp in query.all()]
+        result = [stamp.as_list() for stamp in query.all()]
+        if headers:
+            result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
+        return result
 
     def scan(self, event, name) -> StampEvent:
         code = canonical_name(name)

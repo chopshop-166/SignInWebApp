@@ -56,6 +56,4 @@ def export():
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)
     return excel.make_response_from_array(
-        [["Name", "Start", "End", "Elapsed", "Event"]] + model.export(
-        name, start, end, type_
-    ), "csv")
+        model.export(name, start, end, type_), "csv")
