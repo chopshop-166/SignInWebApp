@@ -20,12 +20,12 @@ def index():
 def scan():
     event = request.values['event']
     name = request.values['name']
-    (human, sign) = model.scan(event, name)
+    stamp = model.scan(event, name)
 
-    if (human, sign) != ("", ""):
+    if stamp:
         return jsonify({
-            'stamp': sign,
-            'message': f"{human} signed {sign}",
+            'stamp': stamp.event,
+            'message': f"{stamp.name} signed {stamp.event}",
             'users': model.get_active(event)
         })
     else:
@@ -40,6 +40,7 @@ def active_all():
 @app.route("/active/<event>")
 def active(event):
     return jsonify(model.get_active(event))
+
 
 @app.route("/stamps")
 def stamps():
