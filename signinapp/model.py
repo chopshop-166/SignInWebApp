@@ -6,7 +6,7 @@ import base64
 import dataclasses
 import hashlib
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple
 
 from flask_sqlalchemy import SQLAlchemy
@@ -65,6 +65,10 @@ class Person(UserMixin, db.Model):
     @hybrid_property
     def admin(self):
         return self.role.admin
+
+    @hybrid_property
+    def total_time(self):
+        return sum((s.elapsed for s in self.stamps), start=timedelta())
 
     @hybrid_method
     def human_readable(self) -> str:

@@ -7,10 +7,6 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <div id="reader" style="width: 100%; margin: auto"></div>
-      <div id="liveAlertPlaceholder"></div>
-    </div>
-    <div class="col">
       <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">
         <thead>
           <tr>
@@ -27,12 +23,14 @@
                 <input type="hidden" value="{{user.id}}" name="user_id">
                 <select id="role" name="role">
                   {%- for role in roles -%}
-                  <option value="{{role.id}}"{% if role.id|int == user.role_id|int %} selected="selected"{% endif %}>{{ role.name }}</option>
+                  <option value="{{role.id}}" {% if role.id|int==user.role_id|int %} selected="selected" {% endif %}>{{
+                    role.name }}</option>
                   {%- endfor -%}
                 </select>
                 <button type=submit>Update</button>
               </form>
             </td>
+            <td>{{ user.total_time }}</td>
           </tr>
           {%- endfor -%}
         </tbody>
