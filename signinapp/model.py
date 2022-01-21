@@ -99,6 +99,14 @@ class Active(db.Model):
     person = relationship("Person")
     event = relationship("Event")
 
+    @hybrid_method
+    def as_dict(self):
+        return {
+            "person": self.person.human_readable(),
+            "start": self.start,
+            "event": self.event.name
+        }
+
 
 class Stamps(db.Model):
     __tablename__ = "stamps"
@@ -139,25 +147,20 @@ class SqliteModel():
         db.session.add(p)
         db.session.commit()
 
-    def get_name_stamps(self, name):
-        m = NAME_RE.match(name)
-        if not m:
-            return []
-        return Stamps.query.filter(Stamps.person.matches(m)).all()
+    def get_stamps(self, name=None, event=None):
+        query = Stamps.query
+        if name:
+            code = canonical_name(name)
+            query = query.filter(Stamps.person.code == code)
+        if event:
+            query = query.filter(Stamps.event.code == event)
+        return [s.as_dict() for s in query.all()]
 
-    def get_event_stamps(self, event):
-        return Stamps.query.filter(Stamps.event.code == event).all()
-
-    def get_all_stamps(self):
-        return [s.as_dict() for s in Stamps.query.all()]
-
-    def get_active(self, event) -> list[Tuple[str, datetime]]:
-        return [(active.person.human_readable(), active.start)
-                for active in Active.query.join(Event).filter(Event.code == event).all()]
-
-    def get_all_active(self) -> list[Tuple[str, datetime, str]]:
-        return [(active.person.human_readable(), active.start, active.event.code)
-                for active in Active.query.all()]
+    def get_active(self, event=None) -> list[dict]:
+        query = Active.query
+        if event:
+            query = query.filter(Active.event.code == event)
+        return [active.as_dict() for active in query.all()]
 
     def export(self, name: str = None,
                start: datetime = None, end: datetime = None,
@@ -182,7 +185,7 @@ class SqliteModel():
         if not code:
             return
 
-        person = Person.query.filter(Person.code == code).first()
+        person = Person.query.filter(Person.code == code).one_or_none()
         if not person:
             return
 

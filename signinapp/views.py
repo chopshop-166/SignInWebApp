@@ -35,12 +35,8 @@ def scan():
 
 
 @app.route("/active")
-def active_all():
-    return jsonify(model.get_all_active())
-
-
-@app.route("/active/<event>")
-def active(event):
+def active():
+    event = request.args.get("event", None)
     return jsonify(model.get_active(event))
 
 

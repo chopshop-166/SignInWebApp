@@ -26,18 +26,18 @@ function populateUsers(userdata) {
     userdata.forEach(element => {
         let row = usersroot.insertRow()
         let name = document.createElement("th")
-        name.innerText = element[0]
+        name.innerText = element["person"]
         name.setAttribute("scope", "row")
         row.appendChild(name)
         let timestamp = document.createElement("td")
-        timestamp.innerText = new Date(element[1]).toLocaleString()
+        timestamp.innerText = new Date(element["start"]).toLocaleString()
         row.appendChild(timestamp)
     });
 }
 
 function updateUserData() {
     const event = "training"
-    fetch(`/active/${event}`)
+    fetch("/active?" + new URLSearchParams({ event: event }))
         .then(data => data.json())
         .then(json => {
             populateUsers(json)
