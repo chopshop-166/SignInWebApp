@@ -14,8 +14,10 @@ app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "1234")
 
-#db_name = 'signin.db'
-db_name = ':memory:'
+if app.config["DEBUG"]:
+    db_name = ':memory:'
+else:
+    db_name = 'signin.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
