@@ -31,6 +31,9 @@
         {{- render_nav_item("auth.register", "Register") -}}
         {{- render_nav_item("auth.login", "Sign In") -}}
         {%- endif -%}
+        {%- if current_user.admin -%}
+        {{- render_nav_item("admin.admin_users", "Admin Users") -}}
+        {%- endif -%}
         {%- endblock %}
         <div class="d-flex">
             <img src="{{ url_for('static', filename='logo.png')}}" height="48">

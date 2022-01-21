@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
-from .model import Person, db, AccountType
+from .model import Person, db, Role
 
 login_manager = LoginManager()
 
@@ -47,7 +47,7 @@ def register():
 
         # Create a new user with the form data. Hash the password so the plaintext version isn't saved.
         new_user = Person.make(name=name, password=password,
-                               role=AccountType.from_name("student"))
+                               role=Role.from_name("student"))
 
         # add the new user to the database
         db.session.add(new_user)

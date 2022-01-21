@@ -49,18 +49,22 @@ class Person(UserMixin, db.Model):
     name = db.Column(db.String, nullable=False)
     password = db.Column(db.String)
     code = db.Column(db.String, nullable=False, unique=True)
-    account_type_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
+    role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
 
     stamps = relationship("Stamps", back_populates="person")
-    account_type = relationship("AccountType")
+    role = relationship("Role")
 
     @hybrid_property
     def mentor(self):
-        return self.account_type.mentor
+        return self.role.mentor
 
     @hybrid_property
     def can_display(self):
-        return self.account_type.can_display
+        return self.role.can_display
+
+    @hybrid_property
+    def admin(self):
+        return self.role.admin
 
     @hybrid_method
     def human_readable(self) -> str:
@@ -70,7 +74,7 @@ class Person(UserMixin, db.Model):
     def make(cls, name, password, role):
         the_hash = mk_hash(name)
         return Person(name=name, password=generate_password_hash(password),
-                      code=the_hash, account_type_id=role.id)
+                      code=the_hash, role_id=role.id)
 
     @classmethod
     def get_canonical(cls, name):
@@ -151,12 +155,13 @@ class Stamps(db.Model):
                 self.elapsed, self.event.name]
 
 
-class AccountType(db.Model):
+class Role(db.Model):
     __tablename__ = "account_types"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     mentor = db.Column(db.Boolean, nullable=False, default=False)
     can_display = db.Column(db.Boolean, nullable=False, default=False)
+    admin = db.Column(db.Boolean, nullable=False, default=False)
 
     @classmethod
     def from_name(cls, name):

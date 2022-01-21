@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-from flask import Flask
-from flask_bootstrap import Bootstrap5
-import flask_excel as excel
-
 import os
+from http.client import HTTPException
 
+import flask_excel as excel
+from flask import Flask, render_template
+from flask_bootstrap import Bootstrap5
+
+from .admin import admin
 from .auth import auth, login_manager
-from .model import Person, db, AccountType
+from .model import Person, Role, db
 from .views import qrbp
 
 app = Flask(__name__)
@@ -36,6 +38,8 @@ app.register_blueprint(auth)
 login_manager.login_view = "auth.login"
 login_manager.init_app(app)
 
+app.register_blueprint(admin)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -45,14 +49,17 @@ def load_user(user_id):
 
 if app.config["DEBUG"]:
     with app.app_context():
-        ADMIN = AccountType(name="admin", mentor=True, can_display=True)
-        MENTOR = AccountType(name="mentor", mentor=True, can_display=True)
-        DISPLAY = AccountType(name="display", can_display=True)
-        STUDENT = AccountType(name="student")
+        ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
+        MENTOR = Role(name="mentor", mentor=True, can_display=True)
+        DISPLAY = Role(name="display", can_display=True)
+        STUDENT = Role(name="student")
 
         db.session.add_all([ADMIN, MENTOR, DISPLAY, STUDENT])
         db.session.commit()
 
-        admin = Person.make("admin", password="1234", role=ADMIN)
-        db.session.add(admin)
+        admin_user = Person.make("admin", password="1234", role=ADMIN)
+        display = Person.make("display", password="1234", role=DISPLAY)
+        mentor = Person.make("Matt Soucy", password="1234", role=MENTOR)
+        student = Person.make("Jeff Burke", password="1234", role=STUDENT)
+        db.session.add_all([admin_user, display, mentor, student])
         db.session.commit()
