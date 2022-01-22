@@ -14,7 +14,7 @@ qrbp = Blueprint("qr", __name__)
 
 @qrbp.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html.jinja2")
 
 
 @qrbp.route("/scan", methods=['POST'])

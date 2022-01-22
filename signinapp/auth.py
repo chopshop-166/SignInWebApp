@@ -53,7 +53,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         return redirect('/login')
-    return render_template("register.html", form=form)
+    return render_template("register.html.jinja2", form=form)
 
 
 @auth.route('/login', methods=["GET", "POST"])
@@ -74,7 +74,7 @@ def login():
         login_user(user, remember=remember)
 
         return redirect('/')
-    return render_template("login.html", form=form)
+    return render_template("login.html.jinja2", form=form)
 
 
 @auth.route('/logout')
