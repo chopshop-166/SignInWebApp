@@ -68,8 +68,8 @@ if app.config["DEBUG"]:
         training = Event(
             name="Training",
             code="5678",
-            start=datetime.datetime.fromisoformat("2022-01-21T14:00:00"),
-            end=datetime.datetime.fromisoformat("2022-01-21T21:00:00"),
+            start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
+            end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
             type_id = TRAINING.id
         )
 
