@@ -142,7 +142,10 @@ class Event(db.Model):
 
     @hybrid_property
     def is_active(self) -> bool:
-        return self.start < datetime.now() < self.end
+        now = datetime.now()
+        return (self.enabled == True and
+                self.start < now and
+                now < self.end)
 
 
 class EventType(db.Model):
@@ -150,7 +153,7 @@ class EventType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
-    autoload = db.Column(db.Boolean)
+    autoload = db.Column(db.Boolean, nullable=False, default=False)
 
     events = relationship("Event", back_populates="type_")
 
@@ -217,6 +220,7 @@ class Role(db.Model):
     mentor = db.Column(db.Boolean, nullable=False, default=False)
     can_display = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
+    autoload = db.Column(db.Boolean, nullable=False, default=False)
 
     @classmethod
     def from_name(cls, name):

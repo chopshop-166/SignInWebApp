@@ -8,19 +8,14 @@ from flask import Blueprint, Response, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
-from .model import model, Event
+from .model import Event, EventType, model
 
 qrbp = Blueprint("qr", __name__)
 
 
 @qrbp.route("/")
 def index():
-    now = datetime.datetime.now()
-    events = Event.query.filter(
-        Event.enabled == True,
-        Event.start < now,
-        Event.end > now
-    ).all()
+    events = Event.query.filter(Event.is_active == True).all()
     return render_template("index.html.jinja2", events=events)
 
 
@@ -52,6 +47,17 @@ def scan():
         })
     else:
         return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
+
+
+@qrbp.route("/autoevent")
+def autoevent():
+    ev = Event.query.join(EventType).filter(Event.is_active == True,
+                            EventType.autoload == True).first()
+
+    if ev:
+        return jsonify({"event": ev.code})
+
+    return jsonify({"event": ""})
 
 
 @qrbp.route("/active")

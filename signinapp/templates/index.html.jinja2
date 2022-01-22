@@ -15,4 +15,19 @@
   </ul>
   {% endif %}
 </div>
+{%- if current_user.is_authenticated and current_user.role.autoload -%}
+<script type="text/javascript">
+function checkNewEvent() {
+  fetch("/autoevent")
+      .then(data => data.json())
+      .then(json => {
+        alert(json)
+        if (json["event"] !== "") {
+          window.location = "{{url_for('qr.event')}}?event_code="+json["event"]
+        }
+      })
+}
+setInterval(checkNewEvent, 10000)
+</script>
+{%- endif -%}
 {% endblock %}

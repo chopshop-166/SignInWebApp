@@ -53,7 +53,7 @@ if app.config["DEBUG"]:
     with app.app_context():
         ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
         MENTOR = Role(name="mentor", mentor=True, can_display=True)
-        DISPLAY = Role(name="display", can_display=True)
+        DISPLAY = Role(name="display", can_display=True, autoload=True)
         STUDENT = Role(name="student")
 
         TRAINING = EventType(name="Training", description="Training Session", autoload=True)
