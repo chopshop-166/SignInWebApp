@@ -13,7 +13,7 @@
     {{ bootstrap.load_css() }}
     {% endblock %}
 
-    <title>{% block title %}Your page title{% endblock %}</title>
+    <title>{% block title %}Chop Shop Sign In{% endblock %}</title>
     {% endblock %}
 </head>
 
@@ -25,6 +25,7 @@
         </div>
         <ul class="navbar-nav">
             {%- if current_user.is_authenticated -%}
+            <li>Welcome, {{current_user.name}}</li>
             {%- if current_user.admin -%}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"

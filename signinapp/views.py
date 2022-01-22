@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 from http import HTTPStatus
 
 import flask_excel as excel
@@ -7,14 +8,28 @@ from flask import Blueprint, Response, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
-from .model import model
+from .model import model, Event
 
 qrbp = Blueprint("qr", __name__)
 
 
 @qrbp.route("/")
 def index():
-    return render_template("index.html.jinja2")
+    now = datetime.datetime.now()
+    events = Event.query.filter(
+        Event.enabled == True,
+        Event.start < now,
+        Event.end > now
+    ).all()
+    return render_template("index.html.jinja2", events=events)
+
+
+@qrbp.route("/event")
+def event():
+    event_code = request.args.get("event_code")
+    if not event_code:
+        return Response("Error: Invalid Event Code", HTTPStatus.BAD_REQUEST)
+    return render_template("event.html.jinja2", event_code=event_code)
 
 
 @qrbp.route("/scan", methods=['POST'])

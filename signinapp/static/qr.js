@@ -36,8 +36,7 @@ function populateUsers(userdata) {
 }
 
 function updateUserData() {
-    const event = "training"
-    fetch("/active?" + new URLSearchParams({ event: event }))
+    fetch("/active?" + new URLSearchParams({ event: event_code }))
         .then(data => data.json())
         .then(json => {
             populateUsers(json)
@@ -50,11 +49,10 @@ function onScanSuccess(decodedText, decodedResult) {
         html5QrcodeScanner.pause();
         setTimeout(function () { html5QrcodeScanner.resume() }, 2000);
     }
-    const event = "training"
 
     let formData = new FormData();
     formData.append('name', decodedText);
-    formData.append('event', event);
+    formData.append('event', event_code);
 
     fetch(`/scan`, { method: "POST", body: formData })
         .then((response) => {
