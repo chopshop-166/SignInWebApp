@@ -58,6 +58,7 @@ class Person(UserMixin, db.Model):
     code = db.Column(db.String, nullable=False, unique=True)
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
+    badge_ids = db.Column(db.String, nullable=False, default="")
 
     stamps = relationship("Stamps", back_populates="person")
     role = relationship("Role")
@@ -78,6 +79,25 @@ class Person(UserMixin, db.Model):
     @hybrid_property
     def total_time(self) -> timedelta:
         return sum((s.elapsed for s in self.stamps), start=timedelta())
+
+    @hybrid_property
+    def badges(self):
+        if not self.badge_ids:
+            return []
+        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
+        return [b for b in Badge.query.all() if b.id in badge_ids]
+
+    @hybrid_method
+    def award_badge(self, badge_id: int):
+        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
+        badge_ids = sorted(set(badge_ids + [badge_id]))
+        self.badge_ids = ",".join(str(b) for b in badge_ids)
+
+    @hybrid_method
+    def remove_badge(self, badge_id: int):
+        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
+        badge_ids = sorted(set(badge_ids) - badge_id)
+        self.badge_ids = ",".join(str(b) for b in badge_ids)
 
     @hybrid_method
     def stamps_for(self, type_: EventType):
@@ -236,6 +256,13 @@ class Subteam(db.Model):
     name = db.Column(db.String, nullable=False)
 
     members = relationship("Person", back_populates="subteam")
+
+class Badge(db.Model):
+    __tablename__ = "badges"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    icon = db.Column(db.String)
+    color = db.Column(db.String, default="black")
 
 
 class SqliteModel():
