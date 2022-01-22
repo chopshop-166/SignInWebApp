@@ -11,7 +11,7 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, SubmitField
 from wtforms.validators import DataRequired
 
-from .model import Person
+from .model import EventType, Person
 
 user = Blueprint("user", __name__)
 
@@ -32,6 +32,7 @@ def profile():
     user = current_user
     if uid := request.args.get("user_id"):
         user = Person.query.get(uid)
-        if current_user.can_view(user):
-            return render_template("profile.html.jinja2", user=user)
+    if current_user.can_view(user):
+        event_types = EventType.query.all()
+        return render_template("profile.html.jinja2", user=user, event_types=event_types)
     return current_app.login_manager.unauthorized()

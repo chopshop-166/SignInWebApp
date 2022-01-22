@@ -74,8 +74,17 @@ class Person(UserMixin, db.Model):
         return self.role.admin
 
     @hybrid_property
-    def total_time(self):
+    def total_time(self) -> timedelta:
         return sum((s.elapsed for s in self.stamps), start=timedelta())
+
+    @hybrid_method
+    def stamps_for(self, type_ : EventType):
+        return [s for s in self.stamps if s.event.type_ == type_]
+
+    @hybrid_method
+    def total_stamps_for(self, type_ : EventType) -> timedelta:
+        return sum((s.elapsed for s in self.stamps_for(type_)),
+                   start=timedelta())
 
     @hybrid_method
     def can_view(self, user : Person):

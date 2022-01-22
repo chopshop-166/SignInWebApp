@@ -16,7 +16,14 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
   <h1>{{user.name}}</h1>
   <div class="row">
     <div class="col">
-      {{user}} is a {{user.role.name}}
+      <div>Role: {{user.role.name}}</div>
+      <div>
+        <ul>
+          {%- for type_ in event_types -%}
+            <li>{{type_.name}}: {{user.total_stamps_for(type_)}}
+          {%- endfor -%}
+        </ul>
+      </div>
     </div>
     <div class="col">
       <div id="qrPlaceholder"></div>
