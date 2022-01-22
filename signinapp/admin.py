@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
 
+from dateutil.rrule import rrule, WEEKLY
 from flask import (Blueprint, Response, current_app, flash, redirect, request,
                    url_for)
 from flask.templating import render_template
@@ -24,6 +26,9 @@ admin = Blueprint("admin", __name__)
 
 DATE_FORMATS = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S',
                 '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M']
+
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday",
+            "Thursday", "Friday", "Saturday", "Sunday"]
 
 
 class EventForm(FlaskForm):
@@ -51,13 +56,11 @@ class EventForm(FlaskForm):
 class BulkEventForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
-    start_day = DateField()
-    end_day = DateField()
-    days = SelectMultipleField(choices=[
-        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-    ])
-    start_time = TimeField()
-    end_time = TimeField()
+    start_day = DateField(validators=[DataRequired()])
+    end_day = DateField(validators=[DataRequired()])
+    days = SelectMultipleField(choices=WEEKDAYS, validators=[DataRequired()])
+    start_time = TimeField(validators=[DataRequired()])
+    end_time = TimeField(validators=[DataRequired()])
     type_ = SelectField(label="Type")
     submit = SubmitField()
 
@@ -67,7 +70,8 @@ class BulkEventForm(FlaskForm):
             return False
 
         if self.start_time.data >= self.end_time.data:
-            self.end_time.errors.append('End time must not be before start time')
+            self.end_time.errors.append(
+                'End time must not be before start time')
             rv = False
 
         if self.start_day.data >= self.end_day.data:
@@ -103,8 +107,6 @@ def admin_required(func):
 @admin.route("/admin")
 @admin_required
 def admin_main():
-    users = Person.query.all()
-    roles = Role.query.all()
     return render_template("admin_main.html.jinja2")
 
 
@@ -151,7 +153,24 @@ def bulk_events():
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
 
     if form.validate_on_submit():
-        return redirect(url_for("admin.admin_events"))
+        start_time = datetime.combine(form.start_day.data, form.start_time.data)
+        end_time = datetime.combine(form.end_day.data, form.end_time.data)
+        days = rrule(WEEKLY,
+            byweekday=[WEEKDAYS.index(d) for d in form.days.data]
+        ).between(start_time, end_time, inc=True)
+        for d in [d.date() for d in days]:
+            ev = Event(
+                name=form.name.data,
+                description=form.description.data,
+                start=datetime.combine(d, form.start_time.data),
+                end=datetime.combine(d, form.end_time.data),
+                code=event_code(),
+                type_=EventType.query.get(form.type_.data)
+            )
+            db.session.add(ev)
+        db.session.commit()
+
+        return redirect(url_for("admin.events"))
     return render_template("admin/event.html.jinja2", form=form)
 
 
