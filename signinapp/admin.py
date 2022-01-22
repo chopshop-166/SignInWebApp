@@ -39,9 +39,7 @@ def admin_required(func):
         if request.method in EXEMPT_METHODS or \
                 current_app.config.get('LOGIN_DISABLED'):
             pass
-        elif not current_user.is_authenticated:
-            return current_app.login_manager.unauthorized()
-        elif not current_user.admin:
+        elif not current_user.is_authenticated or not current_user.admin:
             return current_app.login_manager.unauthorized()
         try:
             # current_app.ensure_sync available in Flask >= 2.0

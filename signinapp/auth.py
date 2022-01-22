@@ -2,11 +2,12 @@
 
 from flask import Blueprint, flash, redirect, url_for
 from flask.templating import render_template
-from flask_login import LoginManager, current_user, login_user, logout_user
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
 from flask_wtf import FlaskForm
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, EqualTo
 
 from .model import Person, Role, db
 
@@ -16,16 +17,26 @@ auth = Blueprint("auth", __name__)
 
 
 class RegisterForm(FlaskForm):
-    name = StringField("name", validators=[DataRequired()])
-    password = PasswordField("password", validators=[DataRequired()])
+    name = StringField("Name", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Register")
 
 
 class LoginForm(FlaskForm):
-    name = StringField("name", validators=[DataRequired()])
-    password = PasswordField("password", validators=[DataRequired()])
-    remember = BooleanField("remember")
+    name = StringField("Name", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    remember = BooleanField("Remember Me")
     submit = SubmitField("Login")
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField(
+        "Current Password", validators=[DataRequired()])
+    new_password = PasswordField("New Password", validators=[DataRequired()])
+    new_password_rep = PasswordField("New Password (again)",
+                                     validators=[DataRequired(),
+                                                 EqualTo("new_password", message='Passwords must match')])
+    submit = SubmitField()
 
 
 @auth.route("/register", methods=["GET", "POST"])
@@ -80,3 +91,19 @@ def login():
 def logout():
     logout_user()
     return redirect('/')
+
+
+@auth.route("/password", methods=["GET", "POST"])
+@login_required
+def password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not check_password_hash(current_user.password, form.current_password.data):
+            flash("Incorrect current password")
+            return redirect(url_for("auth.password"))
+
+        current_user.password = generate_password_hash(form.new_password.data)
+        db.session.commit()
+        return redirect(url_for('user.profile'))
+
+    return render_template("password.html.jinja2", form=form)

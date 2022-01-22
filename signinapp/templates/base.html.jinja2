@@ -25,7 +25,7 @@
         </div>
         <ul class="navbar-nav">
             {%- if current_user.is_authenticated -%}
-            <li>Welcome, <a href="{{url_for('user.profile')}}">{{current_user.name}}</a></li>
+            <li>Welcome, {{current_user.name}}</li>
             {%- if current_user.admin -%}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"
@@ -38,8 +38,18 @@
                 </ul>
             </li>
             {%- endif -%}
-            {{- render_nav_item("qr.export", "Export", use_li=True) -}}
-            {{- render_nav_item("auth.logout", "Sign Out", use_li=True) -}}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    User
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
+                    <li><a class="dropdown-item" href="{{url_for('user.profile')}}">Profile</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('qr.export')}}">Export</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('auth.password')}}">Change Password</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('auth.logout')}}">Sign Out</a></li>
+                </ul>
+            </li>
             {%- else -%}
             {{- render_nav_item("auth.register", "Register", use_li=True) -}}
             {{- render_nav_item("auth.login", "Sign In", use_li=True) -}}
