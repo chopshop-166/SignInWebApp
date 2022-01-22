@@ -9,7 +9,7 @@ from flask.templating import render_template
 from flask_login import LoginManager, current_user
 from flask_login.config import EXEMPT_METHODS
 from flask_wtf import FlaskForm
-from wtforms import DateTimeLocalField, SelectField, StringField, SubmitField
+from wtforms import BooleanField, DateTimeLocalField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from .model import Event, EventType, Person, Role, db, event_code
@@ -29,6 +29,7 @@ class EventForm(FlaskForm):
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
     type_ = SelectField(label="Type")
+    enabled = BooleanField(default=True)
     submit = SubmitField()
 
 
@@ -55,7 +56,7 @@ def admin_required(func):
 def admin_main():
     users = Person.query.all()
     roles = Role.query.all()
-    return render_template("admin_main.html")
+    return render_template("admin_main.html.jinja2")
 
 
 @admin.route("/admin/users", methods=["GET", "POST"])
@@ -104,7 +105,8 @@ def new_event():
             start=form.start.data,
             end=form.end.data,
             code=form.code.data,
-            type_=EventType.query.get(form.type_.data)
+            type_=EventType.query.get(form.type_.data),
+            enabled=form.enabled.data
         )
         db.session.add(ev)
         db.session.commit()
@@ -129,6 +131,7 @@ def edit_event():
         event.end = form.end.data
         event.code = form.code.data
         event.type_ = EventType.query.get(form.type_.data)
+        event.enabled = form.enabled.data
         db.session.commit()
         return redirect(url_for("admin.admin_events"))
 
@@ -138,4 +141,5 @@ def edit_event():
     form.start.process_data(event.start)
     form.end.process_data(event.end)
     form.type_.process_data(event.type_id)
+    form.enabled.process_data(event.enabled)
     return render_template("admin_event.html.jinja2", form=form)
