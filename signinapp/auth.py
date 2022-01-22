@@ -2,13 +2,14 @@
 
 from flask import Blueprint, flash, redirect, url_for
 from flask.templating import render_template
+from flask_bootstrap import SwitchField
 from flask_login import LoginManager, current_user, login_user, logout_user
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
-from wtforms import BooleanField, PasswordField, StringField, SubmitField
+from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
-from .model import Person, db, Role
+from .model import Person, Role, db
 
 login_manager = LoginManager()
 
@@ -24,7 +25,7 @@ class RegisterForm(FlaskForm):
 class LoginForm(FlaskForm):
     name = StringField("name", validators=[DataRequired()])
     password = PasswordField("password", validators=[DataRequired()])
-    remember = BooleanField("remember")
+    remember = SwitchField("remember")
     submit = SubmitField("Login")
 
 
