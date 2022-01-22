@@ -95,9 +95,8 @@ def admin_events():
 @admin_required
 def new_event():
 
-    evtypes = {t.name:t for t in EventType.query.all()}
     form = EventForm()
-    form.type_.choices = list(evtypes.keys())
+    form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
     if form.validate_on_submit():
         ev = Event(
             name=form.name.data,
@@ -105,7 +104,7 @@ def new_event():
             start=form.start.data,
             end=form.end.data,
             code=form.code.data,
-            type_id=evtypes[form.type_.data].id
+            type_=EventType.query.get(form.type_.data)
         )
         db.session.add(ev)
         db.session.commit()
@@ -119,10 +118,8 @@ def new_event():
 def edit_event():
     evid = request.args["event_id"]
 
-    evtypes = {t.name:t for t in EventType.query.all()}
-
     form = EventForm()
-    form.type_.choices = list(evtypes.keys())
+    form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
     event = Event.query.get(evid)
 
     if form.validate_on_submit():
@@ -131,13 +128,14 @@ def edit_event():
         event.start = form.start.data
         event.end = form.end.data
         event.code = form.code.data
-        event.type_id = evtypes[form.type_.data].id
+        event.type_ = EventType.query.get(form.type_.data)
         db.session.commit()
         return redirect(url_for("admin.admin_events"))
 
-    form.name.data = event.name
-    form.description.data = event.description
-    form.code.data = event.code
-    form.start.data = event.start
-    form.end.data = event.end
+    form.name.process_data(event.name)
+    form.description.process_data(event.description)
+    form.code.process_data(event.code)
+    form.start.process_data(event.start)
+    form.end.process_data(event.end)
+    form.type_.process_data(event.type_id)
     return render_template("admin_event.html.jinja2", form=form)
