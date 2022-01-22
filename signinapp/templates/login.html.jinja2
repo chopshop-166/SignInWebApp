@@ -1,6 +1,5 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_form %}
-{% from 'bootstrap5/utils.html' import render_static %}
 
 {% block title %}Log In to Chop Shop Sign In{% endblock %}
 
@@ -14,13 +13,6 @@
       </div>
   {%- endif %}
   {%- endwith %}
-  {%- if form.name.errors %}
-    <ul class="errors">
-    {% for error in form.name.errors %}
-        <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
-  {%- endif %}
   {{ render_form(form) }}
 </div>
 {% endblock %}
