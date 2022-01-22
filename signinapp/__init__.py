@@ -10,6 +10,7 @@ from flask_bootstrap import Bootstrap5
 from .admin import admin
 from .auth import auth, login_manager
 from .model import Event, EventType, Person, Role, db
+from .user import user
 from .views import qrbp
 
 app = Flask(__name__)
@@ -33,12 +34,13 @@ with app.app_context():
     db.create_all()
 
 app.register_blueprint(qrbp)
-
 app.register_blueprint(auth)
+app.register_blueprint(admin)
+app.register_blueprint(user)
+
 login_manager.login_view = "auth.login"
 login_manager.init_app(app)
 
-app.register_blueprint(admin)
 
 
 @login_manager.user_loader

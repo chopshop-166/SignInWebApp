@@ -25,7 +25,7 @@
         </div>
         <ul class="navbar-nav">
             {%- if current_user.is_authenticated -%}
-            <li>Welcome, {{current_user.name}}</li>
+            <li>Welcome, <a href="{{url_for('user.profile')}}">{{current_user.name}}</a></li>
             {%- if current_user.admin -%}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"
