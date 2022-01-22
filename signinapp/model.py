@@ -25,7 +25,7 @@ NAME_RE = re.compile(
 HASH_RE = re.compile(
     r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
 
-    
+
 LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
 
 
@@ -78,16 +78,18 @@ class Person(UserMixin, db.Model):
         return sum((s.elapsed for s in self.stamps), start=timedelta())
 
     @hybrid_method
-    def stamps_for(self, type_ : EventType):
-        return [s for s in self.stamps if s.event.type_ == type_]
+    def stamps_for(self, type_: EventType):
+        return [s for s in self.stamps
+                if s.event.type_ == type_
+                and s.event.enabled]
 
     @hybrid_method
-    def total_stamps_for(self, type_ : EventType) -> timedelta:
+    def total_stamps_for(self, type_: EventType) -> timedelta:
         return sum((s.elapsed for s in self.stamps_for(type_)),
                    start=timedelta())
 
     @hybrid_method
-    def can_view(self, user : Person):
+    def can_view(self, user: Person):
         return self.mentor or self.admin or current_user is user
 
     @hybrid_method
@@ -215,7 +217,7 @@ class Role(db.Model):
 class SqliteModel():
 
     def get_stamps(self, name=None, event=None):
-        query = Stamps.query
+        query = Stamps.query.filter(Stamps.event.enabled == True)
         if name:
             code = canonical_name(name)
             query = query.join(Person).filter_by(code=code)
@@ -232,7 +234,7 @@ class SqliteModel():
     def export(self, name: str = None,
                start: datetime = None, end: datetime = None,
                type_: str = None, headers=True) -> list[list[str]]:
-        query = Stamps.query
+        query = Stamps.query.filter(Stamps.event.enabled == True)
         if name:
             code = mk_hash(name)
             query = query.join(Person).filter_by(code=code)
@@ -256,14 +258,11 @@ class SqliteModel():
         if not person:
             return
 
-        ev = Event.query.filter_by(code=event).one_or_none()
+        ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
         if not ev:
-            ev = Event(name=event, code=event)
-            db.session.add(ev)
-            db.session.commit()
+            return
 
-        active = Active.query.join(Person).filter_by(code=code).one_or_none()
-        if active:
+        if active := Active.query.join(Person).filter_by(code=code).one_or_none():
             stamp = Stamps(person=person, event=ev, start=active.start)
             db.session.delete(active)
             db.session.add(stamp)
