@@ -216,7 +216,7 @@ def edit_event():
         event.type_ = EventType.query.get(form.type_.data)
         event.enabled = form.enabled.data
         db.session.commit()
-        return redirect(url_for("admin.admin_events"))
+        return redirect(url_for("admin.events"))
 
     form.name.process_data(event.name)
     form.description.process_data(event.description)
