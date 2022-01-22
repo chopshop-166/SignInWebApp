@@ -11,6 +11,8 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, SubmitField
 from wtforms.validators import DataRequired
 
+from .model import Person
+
 user = Blueprint("user", __name__)
 
 DATE_FORMATS = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S',
@@ -27,4 +29,9 @@ class ChangePasswordForm(FlaskForm):
 @user.route("/profile")
 @login_required
 def profile():
-    return render_template("profile.html.jinja2")
+    user = current_user
+    if uid := request.args.get("user_id"):
+        user = Person.query.get(uid)
+        if current_user.can_view(user):
+            return render_template("profile.html.jinja2", user=user)
+    return current_app.login_manager.unauthorized()

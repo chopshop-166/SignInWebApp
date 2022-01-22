@@ -9,7 +9,7 @@ import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
@@ -76,6 +76,10 @@ class Person(UserMixin, db.Model):
     @hybrid_property
     def total_time(self):
         return sum((s.elapsed for s in self.stamps), start=timedelta())
+
+    @hybrid_method
+    def can_view(self, user : Person):
+        return self.mentor or self.admin or current_user is user
 
     @hybrid_method
     def human_readable(self) -> str:

@@ -7,16 +7,16 @@
 {{ super() }}
 {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
 <script type="text/javascript">
-new QRCode(document.getElementById("qrPlaceholder"), "{{current_user.code}}");
+new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
 </script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-  <h1>{{current_user.name}}</h1>
+  <h1>{{user.name}}</h1>
   <div class="row">
     <div class="col">
-      {{current_user}} is a {{current_user.role.name}}
+      {{user}} is a {{user.role.name}}
     </div>
     <div class="col">
       <div id="qrPlaceholder"></div>

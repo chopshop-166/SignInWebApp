@@ -80,10 +80,3 @@ def login():
 def logout():
     logout_user()
     return redirect('/')
-
-
-@auth.route('/usertest')
-def usertest():
-    if current_user.is_authenticated:
-        return f"Signed in as {current_user.name}"
-    return "Not signed in"
