@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap5
 
 from .admin import admin
 from .auth import auth, login_manager
-from .model import Event, EventType, Person, Role, db
+from .model import Event, EventType, Person, Role, Subteam, db
 from .user import user
 from .views import qrbp
 
@@ -54,6 +54,7 @@ if app.config["DEBUG"]:
         ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
         MENTOR = Role(name="mentor", mentor=True, can_display=True)
         DISPLAY = Role(name="display", can_display=True, autoload=True)
+        LEAD = Role(name="lead", can_see_subteam=True)
         STUDENT = Role(name="student")
 
         TRAINING = EventType(name="Training", description="Training Session", autoload=True)
@@ -61,9 +62,15 @@ if app.config["DEBUG"]:
         FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
         COMPETITION = EventType(name="Competition", description="Competition")
 
+        SOFTWARE = Subteam(name="Software")
+        MECH = Subteam(name="Mechanical")
+        CAD = Subteam(name="CAD")
+        MARKETING = Subteam(name="Marketing")
+
         db.session.add_all([
             ADMIN, MENTOR, DISPLAY, STUDENT,
-            TRAINING, BUILD, FUNDRAISER, COMPETITION
+            TRAINING, BUILD, FUNDRAISER, COMPETITION,
+            SOFTWARE, MECH, CAD, MARKETING
         ])
         db.session.commit()
 
@@ -77,7 +84,10 @@ if app.config["DEBUG"]:
 
         admin_user = Person.make("admin", password="1234", role=ADMIN)
         display = Person.make("display", password="1234", role=DISPLAY)
+        db.session.add_all([training, admin_user, display])
+        db.session.commit()
+
         mentor = Person.make("Matt Soucy", password="1234", role=MENTOR)
-        student = Person.make("Jeff Burke", password="1234", role=STUDENT)
-        db.session.add_all([training, admin_user, display, mentor, student])
+        student = Person.make("Jeff Burke", password="1234", role=STUDENT, subteam=SOFTWARE)
+        db.session.add_all([mentor, student])
         db.session.commit()

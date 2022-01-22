@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
 
-from dateutil.rrule import rrule, WEEKLY
+from dateutil.rrule import WEEKLY, rrule
 from flask import (Blueprint, Response, current_app, flash, redirect, request,
                    url_for)
 from flask.templating import render_template
@@ -17,8 +17,8 @@ from wtforms import (BooleanField, DateField, DateTimeLocalField, IntegerField,
                      StringField, SubmitField, TimeField)
 from wtforms.validators import DataRequired, ValidationError
 
-from .model import (Active, Event, EventType, Person, Role, Stamps, db,
-                    event_code)
+from .model import (Active, Event, EventType, Person, Role, Stamps, Subteam,
+                    db, event_code)
 
 login_manager = LoginManager()
 
@@ -85,6 +85,7 @@ class UserForm(FlaskForm):
     name = StringField()
     password = PasswordField()
     role = SelectField()
+    subteam = SelectField()
     submit = SubmitField()
 
 
@@ -107,7 +108,7 @@ def admin_required(func):
 @admin.route("/admin")
 @admin_required
 def admin_main():
-    return render_template("admin_main.html.jinja2")
+    return render_template("admin/main.html.jinja2")
 
 
 @admin.route("/admin/users", methods=["GET", "POST"])
@@ -122,7 +123,8 @@ def users():
 @admin_required
 def edit_user():
     form = UserForm()
-    form.role.choices = [(t.id, t.name) for t in Role.query.all()]
+    form.role.choices = [(r.id, r.name) for r in Role.query.all()]
+    form.subteam.choices = [(s.id, s.name) for s in Subteam.query.all()]
     user = Person.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
@@ -136,6 +138,7 @@ def edit_user():
 
     form.name.process_data(user.name)
     form.role.process_data(user.role_id)
+    form.subteam.process_data(user.subteam_id)
     return render_template("admin/user.html.jinja2", form=form)
 
 
@@ -153,11 +156,12 @@ def bulk_events():
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
 
     if form.validate_on_submit():
-        start_time = datetime.combine(form.start_day.data, form.start_time.data)
+        start_time = datetime.combine(
+            form.start_day.data, form.start_time.data)
         end_time = datetime.combine(form.end_day.data, form.end_time.data)
         days = rrule(WEEKLY,
-            byweekday=[WEEKDAYS.index(d) for d in form.days.data]
-        ).between(start_time, end_time, inc=True)
+                     byweekday=[WEEKDAYS.index(d) for d in form.days.data]
+                     ).between(start_time, end_time, inc=True)
         for d in [d.date() for d in days]:
             ev = Event(
                 name=form.name.data,

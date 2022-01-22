@@ -57,9 +57,11 @@ class Person(UserMixin, db.Model):
     password = db.Column(db.String)
     code = db.Column(db.String, nullable=False, unique=True)
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
+    subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
 
     stamps = relationship("Stamps", back_populates="person")
     role = relationship("Role")
+    subteam = relationship("Subteam", back_populates="members")
 
     @hybrid_property
     def mentor(self):
@@ -97,10 +99,10 @@ class Person(UserMixin, db.Model):
         return f"{'*' if self.mentor else ''}{self.name}"
 
     @classmethod
-    def make(cls, name, password, role):
+    def make(cls, name: str, password: str, role: Role, subteam: Subteam = None):
         the_hash = mk_hash(name)
         return Person(name=name, password=generate_password_hash(password),
-                      code=the_hash, role_id=role.id)
+                      code=the_hash, role_id=role.id, subteam=subteam)
 
     @classmethod
     def get_canonical(cls, name):
@@ -221,10 +223,19 @@ class Role(db.Model):
     can_display = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     autoload = db.Column(db.Boolean, nullable=False, default=False)
+    can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
 
     @classmethod
     def from_name(cls, name):
         return cls.query.filter_by(name=name).one_or_none()
+
+
+class Subteam(db.Model):
+    __tablename__ = "subteams"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+
+    members = relationship("Person", back_populates="subteam")
 
 
 class SqliteModel():
@@ -244,9 +255,13 @@ class SqliteModel():
             query = query.join(Event).filter(Event.code == event)
         return [active.as_dict() for active in query.all()]
 
-    def export(self, name: str = None,
-               start: datetime = None, end: datetime = None,
-               type_: str = None, headers=True) -> list[list[str]]:
+    def export(self,
+               name: str = None,
+               start: datetime = None,
+               end: datetime = None,
+               type_: str = None,
+               subteam: Subteam = None,
+               headers=True) -> list[list[str]]:
         query = Stamps.query.filter(Stamps.event.enabled == True)
         if name:
             code = mk_hash(name)
@@ -257,6 +272,8 @@ class SqliteModel():
             query = query.filter(Stamps.end > end)
         if type_:
             query = query.join(Event).filter_by(type_=type_)
+        if subteam:
+            query = query.join(Person).filter_by(subteam=subteam)
         result = [stamp.as_list() for stamp in query.all()]
         if headers:
             result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
@@ -280,7 +297,7 @@ class SqliteModel():
             db.session.add(active)
             db.session.commit()
             return StampEvent(person.human_readable(), "in")
-        
+
         stamp = Stamps(person=person, event=ev, start=active.start)
         db.session.delete(active)
         db.session.add(stamp)

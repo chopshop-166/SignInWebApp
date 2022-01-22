@@ -17,6 +17,7 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
   <div class="row">
     <div class="col">
       <div>Role: {{user.role.name}}</div>
+      <div>Subteam: {{user.subteam.name}}</div>
       <div>
         <ul>
           {%- for type_ in event_types -%}

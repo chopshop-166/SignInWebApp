@@ -11,16 +11,18 @@
         <thead>
           <tr>
             <th scope="col">User</th>
-            <th scope="col">Edit</th>
+            <th scope="col">Subteam</th>
             <th scope="col">Total Time</th>
+            <th scope="col">Edit</th>
           </tr>
         </thead>
         <tbody id="userbody">
           {%- for user in users -%}
           <tr>
             <th><a href="{{url_for('user.profile', user_id=user.id)}}">{{user.name}}</a></th>
-            <td><a href="{{url_for('admin.edit_user', user_id=user.id)}}">Edit</a></td>
+            <td>{{user.subteam.name}}</td>
             <td>{{ user.total_time }}</td>
+            <td><a href="{{url_for('admin.edit_user', user_id=user.id)}}">Edit</a></td>
           </tr>
           {%- endfor -%}
         </tbody>

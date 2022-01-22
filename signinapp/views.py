@@ -4,7 +4,7 @@ import datetime
 from http import HTTPStatus
 
 import flask_excel as excel
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, jsonify, request, current_app
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
@@ -88,3 +88,13 @@ def export():
     type_ = request.args.get("type", None)
     return excel.make_response_from_array(
         model.export(name, start, end, type_), "csv")
+
+
+@qrbp.route("/export/subteam")
+@login_required
+def export_subteam():
+    if not current_user.can_see_subteam or not current_user.subteam_id:
+        return current_app.login_manager.unauthorized()
+        
+    subteam = current_user.subteam
+    return excel.make_response_from_array(model.export(subteam=subteam), "csv")
