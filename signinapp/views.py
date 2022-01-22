@@ -36,13 +36,19 @@ def event():
 def scan():
     event = request.values['event']
     name = request.values['name']
-    stamp = model.scan(event, name)
+
+    ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
+
+    if not ev.is_active:
+        return jsonify({"action": "redirect"})
+
+    stamp = model.scan(ev, name)
 
     if stamp:
         return jsonify({
-            'stamp': stamp.event,
             'message': f"{stamp.name} signed {stamp.event}",
-            'users': model.get_active(event)
+            'users': model.get_active(event),
+            'action': 'update'
         })
     else:
         return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
@@ -51,14 +57,17 @@ def scan():
 @qrbp.route("/active")
 def active():
     event = request.args.get("event", None)
-    return jsonify(model.get_active(event))
 
+    ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
 
-@qrbp.route("/stamps")
-def stamps():
-    name = request.args.get("name", None)
-    event = request.args.get("event", None)
-    return jsonify(model.get_stamps(name=name, event=event))
+    if ev and not ev.is_active:
+        return jsonify({"action": "redirect"})
+
+    return jsonify({
+        "users": model.get_active(event),
+        "action": "update",
+        "message": "Updated user data"
+    })
 
 
 @qrbp.route("/export")

@@ -258,17 +258,16 @@ class SqliteModel():
             result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
         return result
 
-    def scan(self, event, name) -> StampEvent:
+    def scan(self, ev, name) -> StampEvent:
+        if not (ev and ev.is_active):
+            return
+
         code = canonical_name(name)
         if not code:
             return
 
         person = Person.query.filter_by(code=code).one_or_none()
         if not person:
-            return
-
-        ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
-        if not (ev and ev.is_active):
             return
 
         active = Active.query.join(Person).filter_by(code=code).one_or_none()

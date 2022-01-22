@@ -35,13 +35,19 @@ function populateUsers(userdata) {
     });
 }
 
+function handleResponse(json) {
+    if(json["action"] === "update") {
+        populateUsers(json["users"])
+        toast(json["message"])
+    } else if(json["action"] === "redirect") {
+        window.location.replace("/")
+    }
+}
+
 function updateUserData() {
     fetch("/active?" + new URLSearchParams({ event: event_code }))
         .then(data => data.json())
-        .then(json => {
-            populateUsers(json)
-            toast("Updated User Data")
-        })
+        .then(handleResponse)
 }
 
 function onScanSuccess(decodedText, decodedResult) {
@@ -62,10 +68,7 @@ function onScanSuccess(decodedText, decodedResult) {
                 throw Error("Not a valid QR code");
             }
         })
-        .then(json => {
-            toast(json['message'])
-            populateUsers(json['users'])
-        }).catch(data => {
+        .then(handleResponse).catch(data => {
             toast(data)
         })
 }
