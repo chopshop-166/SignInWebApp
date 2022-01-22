@@ -12,7 +12,7 @@ from flask_wtf import FlaskForm
 from wtforms import DateTimeLocalField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
-from .model import Event, Person, Role, db, event_code
+from .model import Event, EventType, Person, Role, db, event_code
 
 login_manager = LoginManager()
 
@@ -28,6 +28,7 @@ class EventForm(FlaskForm):
     code = StringField(validators=[DataRequired()])
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
+    type_ = SelectField(label="Type")
     submit = SubmitField()
 
 
@@ -93,14 +94,18 @@ def admin_events():
 @admin.route("/admin/event/new", methods=["GET", "POST"])
 @admin_required
 def new_event():
+
+    evtypes = {t.name:t for t in EventType.query.all()}
     form = EventForm()
+    form.type_.choices = list(evtypes.keys())
     if form.validate_on_submit():
         ev = Event(
             name=form.name.data,
             description=form.description.data,
             start=form.start.data,
             end=form.end.data,
-            code=form.code.data
+            code=form.code.data,
+            type_id=evtypes[form.type_.data].id
         )
         db.session.add(ev)
         db.session.commit()
@@ -114,7 +119,10 @@ def new_event():
 def edit_event():
     evid = request.args["event_id"]
 
+    evtypes = {t.name:t for t in EventType.query.all()}
+
     form = EventForm()
+    form.type_.choices = list(evtypes.keys())
     event = Event.query.get(evid)
 
     if form.validate_on_submit():
@@ -123,6 +131,7 @@ def edit_event():
         event.start = form.start.data
         event.end = form.end.data
         event.code = form.code.data
+        event.type_id = evtypes[form.type_.data].id
         db.session.commit()
         return redirect(url_for("admin.admin_events"))
 

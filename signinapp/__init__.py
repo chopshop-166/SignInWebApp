@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap5
 
 from .admin import admin
 from .auth import auth, login_manager
-from .model import Event, Person, Role, db
+from .model import Event, EventType, Person, Role, db
 from .views import qrbp
 
 app = Flask(__name__)
@@ -54,14 +54,23 @@ if app.config["DEBUG"]:
         DISPLAY = Role(name="display", can_display=True)
         STUDENT = Role(name="student")
 
-        db.session.add_all([ADMIN, MENTOR, DISPLAY, STUDENT])
+        TRAINING = EventType(name="Training", description="Training Session")
+        BUILD = EventType(name="Build", description="Build Season")
+        FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
+        COMPETITION = EventType(name="Competition", description="Competition")
+
+        db.session.add_all([
+            ADMIN, MENTOR, DISPLAY, STUDENT,
+            TRAINING, BUILD, FUNDRAISER, COMPETITION
+        ])
         db.session.commit()
 
         training = Event(
             name="Training",
             code="5678",
             start=datetime.datetime.fromisoformat("2022-01-21T14:00:00"),
-            end=datetime.datetime.fromisoformat("2022-01-21T21:00:00")
+            end=datetime.datetime.fromisoformat("2022-01-21T21:00:00"),
+            type_id = TRAINING.id
         )
 
         admin_user = Person.make("admin", password="1234", role=ADMIN)

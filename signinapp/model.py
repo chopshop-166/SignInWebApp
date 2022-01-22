@@ -109,12 +109,13 @@ class Event(db.Model):
     # End time
     end = db.Column(db.DateTime)
     # Event type
-    type_ = db.Column(db.String)
+    type_id = db.Column(db.Integer, db.ForeignKey("event_types.id"))
     # Whether the event is enabled
     enabled = db.Column(db.Boolean, default=True, nullable=False)
 
     stamps = relationship("Stamps", back_populates="event")
     active = relationship("Active", back_populates="event")
+    type_ = relationship("EventType", back_populates="events")
 
     @hybrid_property
     def start_local(self) -> str:
@@ -123,6 +124,15 @@ class Event(db.Model):
     @hybrid_property
     def end_local(self) -> str:
         return self.end.astimezone(LOCAL_TIMEZONE).strftime("%c")
+
+
+class EventType(db.Model):
+    __tablename__ = "event_types"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+
+    events = relationship("Event", back_populates="type_")
 
 
 class Active(db.Model):
