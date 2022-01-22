@@ -33,8 +33,9 @@
                     Admin
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
+                    <li><a class="dropdown-item" href="{{url_for('admin.active')}}">Admin Active</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('admin.events')}}">Admin Events</a></li>
                     <li><a class="dropdown-item" href="{{url_for('admin.users')}}">Admin Users</a></li>
-                    <li><a class="dropdown-item" href="{{url_for('admin.events')}}">Admin Event</a></li>
                 </ul>
             </li>
             {%- endif -%}

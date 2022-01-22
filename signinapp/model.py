@@ -146,6 +146,7 @@ class EventType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
+    autoload = db.Column(db.Boolean)
 
     events = relationship("Event", back_populates="type_")
 
@@ -159,6 +160,10 @@ class Active(db.Model):
 
     person = relationship("Person")
     event = relationship("Event")
+
+    @hybrid_property
+    def start_local(self) -> str:
+        return self.start.astimezone(LOCAL_TIMEZONE).strftime("%c")
 
     @hybrid_method
     def as_dict(self):

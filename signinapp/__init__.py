@@ -56,8 +56,8 @@ if app.config["DEBUG"]:
         DISPLAY = Role(name="display", can_display=True)
         STUDENT = Role(name="student")
 
-        TRAINING = EventType(name="Training", description="Training Session")
-        BUILD = EventType(name="Build", description="Build Season")
+        TRAINING = EventType(name="Training", description="Training Session", autoload=True)
+        BUILD = EventType(name="Build", description="Build Season", autoload=True)
         FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
         COMPETITION = EventType(name="Competition", description="Competition")
 

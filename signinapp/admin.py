@@ -9,12 +9,13 @@ from flask.templating import render_template
 from flask_login import LoginManager, current_user
 from flask_login.config import EXEMPT_METHODS
 from flask_wtf import FlaskForm
+from werkzeug.security import generate_password_hash
 from wtforms import (BooleanField, DateTimeLocalField, PasswordField,
                      SelectField, StringField, SubmitField)
 from wtforms.validators import DataRequired
-from werkzeug.security import generate_password_hash
 
-from .model import Event, EventType, Person, Role, db, event_code
+from .model import (Active, Event, EventType, Person, Role, Stamps, db,
+                    event_code)
 
 login_manager = LoginManager()
 
@@ -33,6 +34,7 @@ class EventForm(FlaskForm):
     type_ = SelectField(label="Type")
     enabled = BooleanField(default=True)
     submit = SubmitField()
+
 
 class UserForm(FlaskForm):
     name = StringField()
@@ -70,7 +72,8 @@ def admin_main():
 def users():
     users = Person.query.all()
     roles = Role.query.all()
-    return render_template("admin_users.html.jinja2", users=users, roles=roles)
+    return render_template("admin/users.html.jinja2", users=users, roles=roles)
+
 
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
@@ -90,32 +93,14 @@ def edit_user():
 
     form.name.process_data(user.name)
     form.role.process_data(user.role_id)
-    return render_template("admin_user.html.jinja2", form=form)
-
-
-@admin.route("/admin/users/update_role", methods=["POST"])
-@admin_required
-def update_role():
-    user = Person.query.get(request.form["user_id"])
-    if not user:
-        flash("Invalid user ID")
-        return Response("Invalid user ID", HTTPStatus.BAD_REQUEST)
-
-    role = Role.query.get(request.form["role"])
-    if role:
-        flash("Invalid role ID")
-        return Response("Invalid role ID", HTTPStatus.BAD_REQUEST)
-
-    user.role_id = role.id
-    db.session.commit()
-    return redirect(url_for("admin.admin_users"))
+    return render_template("admin/user.html.jinja2", form=form)
 
 
 @admin.route("/admin/events")
 @admin_required
 def events():
     events = Event.query.filter_by(enabled=True).all()
-    return render_template("admin_events.html.jinja2", events=events)
+    return render_template("admin/events.html.jinja2", events=events)
 
 
 @admin.route("/admin/event/new", methods=["GET", "POST"])
@@ -139,7 +124,7 @@ def new_event():
         return redirect(url_for("admin.admin_events"))
 
     form.code.process_data(event_code())
-    return render_template("admin_event.html.jinja2", form=form)
+    return render_template("admin/event.html.jinja2", form=form)
 
 
 @admin.route("/admin/event/edit", methods=["GET", "POST"])
@@ -169,4 +154,28 @@ def edit_event():
     form.end.process_data(event.end)
     form.type_.process_data(event.type_id)
     form.enabled.process_data(event.enabled)
-    return render_template("admin_event.html.jinja2", form=form)
+    return render_template("admin/event.html.jinja2", form=form)
+
+
+@admin.route("/admin/active", methods=["GET", "POST", "DELETE"])
+@admin_required
+def active():
+    if request.method == "GET":
+        actives = Active.query.all()
+        return render_template("admin/active.html.jinja2", active=actives)
+    elif request.method == "POST":
+        active_event = Active.query.get(request.form["active_id"])
+        stamp = Stamps(person=active_event.person,
+                       event=active_event.event, start=active_event.start)
+        db.session.delete(active_event)
+        db.session.add(stamp)
+        db.session.commit()
+        return redirect(url_for("admin.active"))
+
+@admin.route("/admin/active/delete", methods=["POST"])
+@admin_required
+def active_delete():
+    active_event = Active.query.get(request.form["active_id"])
+    db.session.delete(active_event)
+    db.session.commit()
+    return redirect(url_for("admin.active"))

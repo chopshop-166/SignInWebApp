@@ -7,7 +7,8 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">
+      <a href="{{url_for('admin.new_event')}}">New Event</a>
+      <table id="events" class="table table-sm table-striped table-hover table-bordered table-responsive">
         <thead>
           <tr>
             <th scope="col">Event</th>
@@ -35,7 +36,6 @@
           {%- endfor -%}
         </tbody>
       </table>
-      <a href="{{url_for('admin.new_event')}}">New Event</a>
     </div>
   </div>
 </div>
