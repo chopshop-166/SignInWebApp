@@ -140,6 +140,10 @@ class Event(db.Model):
     def end_local(self) -> str:
         return self.end.astimezone(LOCAL_TIMEZONE).strftime("%c")
 
+    @hybrid_property
+    def is_active(self) -> bool:
+        return self.start < datetime.now() < self.end
+
 
 class EventType(db.Model):
     __tablename__ = "event_types"
@@ -264,23 +268,24 @@ class SqliteModel():
             return
 
         ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
-        if not ev:
+        if not (ev and ev.is_active):
             return
 
-        if active := Active.query.join(Person).filter_by(code=code).one_or_none():
-            stamp = Stamps(person=person, event=ev, start=active.start)
-            db.session.delete(active)
-            db.session.add(stamp)
-            db.session.commit()
-            # Elapsed needs to be taken after committing to the DB
-            # otherwise it won't be populated
-            sign = f"out after {stamp.elapsed}"
-            return StampEvent(person.human_readable(), sign)
-        else:
+        active = Active.query.join(Person).filter_by(code=code).one_or_none()
+        if not active:
             active = Active(person=person, event=ev)
             db.session.add(active)
             db.session.commit()
             return StampEvent(person.human_readable(), "in")
+        
+        stamp = Stamps(person=person, event=ev, start=active.start)
+        db.session.delete(active)
+        db.session.add(stamp)
+        db.session.commit()
+        # Elapsed needs to be taken after committing to the DB
+        # otherwise it won't be populated
+        sign = f"out after {stamp.elapsed}"
+        return StampEvent(person.human_readable(), sign)
 
 
 model = SqliteModel()
