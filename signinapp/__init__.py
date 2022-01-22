@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import os
 
 import flask_excel as excel
@@ -8,7 +9,7 @@ from flask_bootstrap import Bootstrap5
 
 from .admin import admin
 from .auth import auth, login_manager
-from .model import Person, Role, db
+from .model import Event, Person, Role, db
 from .views import qrbp
 
 app = Flask(__name__)
@@ -56,9 +57,16 @@ if app.config["DEBUG"]:
         db.session.add_all([ADMIN, MENTOR, DISPLAY, STUDENT])
         db.session.commit()
 
+        training = Event(
+            name="Training",
+            code="5678",
+            start=datetime.datetime.fromisoformat("2022-01-21T14:00:00"),
+            end=datetime.datetime.fromisoformat("2022-01-21T21:00:00")
+        )
+
         admin_user = Person.make("admin", password="1234", role=ADMIN)
         display = Person.make("display", password="1234", role=DISPLAY)
         mentor = Person.make("Matt Soucy", password="1234", role=MENTOR)
         student = Person.make("Jeff Burke", password="1234", role=STUDENT)
-        db.session.add_all([admin_user, display, mentor, student])
+        db.session.add_all([training, admin_user, display, mentor, student])
         db.session.commit()

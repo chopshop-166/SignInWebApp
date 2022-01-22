@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import base64
 import dataclasses
+import datetime
 import re
-from datetime import datetime, timedelta
+import secrets
+from datetime import datetime, timedelta, timezone
 
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
@@ -23,9 +25,16 @@ NAME_RE = re.compile(
 HASH_RE = re.compile(
     r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
 
+    
+LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
+
 
 def mk_hash(name: str):
     return base64.b64encode(name.lower().encode("utf-8")).decode("utf-8")
+
+
+def event_code():
+    return secrets.token_urlsafe(16)
 
 
 def canonical_name(name: str):
@@ -92,7 +101,7 @@ class Event(db.Model):
     # Description of the event
     description = db.Column(db.String)
     # Unique code for tracking
-    code = db.Column(db.String)
+    code = db.Column(db.String, unique=True)
     # Location the event takes place at
     location = db.Column(db.String)
     # Start time
@@ -101,9 +110,19 @@ class Event(db.Model):
     end = db.Column(db.DateTime)
     # Event type
     type_ = db.Column(db.String)
+    # Whether the event is enabled
+    enabled = db.Column(db.Boolean, default=True, nullable=False)
 
     stamps = relationship("Stamps", back_populates="event")
     active = relationship("Active", back_populates="event")
+
+    @hybrid_property
+    def start_local(self) -> str:
+        return self.start.astimezone(LOCAL_TIMEZONE).strftime("%c")
+
+    @hybrid_property
+    def end_local(self) -> str:
+        return self.end.astimezone(LOCAL_TIMEZONE).strftime("%c")
 
 
 class Active(db.Model):

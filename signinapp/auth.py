@@ -32,7 +32,6 @@ class LoginForm(FlaskForm):
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        print("Validated")
         # code to validate and add user to database goes here
         name = form.name.data
         password = form.password.data
