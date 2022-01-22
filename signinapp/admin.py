@@ -10,9 +10,10 @@ from flask_login import LoginManager, current_user
 from flask_login.config import EXEMPT_METHODS
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import (BooleanField, DateTimeLocalField, PasswordField,
-                     SelectField, StringField, SubmitField)
-from wtforms.validators import DataRequired
+from wtforms import (BooleanField, DateField, DateTimeLocalField, IntegerField,
+                     PasswordField, SelectField, SelectMultipleField,
+                     StringField, SubmitField, TimeField)
+from wtforms.validators import DataRequired, ValidationError
 
 from .model import (Active, Event, EventType, Person, Role, Stamps, db,
                     event_code)
@@ -34,6 +35,46 @@ class EventForm(FlaskForm):
     type_ = SelectField(label="Type")
     enabled = BooleanField(default=True)
     submit = SubmitField()
+
+    def validate(self):
+        rv = FlaskForm.validate(self)
+        if not rv:
+            return False
+
+        if self.start.data >= self.end.data:
+            self.end.errors.append('End time must not be before start time')
+            return False
+
+        return True
+
+
+class BulkEventForm(FlaskForm):
+    name = StringField(validators=[DataRequired()])
+    description = StringField()
+    start_day = DateField()
+    end_day = DateField()
+    days = SelectMultipleField(choices=[
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    ])
+    start_time = TimeField()
+    end_time = TimeField()
+    type_ = SelectField(label="Type")
+    submit = SubmitField()
+
+    def validate(self):
+        rv = FlaskForm.validate(self)
+        if not rv:
+            return False
+
+        if self.start_time.data >= self.end_time.data:
+            self.end_time.errors.append('End time must not be before start time')
+            rv = False
+
+        if self.start_day.data >= self.end_day.data:
+            self.end_day.errors.append('End day must not be before start day')
+            rv = False
+
+        return rv
 
 
 class UserForm(FlaskForm):
@@ -96,11 +137,22 @@ def edit_user():
     return render_template("admin/user.html.jinja2", form=form)
 
 
-@admin.route("/admin/events")
+@admin.route("/admin/event")
 @admin_required
 def events():
     events = Event.query.filter_by(enabled=True).all()
     return render_template("admin/events.html.jinja2", events=events)
+
+
+@admin.route("/admin/event/bulk", methods=["GET", "POST"])
+@admin_required
+def bulk_events():
+    form = BulkEventForm()
+    form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
+
+    if form.validate_on_submit():
+        return redirect(url_for("admin.admin_events"))
+    return render_template("admin/event.html.jinja2", form=form)
 
 
 @admin.route("/admin/event/new", methods=["GET", "POST"])
@@ -171,6 +223,7 @@ def active():
         db.session.add(stamp)
         db.session.commit()
         return redirect(url_for("admin.active"))
+
 
 @admin.route("/admin/active/delete", methods=["POST"])
 @admin_required
