@@ -19,23 +19,30 @@
 
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-brand bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Chop Shop Sign In</a>
+            <a class="navbar-brand" href="{{url_for('qr.index')}}">Chop Shop Sign In</a>
         </div>
-        {% block nav -%}
-        {{- render_nav_item("qr.index", "Home") -}}
-        {%- if current_user.is_authenticated -%}
+        <ul class="navbar-nav">
+            {%- if current_user.is_authenticated -%}
             {%- if current_user.admin -%}
-            {{- render_nav_item("admin.admin_users", "Admin Users") -}}
-            {{- render_nav_item("qr.export", "Export") -}}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    Admin
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
+                    <li><a class="dropdown-item" href="{{url_for('admin.admin_users')}}">Admin Users</a></li>
+                </ul>
+            </li>
             {%- endif -%}
-            {{- render_nav_item("auth.logout", "Sign Out") -}}
-        {%- else -%}
-        {{- render_nav_item("auth.register", "Register") -}}
-        {{- render_nav_item("auth.login", "Sign In") -}}
-        {%- endif -%}
-        {%- endblock %}
+            {{- render_nav_item("qr.export", "Export", use_li=True) -}}
+            {{- render_nav_item("auth.logout", "Sign Out", use_li=True) -}}
+            {%- else -%}
+            {{- render_nav_item("auth.register", "Register", use_li=True) -}}
+            {{- render_nav_item("auth.login", "Sign In", use_li=True) -}}
+            {%- endif -%}
+        </ul>
         <div class="d-flex">
             <img src="{{ url_for('static', filename='logo.png')}}" height="48">
         </div>

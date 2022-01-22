@@ -6,6 +6,7 @@ import flask_excel as excel
 from flask import Blueprint, Response, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
+
 from .model import model
 
 qrbp = Blueprint("qr", __name__)
