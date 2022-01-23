@@ -239,9 +239,9 @@ class Role(db.Model):
     __tablename__ = "account_types"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+    admin = db.Column(db.Boolean, nullable=False, default=False)
     mentor = db.Column(db.Boolean, nullable=False, default=False)
     can_display = db.Column(db.Boolean, nullable=False, default=False)
-    admin = db.Column(db.Boolean, nullable=False, default=False)
     autoload = db.Column(db.Boolean, nullable=False, default=False)
     can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
 

@@ -5,6 +5,7 @@ from flask.templating import render_template
 from .active import *
 from .badges import *
 from .events import *
+from .role import *
 from .subteam import *
 from .users import *
 from .util import *

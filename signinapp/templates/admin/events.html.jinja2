@@ -22,7 +22,7 @@
             <th scope="col">Type</th>
           </tr>
         </thead>
-        <tbody id="userbody">
+        <tbody>
           {%- for event in events|reverse -%}
           <tr>
             <th><a href="{{url_for('admin.edit_event', event_id=event.id)}}">{{event.name}}</a></th>

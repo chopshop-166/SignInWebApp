@@ -17,7 +17,7 @@
             <th scope="col">Tools</th>
           </tr>
         </thead>
-        <tbody id="userbody">
+        <tbody>
           {%- for badge in badges -%}
           <tr>
             <th><a href="{{url_for('admin.edit_badge', badge_id=badge.id)}}">{{show_badge(badge)}}</a></th>
