@@ -21,7 +21,7 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
       <div>
         <ul>
           {%- for type_ in event_types -%}
-            <li>{{type_.name}}: {{user.total_stamps_for(type_)}}
+            <li>{{type_.name}}: {{user.total_stamps_for(type_)}}</li>
           {%- endfor -%}
         </ul>
         <a href="{{url_for('qr.export')}}">Export</a>

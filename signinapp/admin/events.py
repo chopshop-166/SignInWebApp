@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from datetime import datetime
-from functools import wraps
 
 from dateutil.rrule import WEEKLY, rrule
 from flask import redirect, request, url_for

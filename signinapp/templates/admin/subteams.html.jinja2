@@ -1,0 +1,32 @@
+{% extends "base.html.jinja2" %}
+
+{% block title %}Badge Admin - Chop Shop Sign In{%endblock%}
+
+{% block content %}
+<div class="container">
+  {{- render_messages() -}}
+  <div class="row">
+    <div class="col">
+      <a href="{{url_for('admin.new_subteam')}}">New Subteam</a>
+      <table id="subteamss" class="table table-sm table-striped table-hover table-bordered table-responsive">
+        <thead>
+          <tr>
+            <th scope="col">Subteam</th>
+            <th scope="col">ID</th>
+            <th scope="col">Tools</th>
+          </tr>
+        </thead>
+        <tbody id="userbody">
+          {%- for subteam in subteams -%}
+          <tr>
+            <th><a href="{{url_for('team.subteam', st_id=subteam.id)}}">{{subteam.name}}</a></th>
+            <td>{{subteam.id}}</td>
+            <td><a href="{{url_for('admin.edit_subteam', st_id=subteam.id)}}">Edit</a></td>
+          </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

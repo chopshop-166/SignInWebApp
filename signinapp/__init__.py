@@ -10,6 +10,7 @@ from flask_bootstrap import Bootstrap5
 from .admin import admin
 from .auth import auth, login_manager
 from .model import Badge, Event, EventType, Person, Role, Subteam, db
+from .team import team
 from .user import user
 from .views import qrbp
 
@@ -36,6 +37,7 @@ with app.app_context():
 app.register_blueprint(qrbp)
 app.register_blueprint(auth)
 app.register_blueprint(admin)
+app.register_blueprint(team)
 app.register_blueprint(user)
 
 login_manager.login_view = "auth.login"

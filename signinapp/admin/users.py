@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-from http import HTTPStatus
-
-from flask import Response, flash, request
+from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
@@ -38,13 +36,14 @@ def edit_user():
     user = Person.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
-        return Response("Invalid user ID", HTTPStatus.BAD_REQUEST)
+        return redirect(url_for("admin.users"))
 
     if form.validate_on_submit():
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
         user.role_id = form.role.data
         db.session.commit()
+        return redirect(url_for("admin.users"))
 
     form.name.process_data(user.name)
     form.role.process_data(user.role_id)

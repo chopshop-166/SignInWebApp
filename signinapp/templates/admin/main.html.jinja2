@@ -5,18 +5,11 @@
 {% block content %}
 <div class="container">
   <ul>
-    <li>
-      <a href="{{url_for('admin.active')}}">Active</a>
-    </li>
-    <li>
-      <a href="{{url_for('admin.all_badges')}}">Badges</a>
-    </li>
-    <li>
-      <a href="{{url_for('admin.events')}}">Events</a>
-    </li>
-    <li>
-      <a href="{{url_for('admin.users')}}">Users</a>
-    </li>
+    <li><a href="{{url_for('admin.active')}}">Active</a></li>
+    <li><a href="{{url_for('admin.all_badges')}}">Badges</a></li>
+    <li><a href="{{url_for('admin.events')}}">Events</a></li>
+    <li><a href="{{url_for('admin.subteams')}}">Subteams</a></li>
+    <li><a href="{{url_for('admin.users')}}">Users</a></li>
   </ul>
 </div>
 {% endblock %}
