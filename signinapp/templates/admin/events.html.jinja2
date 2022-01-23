@@ -1,9 +1,10 @@
 {% extends "base.html.jinja2" %}
 
-{% block title %}Chop Shop Sign In Event Admin{%endblock%}
+{% block title %}Event Admin - Chop Shop Sign In{%endblock%}
 
 {% block content %}
 <div class="container">
+  {{- render_messages() -}}
   <div class="row">
     <div class="col">
       <a href="{{url_for('admin.new_event')}}">New Event</a>

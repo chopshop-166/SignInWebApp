@@ -1,18 +1,12 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_form %}
 
-{% block title %}Register for Chop Shop Sign In{% endblock %}
+{% block title %}Register - Chop Shop Sign In{% endblock %}
 
 {% block content %}
 <div class="container">
   <h1>Register</h1>
-  {%- with messages = get_flashed_messages() %}
-  {%- if messages %}
-      <div class="notification is-danger">
-          {{ messages[0] }}
-      </div>
-  {%- endif %}
-  {%- endwith %}
+  {{-render_messages()-}}
   {{ render_form(form) }}
 </div>
 {% endblock %}

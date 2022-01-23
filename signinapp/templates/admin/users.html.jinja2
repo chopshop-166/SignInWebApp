@@ -1,9 +1,10 @@
 {% extends "base.html.jinja2" %}
 
-{% block title %}Chop Shop Sign In User Admin{%endblock%}
+{% block title %}User Admin - Chop Shop Sign In{%endblock%}
 
 {% block content %}
 <div class="container">
+  {{- render_messages() -}}
   <div class="row">
     <div class="col">
       <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">

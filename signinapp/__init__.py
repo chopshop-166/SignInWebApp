@@ -89,7 +89,9 @@ if app.config["DEBUG"]:
 
         mentor = Person.make("Matt Soucy", password="1234", role=MENTOR)
         student = Person.make("Jeff Burke", password="1234", role=STUDENT, subteam=SOFTWARE)
-        safe = Badge(name="Safety Certified", icon="cone-striped", color="orange")
+        safe = Badge(name="Safety Certified",
+                     icon="cone-striped", color="orange",
+                     description="Passed Safety Training")
         db.session.add_all([mentor, student, safe])
         db.session.commit()
 

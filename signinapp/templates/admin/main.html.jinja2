@@ -1,15 +1,21 @@
 {% extends "base.html.jinja2" %}
 
-{% block title %}Chop Shop Sign In Admin{%endblock%}
+{% block title %}Admin - Chop Shop Sign In{%endblock%}
 
 {% block content %}
 <div class="container">
   <ul>
     <li>
-      <a href="{{url_for('admin.admin_users')}}">Users</a>
+      <a href="{{url_for('admin.active')}}">Active</a>
     </li>
     <li>
-      <a href="{{url_for('admin.admin_events')}}">Events</a>
+      <a href="{{url_for('admin.all_badges')}}">Badges</a>
+    </li>
+    <li>
+      <a href="{{url_for('admin.events')}}">Events</a>
+    </li>
+    <li>
+      <a href="{{url_for('admin.users')}}">Users</a>
     </li>
   </ul>
 </div>

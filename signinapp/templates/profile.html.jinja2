@@ -1,7 +1,7 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static, render_icon %}
 
-{% block title %}Profile for {{current_user.name}}{% endblock %}
+{% block title %}Profile for {{user.name}} - Chop Shop Sign In{% endblock %}
 
 {% block scripts %}
 {{ super() }}
@@ -35,10 +35,7 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
         {% if user.badges %}
         {% for badge in user.badges %}
           <li>
-            {%- if badge.icon %}
-            {{ render_icon(badge.icon, color=badge.color) }}
-            {% endif -%}
-            {{ badge.name }}
+            {{show_badge(badge)}}
           </li>
         {% endfor %}
         {% else %}

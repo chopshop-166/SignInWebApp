@@ -1,5 +1,9 @@
 <!doctype html>
 <html lang="en">
+{% from 'bootstrap5/utils.html' import render_icon, render_messages %}
+{%- macro show_badge(b) -%}
+{%- if b.icon %}{{ render_icon(b.icon, color=b.color) }}{% endif %}{{ b.name }}
+{%- endmacro -%}
 
 <head>
     {% block head %}
@@ -32,9 +36,10 @@
                     Admin
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
-                    <li><a class="dropdown-item" href="{{url_for('admin.active')}}">Admin Active</a></li>
-                    <li><a class="dropdown-item" href="{{url_for('admin.events')}}">Admin Events</a></li>
-                    <li><a class="dropdown-item" href="{{url_for('admin.users')}}">Admin Users</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('admin.active')}}">Active</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('admin.all_badges')}}">Badges</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('admin.events')}}">Events</a></li>
+                    <li><a class="dropdown-item" href="{{url_for('admin.users')}}">Users</a></li>
                 </ul>
             </li>
             {%- endif -%}

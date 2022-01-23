@@ -1,0 +1,34 @@
+{% extends "base.html.jinja2" %}
+
+{% block title %}Badge Admin - Chop Shop Sign In{%endblock%}
+
+{% block content %}
+<div class="container">
+  {{- render_messages() -}}
+  <div class="row">
+    <div class="col">
+      <a href="{{url_for('admin.new_badge')}}">New Badge</a>
+      <table id="badges" class="table table-sm table-striped table-hover table-bordered table-responsive">
+        <thead>
+          <tr>
+            <th scope="col">Badge</th>
+            <th scope="col">ID</th>
+            <th scope="col">Description</th>
+            <th scope="col">Tools</th>
+          </tr>
+        </thead>
+        <tbody id="userbody">
+          {%- for badge in badges -%}
+          <tr>
+            <th><a href="{{url_for('admin.edit_badge', badge_id=badge.id)}}">{{show_badge(badge)}}</a></th>
+            <td>{{badge.id}}</td>
+            <td>{{badge.description}}</td>
+            <td></td>
+          </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -17,8 +17,8 @@ from wtforms import (BooleanField, DateField, DateTimeLocalField, IntegerField,
                      StringField, SubmitField, TimeField)
 from wtforms.validators import DataRequired, ValidationError
 
-from .model import (Active, Event, EventType, Person, Role, Stamps, Subteam,
-                    db, event_code)
+from .model import (Active, Badge, Event, EventType, Person, Role, Stamps,
+                    Subteam, db, event_code)
 
 login_manager = LoginManager()
 
@@ -82,10 +82,18 @@ class BulkEventForm(FlaskForm):
 
 
 class UserForm(FlaskForm):
-    name = StringField()
+    name = StringField(validators=[DataRequired()])
     password = PasswordField()
     role = SelectField()
     subteam = SelectField()
+    submit = SubmitField()
+
+
+class BadgeForm(FlaskForm):
+    name = StringField(validators=[DataRequired()])
+    description = StringField()
+    icon = StringField()
+    color = StringField("Icon Color")
     submit = SubmitField()
 
 
@@ -139,7 +147,8 @@ def edit_user():
     form.name.process_data(user.name)
     form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
-    return render_template("admin/user.html.jinja2", form=form)
+    return render_template("admin/form.html.jinja2", form=form,
+                           title=f"Edit User {user.name} - Chop Shop Sign In")
 
 
 @admin.route("/admin/event")
@@ -175,7 +184,8 @@ def bulk_events():
         db.session.commit()
 
         return redirect(url_for("admin.events"))
-    return render_template("admin/event.html.jinja2", form=form)
+    return render_template("admin/form.html.jinja2", form=form,
+                           title="Bulk Event Add - Chop Shop Sign In")
 
 
 @admin.route("/admin/event/new", methods=["GET", "POST"])
@@ -196,10 +206,11 @@ def new_event():
         )
         db.session.add(ev)
         db.session.commit()
-        return redirect(url_for("admin.admin_events"))
+        return redirect(url_for("admin.events"))
 
     form.code.process_data(event_code())
-    return render_template("admin/event.html.jinja2", form=form)
+    return render_template("admin/form.html.jinja2", form=form,
+                           title="New Event - Chop Shop Sign In")
 
 
 @admin.route("/admin/event/edit", methods=["GET", "POST"])
@@ -229,23 +240,27 @@ def edit_event():
     form.end.process_data(event.end)
     form.type_.process_data(event.type_id)
     form.enabled.process_data(event.enabled)
-    return render_template("admin/event.html.jinja2", form=form)
+    return render_template("admin/form.html.jinja2", form=form,
+                           title=f"Edit Event {event.name} - Chop Shop Sign In")
 
 
-@admin.route("/admin/active", methods=["GET", "POST", "DELETE"])
+@admin.route("/admin/active", methods=["GET"])
 @admin_required
 def active():
-    if request.method == "GET":
-        actives = Active.query.all()
-        return render_template("admin/active.html.jinja2", active=actives)
-    elif request.method == "POST":
-        active_event = Active.query.get(request.form["active_id"])
-        stamp = Stamps(person=active_event.person,
-                       event=active_event.event, start=active_event.start)
-        db.session.delete(active_event)
-        db.session.add(stamp)
-        db.session.commit()
-        return redirect(url_for("admin.active"))
+    actives = Active.query.all()
+    return render_template("admin/active.html.jinja2", active=actives)
+
+
+@admin.route("/admin/active", methods=["POST"])
+@admin_required
+def active_post():
+    active_event = Active.query.get(request.form["active_id"])
+    stamp = Stamps(person=active_event.person,
+                   event=active_event.event, start=active_event.start)
+    db.session.delete(active_event)
+    db.session.add(stamp)
+    db.session.commit()
+    return redirect(url_for("admin.active"))
 
 
 @admin.route("/admin/active/delete", methods=["POST"])
@@ -255,3 +270,56 @@ def active_delete():
     db.session.delete(active_event)
     db.session.commit()
     return redirect(url_for("admin.active"))
+
+
+@admin.route("/admin/badges", methods=["GET"])
+@admin_required
+def all_badges():
+    badges = Badge.query.all()
+    return render_template("admin/badges.html.jinja2", badges=badges)
+
+
+@admin.route("/admin/badges/new", methods=["GET", "POST"])
+@admin_required
+def new_badge():
+
+    form = BadgeForm()
+    if form.validate_on_submit():
+        badge = Badge(name=form.name.data,
+                      description=form.description.data,
+                      icon=form.icon.data,
+                      color=form.color.data)
+        db.session.add(badge)
+        db.session.commit()
+        return redirect(url_for("admin.all_badges"))
+
+    return render_template("admin/form.html.jinja2", form=form,
+                           title="New Badge - Chop Shop Sign In")
+
+
+@admin.route("/admin/badges/edit", methods=["GET", "POST"])
+@admin_required
+def edit_badge():
+    badge_id = request.args["badge_id"]
+
+    form = BadgeForm()
+    badge = Badge.query.get(badge_id)
+
+    if not badge:
+        flash("Badge does not exist")
+        return redirect(url_for("admin.all_badges"))
+
+    if form.validate_on_submit():
+        badge.name = form.name.data
+        badge.description = form.description.data
+        badge.icon = form.icon.data
+        badge.color = form.color.data
+        db.session.commit()
+        return redirect(url_for("admin.all_badges"))
+
+    form.name.process_data(badge.name)
+    form.description.process_data(badge.description)
+    form.icon.process_data(badge.icon)
+    form.color.process_data(badge.color)
+    return render_template("admin/form.html.jinja2", form=form,
+                           title=f"Edit Badge {badge.name} - Chop Shop Sign In")
