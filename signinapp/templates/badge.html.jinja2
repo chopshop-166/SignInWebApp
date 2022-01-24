@@ -1,6 +1,8 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static %}
 
+{% block title %}Badge {{badge.name}} - Chop Shop Sign In{% endblock %}
+
 {% block content %}
 <div class="container">
   <div class="row">
@@ -14,13 +16,15 @@
           <tr>
             <th scope="col">User</th>
             <th scope="col">Subteam</th>
+            <th scope="col">Date Received</th>
           </tr>
         </thead>
         <tbody id="userbody">
-        {%- for owner in owners -%}
+        {%- for award in awards -%}
           <tr>
-            <td><a href="{{url_for('user.profile', user_id=owner.id)}}">{{owner.name}}</a></td>
-            <td>{{owner.subteam.name}}</td>
+            <td><a href="{{url_for('user.profile', user_id=award.user_id)}}">{{award.owner.name}}</a></td>
+            <td>{{award.owner.subteam.name}}</td>
+            <td>{{award.received}}</td>
           </tr>
         {%- endfor -%}
         </tbody>

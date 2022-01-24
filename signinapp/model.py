@@ -58,13 +58,13 @@ class User(UserMixin, db.Model):
     code = db.Column(db.String, nullable=False, unique=True)
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
-    badge_ids = db.Column(db.String, nullable=False, default="")
     approved = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
 
     stamps = relationship("Stamps", back_populates="user")
     role = relationship("Role")
     subteam = relationship("Subteam", back_populates="members")
+    awards = relationship("BadgeAward", back_populates="owner")
 
     @hybrid_property
     def mentor(self):
@@ -84,27 +84,26 @@ class User(UserMixin, db.Model):
 
     @hybrid_property
     def badges(self):
-        if not self.badge_ids:
-            self.badge_ids = ""
-        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
-        return [b for b in Badge.query.all() if b.id in badge_ids]
+        return [award for award in BadgeAward.query.filter_by(user_id=self.id).all()]
 
     @hybrid_method
     def has_badge(self, badge_id: int):
-        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
-        return badge_id in badge_ids
+        return badge_id in [b.badge_id for b in self.badges]
 
     @hybrid_method
     def award_badge(self, badge_id: int):
-        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
-        badge_ids = sorted(set(badge_ids + [badge_id]))
-        self.badge_ids = ",".join(str(b) for b in badge_ids)
+        if not self.has_badge(badge_id):
+            award = BadgeAward(badge_id=badge_id, owner=self)
+            db.session.add(award)
+            db.session.commit()
 
     @hybrid_method
     def remove_badge(self, badge_id: int):
-        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
-        badge_ids = sorted(set(badge_ids) - set([badge_id]))
-        self.badge_ids = ",".join(str(b) for b in badge_ids)
+        if self.has_badge(badge_id):
+            award = BadgeAward.query.filter_by(
+                badge_id=badge_id, owner=self).one_or_none()
+            db.session.delete(award)
+            db.session.commit()
 
     @hybrid_method
     def stamps_for(self, type_: EventType):
@@ -130,8 +129,8 @@ class User(UserMixin, db.Model):
              subteam: Subteam = None, approved=False):
         the_hash = mk_hash(name)
         return User(name=name, password=generate_password_hash(password),
-                      code=the_hash, role_id=role.id, subteam=subteam,
-                      approved=approved)
+                    code=the_hash, role_id=role.id, subteam=subteam,
+                    approved=approved)
 
     @classmethod
     def get_canonical(cls, name):
@@ -274,6 +273,19 @@ class Badge(db.Model):
     description = db.Column(db.String)
     icon = db.Column(db.String)
     color = db.Column(db.String, default="black")
+
+    awards = relationship("BadgeAward", back_populates="badge")
+
+
+class BadgeAward(db.Model):
+    __tablename__ = "badge_awards"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"))
+    received = db.Column(db.DateTime, server_default=func.now())
+
+    owner = relationship("User", uselist=False)
+    badge = relationship("Badge", back_populates="awards")
 
 
 class SqliteModel():

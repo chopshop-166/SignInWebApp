@@ -11,7 +11,7 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, SubmitField
 from wtforms.validators import DataRequired
 
-from .model import Badge, EventType, User
+from .model import Badge, BadgeAward, EventType, User
 
 user = Blueprint("user", __name__)
 
@@ -37,8 +37,7 @@ def badge():
     if bid := request.args.get("badge_id"):
         bid = int(bid)
         badge = Badge.query.get(bid)
-        owners = [u for u in User.query.filter_by(active=True).all()
-                  if u.has_badge(bid)]
-        owners.sort(key=lambda u: u.name)
-        return render_template("badge.html.jinja2", badge=badge, owners=owners)
+        awards = BadgeAward.query.filter_by(badge_id=bid).all()
+        awards.sort(key=lambda u: u.owner.name)
+        return render_template("badge.html.jinja2", badge=badge, awards=awards)
     return current_app.login_manager.unauthorized()
