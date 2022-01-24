@@ -20,10 +20,11 @@
         <tbody>
           {%- for badge in badges -%}
           <tr>
-            <th><a href="{{url_for('admin.edit_badge', badge_id=badge.id)}}">{{show_badge(badge)}}</a></th>
+            <th><a href="{{url_for('user.badge', badge_id=badge.id)}}">{{show_badge(badge)}}</a></th>
             <td>{{badge.id}}</td>
             <td>{{badge.description}}</td>
             <td>
+              <a href="{{url_for('admin.edit_badge', badge_id=badge.id)}}">Edit</a>
               <a href="{{url_for('admin.award_badge', badge_id=badge.id)}}">Award</a>
             </td>
           </tr>

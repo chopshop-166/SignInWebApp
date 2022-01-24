@@ -1,0 +1,31 @@
+{% extends "base.html.jinja2" %}
+{% from 'bootstrap5/utils.html' import render_static %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>{{badge.name}}</h1>
+      {{badge.description}}
+    </div>
+    <div class="col">
+      <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">
+        <thead>
+          <tr>
+            <th scope="col">User</th>
+            <th scope="col">Subteam</th>
+          </tr>
+        </thead>
+        <tbody id="userbody">
+        {%- for owner in owners -%}
+          <tr>
+            <td><a href="{{url_for('user.profile', user_id=owner.id)}}">{{owner.name}}</a></td>
+            <td>{{owner.subteam.name}}</td>
+          </tr>
+        {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
