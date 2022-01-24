@@ -23,7 +23,9 @@
             <th><a href="{{url_for('admin.edit_badge', badge_id=badge.id)}}">{{show_badge(badge)}}</a></th>
             <td>{{badge.id}}</td>
             <td>{{badge.description}}</td>
-            <td></td>
+            <td>
+              <a href="{{url_for('admin.award_badge', badge_id=badge.id)}}">Award</a>
+            </td>
           </tr>
           {%- endfor -%}
         </tbody>

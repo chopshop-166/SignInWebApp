@@ -13,6 +13,15 @@ from .model import Person, Role, db
 
 login_manager = LoginManager()
 
+
+@login_manager.user_loader
+def load_user(user_id):
+    # since the user_id is just the primary key of our user table, use it in the query for the user
+    person = Person.query.get(int(user_id))
+    if person.approved:
+        return person
+
+
 auth = Blueprint("auth", __name__)
 
 

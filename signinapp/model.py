@@ -85,9 +85,14 @@ class Person(UserMixin, db.Model):
     @hybrid_property
     def badges(self):
         if not self.badge_ids:
-            return []
+            self.badge_ids = ""
         badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
         return [b for b in Badge.query.all() if b.id in badge_ids]
+
+    @hybrid_method
+    def has_badge(self, badge_id: int):
+        badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
+        return badge_id in badge_ids
 
     @hybrid_method
     def award_badge(self, badge_id: int):
@@ -98,7 +103,7 @@ class Person(UserMixin, db.Model):
     @hybrid_method
     def remove_badge(self, badge_id: int):
         badge_ids = [int(b) for b in self.badge_ids.split(",") if b]
-        badge_ids = sorted(set(badge_ids) - badge_id)
+        badge_ids = sorted(set(badge_ids) - set([badge_id]))
         self.badge_ids = ",".join(str(b) for b in badge_ids)
 
     @hybrid_method

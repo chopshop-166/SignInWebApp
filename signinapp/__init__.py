@@ -44,15 +44,6 @@ login_manager.login_view = "auth.login"
 login_manager.init_app(app)
 
 
-
-@login_manager.user_loader
-def load_user(user_id):
-    # since the user_id is just the primary key of our user table, use it in the query for the user
-    person = Person.query.get(int(user_id))
-    if person.approved:
-        return person
-
-
 if app.config["DEBUG"]:
     with app.app_context():
         ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
@@ -61,8 +52,10 @@ if app.config["DEBUG"]:
         LEAD = Role(name="lead", can_see_subteam=True)
         STUDENT = Role(name="student")
 
-        TRAINING = EventType(name="Training", description="Training Session", autoload=True)
-        BUILD = EventType(name="Build", description="Build Season", autoload=True)
+        TRAINING = EventType(
+            name="Training", description="Training Session", autoload=True)
+        BUILD = EventType(
+            name="Build", description="Build Season", autoload=True)
         FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
         COMPETITION = EventType(name="Competition", description="Competition")
 
@@ -83,16 +76,19 @@ if app.config["DEBUG"]:
             code="5678",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
-            type_id = TRAINING.id
+            type_id=TRAINING.id
         )
 
-        admin_user = Person.make("admin", password="1234", role=ADMIN, approved=True)
-        display = Person.make("display", password="1234", role=DISPLAY, approved=True)
+        admin_user = Person.make(
+            "admin", password="1234", role=ADMIN, approved=True)
+        display = Person.make("display", password="1234",
+                              role=DISPLAY, approved=True)
         db.session.add_all([training, admin_user, display])
         db.session.commit()
 
         mentor = Person.make("Matt Soucy", password="1234", role=MENTOR)
-        student = Person.make("Jeff Burke", password="1234", role=STUDENT, subteam=SOFTWARE)
+        student = Person.make("Jeff Burke", password="1234",
+                              role=STUDENT, subteam=SOFTWARE)
         safe = Badge(name="Safety Certified",
                      icon="cone-striped", color="orange",
                      description="Passed Safety Training")
