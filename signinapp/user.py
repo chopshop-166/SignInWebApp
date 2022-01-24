@@ -37,8 +37,8 @@ def badge():
     if bid := request.args.get("badge_id"):
         bid = int(bid)
         badge = Badge.query.get(bid)
-        owners = [p for p in User.query.filter_by(active=True).all()
-                  if p.has_badge(bid)]
-        print(bid, owners)
+        owners = [u for u in User.query.filter_by(active=True).all()
+                  if u.has_badge(bid)]
+        owners.sort(key=lambda u: u.name)
         return render_template("badge.html.jinja2", badge=badge, owners=owners)
     return current_app.login_manager.unauthorized()

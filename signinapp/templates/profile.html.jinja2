@@ -33,7 +33,7 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
         <h2>Badges</h2>
         <ul>
         {% if user.badges %}
-        {% for badge in user.badges %}
+        {% for badge in user.badges|sort(attribute="name") %}
           <li><a href="{{url_for('user.badge', badge_id=badge.id)}}">{{show_badge(badge)}}</a></li>
         {% endfor %}
         {% else %}
