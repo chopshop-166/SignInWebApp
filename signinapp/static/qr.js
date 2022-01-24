@@ -26,7 +26,7 @@ function populateUsers(userdata) {
     userdata.forEach(element => {
         let row = usersroot.insertRow()
         let name = document.createElement("th")
-        name.innerText = element["person"]
+        name.innerText = element["user"]
         name.setAttribute("scope", "row")
         row.appendChild(name)
         let timestamp = document.createElement("td")

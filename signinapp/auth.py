@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
-from .model import Person, Role, db
+from .model import Role, User, db
 
 login_manager = LoginManager()
 
@@ -17,9 +17,9 @@ login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(user_id):
     # since the user_id is just the primary key of our user table, use it in the query for the user
-    person = Person.query.get(int(user_id))
-    if person.approved:
-        return person
+    user = User.query.get(int(user_id))
+    if user.approved:
+        return user
 
 
 auth = Blueprint("auth", __name__)
@@ -57,7 +57,7 @@ def register():
         password = form.password.data
 
         # if this returns a user, then the email already exists in database
-        user = Person.get_canonical(name)
+        user = User.get_canonical(name)
 
         # if a user is found, we want to redirect back to signup page so user can try again
         if user:
@@ -65,8 +65,8 @@ def register():
             return redirect(url_for('auth.register'))
 
         # Create a new user with the form data. Hash the password so the plaintext version isn't saved.
-        new_user = Person.make(name=name, password=password,
-                               role=Role.from_name("student"))
+        new_user = User.make(name=name, password=password,
+                             role=Role.from_name("student"))
 
         # add the new user to the database
         db.session.add(new_user)
@@ -84,7 +84,7 @@ def login():
         remember = form.remember.data
 
         # if this returns a user, then the email already exists in database
-        user = Person.get_canonical(name)
+        user = User.get_canonical(name)
 
         if not user or not check_password_hash(user.password, password):
             flash('Please check your login details and try again.')

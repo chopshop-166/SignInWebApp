@@ -3,11 +3,11 @@
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from wtforms import SelectField, SelectMultipleField, StringField, SubmitField
-from wtforms import widgets
+from wtforms import (SelectField, SelectMultipleField, StringField,
+                     SubmitField, widgets)
 from wtforms.validators import DataRequired
 
-from ..model import Badge, Person, db
+from ..model import Badge, User, db
 from .util import admin, admin_required
 
 
@@ -19,10 +19,10 @@ class BadgeForm(FlaskForm):
     submit = SubmitField()
 
 
-
 class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
+
 
 class BadgeAwardForm(FlaskForm):
     users = MultiCheckboxField()
@@ -88,7 +88,7 @@ def award_badge():
     badge_id = int(request.args["badge_id"])
 
     form = BadgeAwardForm()
-    people = Person.query.filter_by(active=True).all()
+    people = User.query.filter_by(active=True).all()
     form.users.choices = [p.name for p in people]
     badge = Badge.query.get(badge_id)
 

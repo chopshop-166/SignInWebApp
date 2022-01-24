@@ -18,7 +18,7 @@ def active():
 @admin_required
 def active_post():
     active_event = Active.query.get(request.form["active_id"])
-    stamp = Stamps(person=active_event.person,
+    stamp = Stamps(user=active_event.user,
                    event=active_event.event, start=active_event.start)
     db.session.delete(active_event)
     db.session.add(stamp)

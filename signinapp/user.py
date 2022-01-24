@@ -11,7 +11,7 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, SubmitField
 from wtforms.validators import DataRequired
 
-from .model import Badge, EventType, Person
+from .model import Badge, EventType, User
 
 user = Blueprint("user", __name__)
 
@@ -24,7 +24,7 @@ DATE_FORMATS = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S',
 def profile():
     user = current_user
     if uid := request.args.get("user_id"):
-        user = Person.query.get(uid)
+        user = User.query.get(uid)
     if current_user.can_view(user):
         event_types = EventType.query.all()
         return render_template("profile.html.jinja2", user=user, event_types=event_types)
@@ -37,7 +37,7 @@ def badge():
     if bid := request.args.get("badge_id"):
         bid = int(bid)
         badge = Badge.query.get(bid)
-        owners = [p for p in Person.query.filter_by(active=True).all()
+        owners = [p for p in User.query.filter_by(active=True).all()
                   if p.has_badge(bid)]
         print(bid, owners)
         return render_template("badge.html.jinja2", badge=badge, owners=owners)

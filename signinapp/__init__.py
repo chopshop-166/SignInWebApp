@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap5
 
 from .admin import admin
 from .auth import auth, login_manager
-from .model import Badge, Event, EventType, Person, Role, Subteam, db
+from .model import Badge, Event, EventType, Role, Subteam, User, db
 from .team import team
 from .user import user
 from .views import qrbp
@@ -79,16 +79,16 @@ if app.config["DEBUG"]:
             type_id=TRAINING.id
         )
 
-        admin_user = Person.make(
+        admin_user = User.make(
             "admin", password="1234", role=ADMIN, approved=True)
-        display = Person.make("display", password="1234",
-                              role=DISPLAY, approved=True)
+        display = User.make("display", password="1234",
+                            role=DISPLAY, approved=True)
         db.session.add_all([training, admin_user, display])
         db.session.commit()
 
-        mentor = Person.make("Matt Soucy", password="1234", role=MENTOR)
-        student = Person.make("Jeff Burke", password="1234",
-                              role=STUDENT, subteam=SOFTWARE)
+        mentor = User.make("Matt Soucy", password="1234", role=MENTOR)
+        student = User.make("Jeff Burke", password="1234",
+                            role=STUDENT, subteam=SOFTWARE)
         safe = Badge(name="Safety Certified",
                      icon="cone-striped", color="orange",
                      description="Passed Safety Training")

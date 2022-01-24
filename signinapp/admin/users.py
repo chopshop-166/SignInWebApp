@@ -4,10 +4,11 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField
+from wtforms import (BooleanField, PasswordField, SelectField, StringField,
+                     SubmitField)
 from wtforms.validators import DataRequired
 
-from ..model import Person, Role, Subteam, db
+from ..model import Role, Subteam, User, db
 from .util import admin, admin_required
 
 
@@ -24,7 +25,7 @@ class UserForm(FlaskForm):
 @admin.route("/admin/users", methods=["GET", "POST"])
 @admin_required
 def users():
-    users = Person.query.all()
+    users = User.query.all()
     roles = Role.query.all()
     return render_template("admin/users.html.jinja2", users=users, roles=roles)
 
@@ -35,7 +36,7 @@ def edit_user():
     form = UserForm()
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
     form.subteam.choices = [(s.id, s.name) for s in Subteam.query.all()]
-    user = Person.query.get(request.args["user_id"])
+    user = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("admin.users"))

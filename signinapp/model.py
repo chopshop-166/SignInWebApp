@@ -50,8 +50,8 @@ class StampEvent():
     event: str
 
 
-class Person(UserMixin, db.Model):
-    __tablename__ = "people"
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     password = db.Column(db.String)
@@ -62,7 +62,7 @@ class Person(UserMixin, db.Model):
     approved = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
 
-    stamps = relationship("Stamps", back_populates="person")
+    stamps = relationship("Stamps", back_populates="user")
     role = relationship("Role")
     subteam = relationship("Subteam", back_populates="members")
 
@@ -118,7 +118,7 @@ class Person(UserMixin, db.Model):
                    start=timedelta())
 
     @hybrid_method
-    def can_view(self, user: Person):
+    def can_view(self, user: User):
         return self.mentor or self.admin or current_user is user
 
     @hybrid_method
@@ -129,14 +129,14 @@ class Person(UserMixin, db.Model):
     def make(cls, name: str, password: str, role: Role,
              subteam: Subteam = None, approved=False):
         the_hash = mk_hash(name)
-        return Person(name=name, password=generate_password_hash(password),
+        return User(name=name, password=generate_password_hash(password),
                       code=the_hash, role_id=role.id, subteam=subteam,
                       approved=approved)
 
     @classmethod
     def get_canonical(cls, name):
         code = mk_hash(name)
-        return Person.query.filter_by(code=code).one_or_none()
+        return User.query.filter_by(code=code).one_or_none()
 
 
 class Event(db.Model):
@@ -192,11 +192,11 @@ class EventType(db.Model):
 class Active(db.Model):
     __tablename__ = "active"
     id = db.Column(db.Integer, primary_key=True)
-    person_id = db.Column(db.Integer, db.ForeignKey("people.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
     start = db.Column(db.DateTime, server_default=func.now())
 
-    person = relationship("Person")
+    user = relationship("User")
     event = relationship("Event")
 
     @hybrid_property
@@ -206,7 +206,7 @@ class Active(db.Model):
     @hybrid_method
     def as_dict(self):
         return {
-            "person": self.person.human_readable(),
+            "user": self.user.human_readable(),
             "start": self.start,
             "event": self.event.name
         }
@@ -215,12 +215,12 @@ class Active(db.Model):
 class Stamps(db.Model):
     __tablename__ = "stamps"
     id = db.Column(db.Integer, primary_key=True)
-    person_id = db.Column(db.String, db.ForeignKey("people.id"))
+    user_id = db.Column(db.String, db.ForeignKey("users.id"))
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
     start = db.Column(db.DateTime)
     end = db.Column(db.DateTime, server_default=func.now())
 
-    person = relationship("Person", back_populates="stamps")
+    user = relationship("User", back_populates="stamps")
     event = relationship("Event", back_populates="stamps")
 
     @hybrid_property
@@ -230,7 +230,7 @@ class Stamps(db.Model):
     @hybrid_method
     def as_dict(self):
         return {
-            "person": self.person.human_readable(),
+            "user": self.user.human_readable(),
             "elapsed": str(self.elapsed),
             "start": self.start,
             "end": self.end,
@@ -239,7 +239,7 @@ class Stamps(db.Model):
 
     @hybrid_method
     def as_list(self):
-        return [self.person.human_readable(),
+        return [self.user.human_readable(),
                 self.start, self.end,
                 self.elapsed, self.event.name]
 
@@ -264,7 +264,8 @@ class Subteam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
 
-    members = relationship("Person", back_populates="subteam")
+    members = relationship("User", back_populates="subteam")
+
 
 class Badge(db.Model):
     __tablename__ = "badges"
@@ -281,7 +282,7 @@ class SqliteModel():
         query = Stamps.query.filter(Stamps.event.enabled == True)
         if name:
             code = canonical_name(name)
-            query = query.join(Person).filter_by(code=code)
+            query = query.join(User).filter_by(code=code)
         if event:
             query = query.join(Event).filter_by(code=event)
         return [s.as_dict() for s in query.all()]
@@ -302,7 +303,7 @@ class SqliteModel():
         query = Stamps.query.filter(Stamps.event.enabled == True)
         if name:
             code = mk_hash(name)
-            query = query.join(Person).filter_by(code=code)
+            query = query.join(User).filter_by(code=code)
         if start:
             query = query.filter(Stamps.start < start)
         if end:
@@ -310,7 +311,7 @@ class SqliteModel():
         if type_:
             query = query.join(Event).filter_by(type_=type_)
         if subteam:
-            query = query.join(Person).filter_by(subteam=subteam)
+            query = query.join(User).filter_by(subteam=subteam)
         result = [stamp.as_list() for stamp in query.all()]
         if headers:
             result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
@@ -324,25 +325,25 @@ class SqliteModel():
         if not code:
             return
 
-        person = Person.query.filter_by(code=code).one_or_none()
-        if not (person and person.approved):
+        user = User.query.filter_by(code=code).one_or_none()
+        if not (user and user.approved):
             return
 
-        active = Active.query.join(Person).filter_by(code=code).one_or_none()
+        active = Active.query.join(User).filter_by(code=code).one_or_none()
         if not active:
-            active = Active(person=person, event=ev)
+            active = Active(user=user, event=ev)
             db.session.add(active)
             db.session.commit()
-            return StampEvent(person.human_readable(), "in")
+            return StampEvent(user.human_readable(), "in")
 
-        stamp = Stamps(person=person, event=ev, start=active.start)
+        stamp = Stamps(user=user, event=ev, start=active.start)
         db.session.delete(active)
         db.session.add(stamp)
         db.session.commit()
         # Elapsed needs to be taken after committing to the DB
         # otherwise it won't be populated
         sign = f"out after {stamp.elapsed}"
-        return StampEvent(person.human_readable(), sign)
+        return StampEvent(user.human_readable(), sign)
 
 
 model = SqliteModel()
