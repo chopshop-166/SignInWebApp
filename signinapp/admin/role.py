@@ -20,14 +20,14 @@ class RoleForm(FlaskForm):
     submit = SubmitField()
 
 
-@admin.route("/admin/subteams", methods=["GET", "POST"])
+@admin.route("/admin/roles", methods=["GET", "POST"])
 @admin_required
 def roles():
     roles = Role.query.all()
     return render_template("admin/roles.html.jinja2", roles=roles)
 
 
-@admin.route("/admin/subteams/new", methods=["GET", "POST"])
+@admin.route("/admin/roles/new", methods=["GET", "POST"])
 @admin_required
 def new_role():
     form = RoleForm()
@@ -49,7 +49,7 @@ def new_role():
                            title=f"New Subteam - Chop Shop Sign In")
 
 
-@admin.route("/admin/subteams/edit", methods=["GET", "POST"])
+@admin.route("/admin/roles/edit", methods=["GET", "POST"])
 @admin_required
 def edit_role():
     form = RoleForm()
