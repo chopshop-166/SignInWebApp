@@ -6,7 +6,7 @@ from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import (BooleanField, PasswordField, SelectField, StringField,
                      SubmitField)
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, EqualTo
 
 from ..model import Role, Subteam, User, db
 from .util import admin, admin_required
@@ -22,6 +22,14 @@ class UserForm(FlaskForm):
     submit = SubmitField()
 
 
+class DeleteUserForm(FlaskForm):
+    name = StringField(validators=[DataRequired()])
+    verify = StringField("Confirm Name",
+                         validators=[DataRequired(),
+                                     EqualTo("name", message="Enter the user's name")])
+    submit = SubmitField()
+
+
 @admin.route("/admin/users", methods=["GET", "POST"])
 @admin_required
 def users():
@@ -30,12 +38,37 @@ def users():
     return render_template("admin/users.html.jinja2", users=users, roles=roles)
 
 
+@admin.route("/admin/users/new", methods=["GET", "POST"])
+@admin_required
+def new_user():
+    form = UserForm()
+    form.role.choices = [(r.id, r.name) for r in Role.query.all()]
+    form.subteam.choices = [(0, "None")]+[(s.id, s.name) for s in Subteam.query.all()]
+
+    if form.validate_on_submit():
+        user = User.make(
+            name=form.name.data,
+            password=form.password.data,
+            approved=form.approved.data,
+            role=Role.query.get(form.role.data)
+        )
+        if form.subteam.data:
+            user.subteam_id = form.subteam.data
+        user.active = form.active.data
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("admin.users"))
+
+    return render_template("admin/form.html.jinja2", form=form,
+                           title=f"New User - Chop Shop Sign In")
+
+
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
     form = UserForm()
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(s.id, s.name) for s in Subteam.query.all()]
+    form.subteam.choices = [(0, "None")]+[(s.id, s.name) for s in Subteam.query.all()]
     user = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
@@ -45,7 +78,7 @@ def edit_user():
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
         user.role_id = form.role.data
-        user.subteam_id = form.subteam.data
+        user.subteam_id = form.subteam.data or None
         user.approved = form.approved.data
         user.active = form.active.data
         db.session.commit()
@@ -58,3 +91,22 @@ def edit_user():
     form.active.process_data(user.active)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit User {user.name} - Chop Shop Sign In")
+
+
+@admin.route("/admin/users/delete", methods=["GET", "POST"])
+@admin_required
+def delete_user():
+    form = DeleteUserForm()
+    user = User.query.get(request.args["user_id"])
+    if not user:
+        flash("Invalid user ID")
+        return redirect(url_for("admin.users"))
+
+    if form.validate_on_submit():
+        db.session.delete(user)
+        db.session.commit()
+        return redirect(url_for("admin.users"))
+
+    form.name.process_data(user.name)
+    return render_template("admin/form.html.jinja2", form=form,
+                           title=f"Delete User {user.name} - Chop Shop Sign In")
