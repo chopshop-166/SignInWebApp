@@ -48,7 +48,9 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     # since the user_id is just the primary key of our user table, use it in the query for the user
-    return Person.query.get(int(user_id))
+    person = Person.query.get(int(user_id))
+    if person.approved:
+        return person
 
 
 if app.config["DEBUG"]:
@@ -84,8 +86,8 @@ if app.config["DEBUG"]:
             type_id = TRAINING.id
         )
 
-        admin_user = Person.make("admin", password="1234", role=ADMIN)
-        display = Person.make("display", password="1234", role=DISPLAY)
+        admin_user = Person.make("admin", password="1234", role=ADMIN, approved=True)
+        display = Person.make("display", password="1234", role=DISPLAY, approved=True)
         db.session.add_all([training, admin_user, display])
         db.session.commit()
 

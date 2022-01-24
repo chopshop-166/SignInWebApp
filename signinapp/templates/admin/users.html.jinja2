@@ -13,6 +13,7 @@
             <th scope="col">User</th>
             <th scope="col">Subteam</th>
             <th scope="col">Total Time</th>
+            <th scope="col">Approved</th>
             <th scope="col">Edit</th>
           </tr>
         </thead>
@@ -22,6 +23,7 @@
             <th><a href="{{url_for('user.profile', user_id=user.id)}}">{{user.name}}</a></th>
             <td>{{user.subteam.name}}</td>
             <td>{{ user.total_time }}</td>
+            <td>{{ user.approved }}</td>
             <td><a href="{{url_for('admin.edit_user', user_id=user.id)}}">Edit</a></td>
           </tr>
           {%- endfor -%}

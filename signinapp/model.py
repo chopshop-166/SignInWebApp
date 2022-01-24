@@ -59,6 +59,8 @@ class Person(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
     badge_ids = db.Column(db.String, nullable=False, default="")
+    approved = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
 
     stamps = relationship("Stamps", back_populates="person")
     role = relationship("Role")
@@ -119,10 +121,12 @@ class Person(UserMixin, db.Model):
         return f"{'*' if self.mentor else ''}{self.name}"
 
     @classmethod
-    def make(cls, name: str, password: str, role: Role, subteam: Subteam = None):
+    def make(cls, name: str, password: str, role: Role,
+             subteam: Subteam = None, approved=False):
         the_hash = mk_hash(name)
         return Person(name=name, password=generate_password_hash(password),
-                      code=the_hash, role_id=role.id, subteam=subteam)
+                      code=the_hash, role_id=role.id, subteam=subteam,
+                      approved=approved)
 
     @classmethod
     def get_canonical(cls, name):
@@ -316,7 +320,7 @@ class SqliteModel():
             return
 
         person = Person.query.filter_by(code=code).one_or_none()
-        if not person:
+        if not (person and person.approved):
             return
 
         active = Active.query.join(Person).filter_by(code=code).one_or_none()

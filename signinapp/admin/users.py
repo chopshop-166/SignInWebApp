@@ -4,7 +4,7 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import PasswordField, SelectField, StringField, SubmitField
+from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from ..model import Person, Role, Subteam, db
@@ -16,6 +16,8 @@ class UserForm(FlaskForm):
     password = PasswordField()
     role = SelectField()
     subteam = SelectField()
+    approved = BooleanField()
+    active = BooleanField()
     submit = SubmitField()
 
 
@@ -42,11 +44,16 @@ def edit_user():
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
         user.role_id = form.role.data
+        user.subteam_id = form.subteam.data
+        user.approved = form.approved.data
+        user.active = form.active.data
         db.session.commit()
         return redirect(url_for("admin.users"))
 
     form.name.process_data(user.name)
     form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
+    form.approved.process_data(user.approved)
+    form.active.process_data(user.active)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit User {user.name} - Chop Shop Sign In")
