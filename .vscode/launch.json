@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Flask",
+            "name": "Debug Server",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -16,6 +16,35 @@
             "args": [
                 "run",
                 "--no-debugger"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Production",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "signinapp/webapp.py",
+                "FLASK_ENV": "production"
+            },
+            "args": [
+                "run",
+                "--no-debugger"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Init DB",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "signinapp/webapp.py",
+                "FLASK_ENV": "production"
+            },
+            "args": [
+                "init-db"
             ],
             "jinja": true
         }

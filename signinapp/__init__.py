@@ -43,48 +43,57 @@ app.register_blueprint(user)
 login_manager.login_view = "auth.login"
 login_manager.init_app(app)
 
+def init_default_db():
+
+    ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
+    MENTOR = Role(name="mentor", mentor=True, can_display=True)
+    DISPLAY = Role(name="display", can_display=True, autoload=True)
+    LEAD = Role(name="lead", can_see_subteam=True)
+    STUDENT = Role(name="student")
+
+    TRAINING = EventType(
+        name="Training", description="Training Session", autoload=True)
+    BUILD = EventType(
+        name="Build", description="Build Season", autoload=True)
+    FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
+    COMPETITION = EventType(name="Competition", description="Competition")
+
+    SOFTWARE = Subteam(name="Software")
+    MECH = Subteam(name="Mechanical")
+    CAD = Subteam(name="CAD")
+    MARKETING = Subteam(name="Marketing")
+
+    db.session.add_all([
+        ADMIN, MENTOR, DISPLAY, LEAD, STUDENT,
+        TRAINING, BUILD, FUNDRAISER, COMPETITION,
+        SOFTWARE, MECH, CAD, MARKETING
+    ])
+    db.session.commit()
+
+    admin_user = User.make("admin", password="1234", role=ADMIN, approved=True)
+    display = User.make("display", password="1234",
+                        role=DISPLAY, approved=True)
+    db.session.add_all([admin_user, display])
+    db.session.commit()
+
 
 if app.config["DEBUG"]:
     with app.app_context():
-        ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
-        MENTOR = Role(name="mentor", mentor=True, can_display=True)
-        DISPLAY = Role(name="display", can_display=True, autoload=True)
-        LEAD = Role(name="lead", can_see_subteam=True)
-        STUDENT = Role(name="student")
-
-        TRAINING = EventType(
-            name="Training", description="Training Session", autoload=True)
-        BUILD = EventType(
-            name="Build", description="Build Season", autoload=True)
-        FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
-        COMPETITION = EventType(name="Competition", description="Competition")
-
-        SOFTWARE = Subteam(name="Software")
-        MECH = Subteam(name="Mechanical")
-        CAD = Subteam(name="CAD")
-        MARKETING = Subteam(name="Marketing")
-
-        db.session.add_all([
-            ADMIN, MENTOR, DISPLAY, STUDENT,
-            TRAINING, BUILD, FUNDRAISER, COMPETITION,
-            SOFTWARE, MECH, CAD, MARKETING
-        ])
-        db.session.commit()
+        init_default_db()
 
         training = Event(
             name="Training",
             code="5678",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
-            type_id=TRAINING.id
+            type_=EventType.query.filter_by(name="Training").one()
         )
-
-        admin_user = User.make(
-            "admin", password="1234", role=ADMIN, approved=True)
-        display = User.make("display", password="1234",
-                            role=DISPLAY, approved=True)
-        db.session.add_all([training, admin_user, display])
+        db.session.add_all([training])
         db.session.commit()
+
+        MENTOR = Role.query.filter_by(name="mentor").one()
+        STUDENT = Role.query.filter_by(name="student").one()
+        SOFTWARE = Subteam.query.filter_by(name="Software").one()
 
         mentor = User.make("Matt Soucy", password="1234", role=MENTOR)
         student = User.make("Jeff Burke", password="1234",
