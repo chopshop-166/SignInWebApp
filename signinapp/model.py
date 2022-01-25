@@ -15,6 +15,7 @@ from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
+from sqlalchemy.sql import and_
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -177,9 +178,9 @@ class Event(db.Model):
     def is_active(self) -> bool:
         ' Test for if the event is currently active '
         now = datetime.now()
-        return (self.enabled == True and
-                self.start < now and
-                now < self.end)
+        return and_(self.enabled == True,
+                    self.start < now,
+                    now < self.end).label('is_active')
 
 
 class EventType(db.Model):

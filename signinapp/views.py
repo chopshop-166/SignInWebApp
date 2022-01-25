@@ -14,7 +14,7 @@ qrbp = Blueprint("qr", __name__)
 
 @qrbp.route("/")
 def index():
-    events = Event.query.filter(Event.is_active == True).all()
+    events = Event.query.filter(Event.is_active).all()
     return render_template("index.html.jinja2", events=events)
 
 
