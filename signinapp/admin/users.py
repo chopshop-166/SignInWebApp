@@ -43,7 +43,8 @@ def users():
 def new_user():
     form = UserForm()
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name) for s in Subteam.query.all()]
+    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
+                                          for s in Subteam.query.all()]
 
     if form.validate_on_submit():
         user = User.make(
@@ -68,7 +69,8 @@ def new_user():
 def edit_user():
     form = UserForm()
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name) for s in Subteam.query.all()]
+    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
+                                          for s in Subteam.query.all()]
     user = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")

@@ -3,8 +3,7 @@
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from wtforms import (SelectField, SelectMultipleField, StringField,
-                     SubmitField, widgets)
+from wtforms import SelectMultipleField, StringField, SubmitField, widgets
 from wtforms.validators import DataRequired
 
 from ..model import Badge, User, db

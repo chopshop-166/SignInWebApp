@@ -26,7 +26,7 @@ def subteams():
 @admin_required
 def new_subteam():
     form = SubteamForm()
-    
+
     if form.validate_on_submit():
         st = Subteam(name=form.name.data)
         db.session.add(st)

@@ -30,7 +30,7 @@
             {%- endif -%}
             <ul class="navbar-nav">
                 {%- if current_user.is_authenticated -%}
-                {%- if current_user.admin -%}
+                {%- if current_user.role.admin -%}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">

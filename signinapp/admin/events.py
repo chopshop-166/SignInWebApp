@@ -6,9 +6,8 @@ from dateutil.rrule import WEEKLY, rrule
 from flask import redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from wtforms import (BooleanField, DateField, DateTimeLocalField, IntegerField,
-                     SelectField, SelectMultipleField, StringField,
-                     SubmitField, TimeField)
+from wtforms import (BooleanField, DateField, DateTimeLocalField, SelectField,
+                     SelectMultipleField, StringField, SubmitField, TimeField)
 from wtforms.validators import DataRequired
 
 from ..model import Event, EventType, db, event_code

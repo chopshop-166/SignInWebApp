@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-  {% if current_user.is_authenticated and current_user.can_display %}
+  {% if current_user.is_authenticated and current_user.role.can_display %}
   <h1>Available Events</h1>
   <ul>
     {% if events %}

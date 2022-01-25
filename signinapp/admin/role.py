@@ -60,12 +60,12 @@ def edit_role():
         return redirect(url_for("admin.roles"))
 
     if form.validate_on_submit():
-        r.name=form.name.data
-        r.admin=form.admin.data
-        r.mentor=form.mentor.data
-        r.can_display=form.can_display.data
-        r.autoload=form.autoload.data
-        r.can_see_subteam=form.can_see_subteam.data
+        r.name = form.name.data
+        r.admin = form.admin.data
+        r.mentor = form.mentor.data
+        r.can_display = form.can_display.data
+        r.autoload = form.autoload.data
+        r.can_see_subteam = form.can_see_subteam.data
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 

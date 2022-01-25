@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import datetime
 from http import HTTPStatus
 
 import flask_excel as excel
-from flask import Blueprint, Response, jsonify, request, current_app
+from flask import Blueprint, Response, current_app, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
-from .model import Event, EventType, model
+from .model import Event, EventType, export, get_active, scan
 
 qrbp = Blueprint("qr", __name__)
 
@@ -37,12 +36,12 @@ def scan():
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    stamp = model.scan(ev, name)
+    stamp = scan(ev, name)
 
     if stamp:
         return jsonify({
             'message': f"{stamp.name} signed {stamp.event}",
-            'users': model.get_active(event),
+            'users': get_active(event),
             'action': 'update'
         })
     else:
@@ -52,7 +51,7 @@ def scan():
 @qrbp.route("/autoevent")
 def autoevent():
     ev = Event.query.join(EventType).filter(Event.is_active == True,
-                            EventType.autoload == True).first()
+                                            EventType.autoload == True).first()
 
     if ev:
         return jsonify({"event": ev.code})
@@ -70,7 +69,7 @@ def active():
         return jsonify({"action": "redirect"})
 
     return jsonify({
-        "users": model.get_active(event),
+        "users": get_active(event),
         "action": "update",
         "message": "Updated user data"
     })
@@ -79,15 +78,14 @@ def active():
 @qrbp.route("/export")
 @login_required
 def export():
-    if current_user.admin:
+    if current_user.role.admin:
         name = request.args.get("name", None)
     else:
         name = current_user.name
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)
-    return excel.make_response_from_array(
-        model.export(name, start, end, type_), "csv")
+    return excel.make_response_from_array(export(name, start, end, type_), "csv")
 
 
 @qrbp.route("/export/subteam")
@@ -95,6 +93,6 @@ def export():
 def export_subteam():
     if not current_user.can_see_subteam or not current_user.subteam_id:
         return current_app.login_manager.unauthorized()
-        
+
     subteam = current_user.subteam
-    return excel.make_response_from_array(model.export(subteam=subteam), "csv")
+    return excel.make_response_from_array(export(subteam=subteam), "csv")

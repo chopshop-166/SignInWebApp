@@ -91,9 +91,9 @@ if app.config["DEBUG"]:
         db.session.add_all([training])
         db.session.commit()
 
-        MENTOR = Role.query.filter_by(name="mentor").one()
-        STUDENT = Role.query.filter_by(name="student").one()
-        SOFTWARE = Subteam.query.filter_by(name="Software").one()
+        MENTOR = Role.from_name("mentor")
+        STUDENT = Role.from_name("student")
+        SOFTWARE = Subteam.from_name("Software")
 
         mentor = User.make("Matt Soucy", password="1234", role=MENTOR)
         student = User.make("Jeff Burke", password="1234",
