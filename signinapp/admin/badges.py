@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
@@ -7,7 +5,8 @@ from wtforms import SelectMultipleField, StringField, SubmitField, widgets
 from wtforms.validators import DataRequired
 
 from ..model import Badge, User, db
-from .util import admin, admin_required
+from ..util import admin_required
+from .util import admin
 
 
 class BadgeForm(FlaskForm):

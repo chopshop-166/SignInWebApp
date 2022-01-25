@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
@@ -9,7 +7,8 @@ from wtforms import (BooleanField, PasswordField, SelectField, StringField,
 from wtforms.validators import DataRequired, EqualTo
 
 from ..model import Role, Subteam, User, db
-from .util import admin, admin_required
+from ..util import admin_required
+from .util import admin
 
 
 class UserForm(FlaskForm):

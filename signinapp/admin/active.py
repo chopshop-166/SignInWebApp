@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-
 from flask import redirect, request, url_for
 from flask.templating import render_template
 
 from ..model import Active, Stamps, db
-from .util import admin, admin_required
+from ..util import admin_required
+from .util import admin
 
 
 @admin.route("/admin/active", methods=["GET"])

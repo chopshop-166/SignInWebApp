@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from datetime import datetime
 
 from dateutil.rrule import WEEKLY, rrule
@@ -11,7 +9,8 @@ from wtforms import (BooleanField, DateField, DateTimeLocalField, SelectField,
 from wtforms.validators import DataRequired
 
 from ..model import Event, EventType, db, event_code
-from .util import admin, admin_required
+from ..util import admin_required
+from .util import admin
 
 DATE_FORMATS = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S',
                 '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M']
