@@ -91,6 +91,10 @@ def login():
             flash('Please check your login details and try again.')
             return redirect(url_for('auth.login'))
 
+        if not user.approved:
+            flash('User is not approved')
+            return redirect(url_for('auth.login'))
+
         login_user(user, remember=remember)
 
         return redirect('/')

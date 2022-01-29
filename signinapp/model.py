@@ -71,6 +71,11 @@ class User(UserMixin, db.Model):
     awards = relationship("BadgeAward", back_populates="owner")
 
     @hybrid_property
+    def is_active(self) -> bool:
+        ' Required by Flask-Login '
+        return self.active and self.approved
+
+    @hybrid_property
     def total_time(self) -> timedelta:
         ' Total time for all stamps '
         return sum((s.elapsed for s in self.stamps), start=timedelta())
