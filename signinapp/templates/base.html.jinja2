@@ -28,11 +28,11 @@
             {%- if current_user.is_authenticated -%}
                 <span class="navbar-text">Welcome, {{current_user.name}}</span>
             {%- endif -%}
-            <ul class="navbar-nav">
+            <ul class="nav navbar-nav">
                 {%- if current_user.is_authenticated -%}
                 {%- if current_user.role.admin -%}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarAdminDropdown" role="button"
+                    <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarAdminDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Admin
                     </a>
@@ -47,7 +47,7 @@
                 </li>
                 {%- endif -%}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button"
+                    <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarUserDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         User
                     </a>
@@ -59,8 +59,8 @@
                     </ul>
                 </li>
                 {%- else -%}
-                <li class="nav-item"><a href="{{url_for('auth.register')}}">Register</a></li>
-                <li class="nav-item"><a href="{{url_for('auth.login')}}">Sign In</a></li>
+                <li class="nav-item"><a class="btn btn-primary" href="{{url_for('auth.register')}}">Register</a></li>
+                <li class="nav-item"><a class="btn btn-primary" href="{{url_for('auth.login')}}">Sign In</a></li>
                 {%- endif -%}
             </ul>
             <div class="d-flex">
