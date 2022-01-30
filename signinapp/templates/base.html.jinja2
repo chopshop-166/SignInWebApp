@@ -25,46 +25,51 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{url_for('index')}}">Chop Shop Sign In</a>
-            {%- if current_user.is_authenticated -%}
-                <span class="navbar-text">Welcome, {{current_user.name}}</span>
-            {%- endif -%}
-            <ul class="nav navbar-nav">
+            <button class="navbar-toggler"  type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navmenu">
                 {%- if current_user.is_authenticated -%}
-                {%- if current_user.role.admin -%}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarAdminDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Admin
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
-                        <li><a class="dropdown-item" href="{{url_for('admin.active')}}">Active</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('admin.all_badges')}}">Badges</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('admin.events')}}">Events</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('admin.roles')}}">Roles</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('admin.subteams')}}">Subteams</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('admin.users')}}">Users</a></li>
-                    </ul>
-                </li>
+                    <span class="navbar-text">Welcome, {{current_user.name}}</span>
                 {%- endif -%}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarUserDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        User
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarUserDropdown">
-                        <li><a class="dropdown-item" href="{{url_for('user.profile')}}">Profile</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('event.export')}}">Export</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('auth.password')}}">Change Password</a></li>
-                        <li><a class="dropdown-item" href="{{url_for('auth.logout')}}">Sign Out</a></li>
-                    </ul>
-                </li>
-                {%- else -%}
-                <li class="nav-item"><a class="btn btn-primary" href="{{url_for('auth.register')}}">Register</a></li>
-                <li class="nav-item"><a class="btn btn-primary" href="{{url_for('auth.login')}}">Sign In</a></li>
-                {%- endif -%}
-            </ul>
-            <div class="d-flex">
-                <img src="{{ url_for('static', filename='logo.png')}}" height="48">
+                <ul class="navbar-nav ms-auto">
+                    {%- if current_user.is_authenticated -%}
+                    {%- if current_user.role.admin -%}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarAdminDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
+                            <li><a class="dropdown-item" href="{{url_for('admin.active')}}">Active</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('admin.all_badges')}}">Badges</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('admin.events')}}">Events</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('admin.roles')}}">Roles</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('admin.subteams')}}">Subteams</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('admin.users')}}">Users</a></li>
+                        </ul>
+                    </li>
+                    {%- endif -%}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarUserDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            User
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarUserDropdown">
+                            <li><a class="dropdown-item" href="{{url_for('user.profile')}}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('event.export')}}">Export</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('auth.password')}}">Change Password</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('auth.logout')}}">Sign Out</a></li>
+                        </ul>
+                    </li>
+                    {%- else -%}
+                    <li class="nav-item"><a class="nav-link btn btn-primary" href="{{url_for('auth.register')}}">Register</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-primary" href="{{url_for('auth.login')}}">Sign In</a></li>
+                    {%- endif -%}
+                </ul>
+                <div class="d-flex">
+                    <img src="{{ url_for('static', filename='logo.png')}}" height="48">
+                </div>
             </div>
         </div>
     </nav>

@@ -1,3 +1,13 @@
-$primary: #2525db;
+//$primary: #2525db;
+$primary: #0f2b8e;
+$body-bg: #242526;
+$body-color: #e4e6eb;
+
+.bg-robot {
+    background-image: url('20211029_224844.jpg');
+    background-repeat: repeat;
+    background-attachment: scroll;
+    background-size: cover;
+};
 
 @import "scss/bootstrap.scss";
