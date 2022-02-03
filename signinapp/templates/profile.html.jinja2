@@ -12,35 +12,38 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container table table-responsive">
   <h1>{{user.name}}</h1>
   <div class="row">
     <div class="col">
-      <div>Role: {{user.role.name}}</div>
-      <div>Subteam: {{user.subteam.name}}</div>
+      <h2>Role: {{user.role.name}}</h2>
+      <h2>Subteam: {{user.subteam.name}}</h2>
       <div>
         <ul>
           {%- for type_ in event_types -%}
             <li>{{type_.name}}: {{user.total_stamps_for(type_)}}</li>
           {%- endfor -%}
         </ul>
-        <a href="{{url_for('event.export')}}">Export</a>
+        <a class="link-light" href="{{url_for('event.export')}}">Export</a>
       </div>
     </div>
     <div class="col">
-      <div id="qrPlaceholder"></div>
       <div id="badges">
-        <h2>Badges</h2>
-        <ul>
-        {% if user.badges %}
-        {% for award in user.badges|sort(attribute="name") %}
-          <li><a href="{{url_for('user.badge', badge_id=award.badge_id)}}">{{show_badge(award.badge)}}</a></li>
-        {% endfor %}
-        {% else %}
-        <li>None yet!</li>
-        {% endif %}
-        </ul>
-      </div>
+          <h2>Badges:</h2>
+          <ul>
+            {% if user.badges %}
+            {% for award in user.badges|sort(attribute="name") %}
+              <li><a href="{{url_for('user.badge', badge_id=award.badge_id)}}">{{show_badge(award.badge)}}</a></li>
+            {% endfor %}
+            {% else %}
+            <li>None yet!</li>
+            {% endif %}
+          </ul>
+        </div>
+    </div>
+    <div class="col">
+      <h2>QR Code:</h2>
+      <div id="qrPlaceholder"></div>
     </div>
   </div>
 </div>
