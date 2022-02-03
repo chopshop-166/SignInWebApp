@@ -68,7 +68,9 @@
                     {%- endif -%}
                 </ul>
                 <div class="d-flex">
-                    <img src="{{ url_for('static', filename='logo.png')}}" height="48">
+                    <a class="navbar-brand" href="{{url_for('index')}}">
+                        <img src="{{ url_for('static', filename='logo.png')}}" height="48">
+                    </a>
                 </div>
             </div>
         </div>
