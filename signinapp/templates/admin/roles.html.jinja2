@@ -3,38 +3,34 @@
 {% block title %}Badge Admin - Chop Shop Sign In{%endblock%}
 
 {% block content %}
-<div class="container">
+<div class="pt-3 container table-responsive">
   {{- render_messages() -}}
-  <div class="row">
-    <div class="col">
-      <a href="{{url_for('admin.new_role')}}">New Role</a>
-      <table id="roles" class="table table-sm table-striped table-hover table-bordered table-responsive">
-        <thead>
-          <tr>
-            <th scope="col">Role</th>
-            <th scope="col">ID</th>
-            <th scope="col">Is Admin</th>
-            <th scope="col">Is Mentor</th>
-            <th scope="col">Can Display</th>
-            <th scope="col">Autoload</th>
-            <th scope="col">Can See Subteam Info</th>
-          </tr>
-        </thead>
-        <tbody>
-          {%- for role in roles -%}
-          <tr>
-            <th><a href="{{url_for('admin.edit_role', role_id=role.id)}}">{{role.name}}</a></th>
-            <td>{{role.id}}</td>
-            <td>{{role.admin}}</td>
-            <td>{{role.mentor}}</td>
-            <td>{{role.can_display}}</td>
-            <td>{{role.autoload}}</td>
-            <td>{{role.can_see_subteam}}</td>
-          </tr>
-          {%- endfor -%}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <table id="roles" class="table table-striped table-hover table-dark">
+    <thead>
+      <tr>
+        <th scope="col">Role</th>
+        <th scope="col">ID</th>
+        <th scope="col">Is Admin</th>
+        <th scope="col">Is Mentor</th>
+        <th scope="col">Can Display</th>
+        <th scope="col">Autoload</th>
+        <th scope="col">Can See Subteam Info</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for role in roles -%}
+      <tr>
+        <th><a class="link-light" href="{{url_for('admin.edit_role', role_id=role.id)}}">{{role.name}}</a></th>
+        <td>{{role.id}}</td>
+        <td>{{role.admin}}</td>
+        <td>{{role.mentor}}</td>
+        <td>{{role.can_display}}</td>
+        <td>{{role.autoload}}</td>
+        <td>{{role.can_see_subteam}}</td>
+      </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+  <a href="{{url_for('admin.new_role')}}"><button class="btn btn-primary">New Role</button></a>
 </div>
 {% endblock %}

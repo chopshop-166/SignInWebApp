@@ -3,37 +3,33 @@
 {% block title %}User Admin - Chop Shop Sign In{%endblock%}
 
 {% block content %}
-<div class="container">
+<div class="container table-responsive-sm pt-3">
   {{- render_messages() -}}
-  <div class="row">
-    <div class="col">
-      <a href="{{url_for('admin.new_user')}}">New User</a>
-      <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">
-        <thead>
-          <tr>
-            <th scope="col">User</th>
-            <th scope="col">Subteam</th>
-            <th scope="col">Total Time</th>
-            <th scope="col">Approved</th>
-            <th scope="col">Edit</th>
-          </tr>
-        </thead>
-        <tbody id="userbody">
-          {%- for user in users -%}
-          <tr>
-            <th><a href="{{url_for('user.profile', user_id=user.id)}}">{{user.name}}</a></th>
-            <td>{{user.subteam.name}}</td>
-            <td>{{ user.total_time }}</td>
-            <td>{{ user.approved }}</td>
-            <td>
-              <a href="{{url_for('admin.edit_user', user_id=user.id)}}">Edit</a>
-              <a href="{{url_for('admin.delete_user', user_id=user.id)}}">Delete</a>
-            </td>
-          </tr>
-          {%- endfor -%}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <table id="users" class="table table-striped table-hover table-dark">
+    <thead>
+      <tr>
+        <th scope="col">User</th>
+        <th scope="col">Subteam</th>
+        <th scope="col">Total Time</th>
+        <th scope="col">Approved</th>
+        <th scope="col">Edit</th>
+      </tr>
+    </thead>
+    <tbody id="userbody">
+      {%- for user in users -%}
+      <tr>
+        <th><a class="link-light" href="{{url_for('user.profile', user_id=user.id)}}">{{user.name}}</a></th>
+        <td>{{user.subteam.name}}</td>
+        <td>{{ user.total_time }}</td>
+        <td>{{ user.approved }}</td>
+        <td>
+          <a class="link-light" href="{{url_for('admin.edit_user', user_id=user.id)}}">Edit</a>
+          <a class="link-light" href="{{url_for('admin.delete_user', user_id=user.id)}}">Delete</a>
+        </td>
+      </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+  <a class="link-light" href="{{url_for('admin.new_user')}}"><button class="btn btn-primary">New User</button></a>
 </div>
 {% endblock %}
