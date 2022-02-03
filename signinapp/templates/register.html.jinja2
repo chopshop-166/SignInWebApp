@@ -3,11 +3,14 @@
 
 {% block title %}Register - Chop Shop Sign In{% endblock %}
 
+{% block bodyAttrs %}class="bg-robot register"{% endblock %}
+
 {% block content %}
-<body class="bg-robot"></body>
-<div class="container p-5 w-400 bg-dark rounded container">
-  <h1>Register</h1>
-  {{-render_messages()-}}
-  {{ render_form(form) }}
+<div class="parent d-flex align-items-center">
+  <div class="p-5 bg-dark rounded-3 container">
+    <h1>Register</h1>
+    {{-render_messages()-}}
+    {{ render_form(form) }}
+  </div>
 </div>
 {% endblock %}

@@ -3,11 +3,24 @@ $primary: #0f2b8e;
 $body-bg: #242526;
 $body-color: #e4e6eb;
 
-.bg-robot {
+$border-radius-lg: 1rem;
+
+.login {
     background-image: url('20211029_224844.jpg');
+}
+
+.register {
+    background-image: url('RegisterBackground.png');
+}
+
+.bg-robot {
     background-repeat: repeat;
     background-attachment: scroll;
     background-size: cover;
 };
+
+.parent {
+    min-height: 80vH;
+}
 
 @import "scss/bootstrap.scss";
