@@ -5,11 +5,13 @@
 <div class="container">
   {{ render_messages() }}
   {% if current_user.is_authenticated and current_user.role.can_display %}
-  <h1>Available Events</h1>
-  <ul>
+  <h1 class="pt-3 pb-1">Available Events</h1>
+  <div class="list-group list-group-flush">
     {% if events %}
     {% for event in events %}
-    <li><a href="{{url_for('event.event', event_code=event.code)}}">{{event.name}}</a></li>
+    <a class="list-group-item list-group-item-primary list-group-item-action rounded-3" href="{{url_for('event.event', event_code=event.code)}}">
+      {{event.name}}
+    </a>
     {% endfor %}
     {% else %}
     <li>None</li>
