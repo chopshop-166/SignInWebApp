@@ -123,7 +123,7 @@ class User(UserMixin, db.Model):
     @hybrid_method
     def can_view(self, user: User):
         ' Whether the user in question can view this user '
-        return self.role.mentor or self.role.admin or self is user
+        return self.role.mentor or self.role.admin or self == user
 
     @hybrid_method
     def human_readable(self) -> str:
