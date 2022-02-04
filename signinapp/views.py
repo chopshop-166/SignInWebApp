@@ -7,7 +7,7 @@ from flask import Blueprint, Response, current_app, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
-from .model import Event, EventType, export, get_active, scan
+from .model import Event, EventType, export, get_active, scan as mscan
 
 qrbp = Blueprint("qr", __name__)
 
@@ -36,7 +36,7 @@ def scan():
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    stamp = scan(ev, name)
+    stamp = mscan(ev, name)
 
     if stamp:
         return jsonify({
