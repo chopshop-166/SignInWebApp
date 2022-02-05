@@ -7,7 +7,7 @@ from flask import Blueprint, Response, current_app, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
-from .model import Event, EventType, export, get_active, scan as mscan
+from .model import Active, Event, EventType, Stamps
 
 qrbp = Blueprint("qr", __name__)
 
@@ -31,17 +31,17 @@ def scan():
     event = request.values['event']
     name = request.values['name']
 
-    ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
+    ev: Event = Event.query.filter_by(code=event, enabled=True).one_or_none()
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    stamp = mscan(ev, name)
+    stamp = ev.scan(name)
 
     if stamp:
         return jsonify({
             'message': f"{stamp.name} signed {stamp.event}",
-            'users': get_active(event),
+            'users': Active.get(event),
             'action': 'update'
         })
     else:
@@ -50,8 +50,8 @@ def scan():
 
 @qrbp.route("/autoevent")
 def autoevent():
-    ev = Event.query.join(EventType).filter(Event.is_active == True,
-                                            EventType.autoload == True).first()
+    ev = Event.query.filter_by(is_active=True).join(
+        EventType).filter_by(autoload=True).first()
 
     if ev:
         return jsonify({"event": ev.code})
@@ -69,7 +69,7 @@ def active():
         return jsonify({"action": "redirect"})
 
     return jsonify({
-        "users": get_active(event),
+        "users": Active.get(event),
         "action": "update",
         "message": "Updated user data"
     })
@@ -85,7 +85,7 @@ def export():
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)
-    return excel.make_response_from_array(export(name, start, end, type_), "csv")
+    return excel.make_response_from_array(Stamps.export(name, start, end, type_), "csv")
 
 
 @qrbp.route("/export/subteam")

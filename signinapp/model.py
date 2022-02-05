@@ -137,8 +137,8 @@ class User(UserMixin, db.Model):
                     code=mk_hash(name), role_id=role.id, subteam=subteam,
                     approved=approved)
 
-    @classmethod
-    def get_canonical(cls, name) -> User | None:
+    @staticmethod
+    def get_canonical(name) -> User | None:
         ' Look up user by name '
         code = mk_hash(name)
         return User.query.filter_by(code=code).one_or_none()
@@ -186,6 +186,35 @@ class Event(db.Model):
                 (self.start < now) &
                 (now < self.end))
 
+    def scan(self, name) -> StampEvent:
+        if not self.is_active:
+            return
+
+        code = canonical_name(name)
+        if not code:
+            return
+
+        user = User.query.filter_by(code=code).one_or_none()
+        if not (user and user.approved):
+            return
+
+        active = Active.query.filter_by(event=self).join(
+            User).filter_by(code=code).one_or_none()
+        if not active:
+            active = Active(user=user, event=self)
+            db.session.add(active)
+            db.session.commit()
+            return StampEvent(user.human_readable(), "in")
+
+        stamp = Stamps(user=user, event=self, start=active.start)
+        db.session.delete(active)
+        db.session.add(stamp)
+        db.session.commit()
+        # Elapsed needs to be taken after committing to the DB
+        # otherwise it won't be populated
+        sign = f"out after {stamp.elapsed}"
+        return StampEvent(user.human_readable(), sign)
+
 
 class EventType(db.Model):
     __tablename__ = "event_types"
@@ -221,6 +250,13 @@ class Active(db.Model):
             "event": self.event.name
         }
 
+    @staticmethod
+    def get(event=None) -> list[dict]:
+        query = Active.query
+        if event:
+            query = query.join(Event).filter(Event.code == event)
+        return [active.as_dict() for active in query.all()]
+
 
 class Stamps(db.Model):
     __tablename__ = "stamps"
@@ -255,6 +291,41 @@ class Stamps(db.Model):
         return [self.user.human_readable(),
                 self.start, self.end,
                 self.elapsed, self.event.name]
+
+    @staticmethod
+    def get(name=None, event=None):
+        ' Get stamps matching a requirement '
+        query = Stamps.query.filter(Stamps.event.enabled == True)
+        if name:
+            code = canonical_name(name)
+            query = query.join(User).filter_by(code=code)
+        if event:
+            query = query.join(Event).filter_by(code=event)
+        return [s.as_dict() for s in query.all()]
+
+    @staticmethod
+    def export(name: str = None,
+               start: datetime = None,
+               end: datetime = None,
+               type_: str = None,
+               subteam: Subteam = None,
+               headers=True) -> list[list[str]]:
+        query = Stamps.query.filter(Stamps.event.enabled == True)
+        if name:
+            code = mk_hash(name)
+            query = query.join(User).filter_by(code=code)
+        if start:
+            query = query.filter(Stamps.start < start)
+        if end:
+            query = query.filter(Stamps.end > end)
+        if type_:
+            query = query.join(Event).filter_by(type_=type_)
+        if subteam:
+            query = query.join(User).filter_by(subteam=subteam)
+        result = [stamp.as_list() for stamp in query.all()]
+        if headers:
+            result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
+        return result
 
 
 class Role(db.Model):
@@ -308,73 +379,3 @@ class BadgeAward(db.Model):
 
     owner = relationship("User", uselist=False)
     badge = relationship("Badge", back_populates="awards")
-
-
-def get_stamps(name=None, event=None):
-    query = Stamps.query.filter(Stamps.event.enabled == True)
-    if name:
-        code = canonical_name(name)
-        query = query.join(User).filter_by(code=code)
-    if event:
-        query = query.join(Event).filter_by(code=event)
-    return [s.as_dict() for s in query.all()]
-
-
-def get_active(event=None) -> list[dict]:
-    query = Active.query
-    if event:
-        query = query.join(Event).filter(Event.code == event)
-    return [active.as_dict() for active in query.all()]
-
-
-def export(name: str = None,
-           start: datetime = None,
-           end: datetime = None,
-           type_: str = None,
-           subteam: Subteam = None,
-           headers=True) -> list[list[str]]:
-    query = Stamps.query.filter(Stamps.event.enabled == True)
-    if name:
-        code = mk_hash(name)
-        query = query.join(User).filter_by(code=code)
-    if start:
-        query = query.filter(Stamps.start < start)
-    if end:
-        query = query.filter(Stamps.end > end)
-    if type_:
-        query = query.join(Event).filter_by(type_=type_)
-    if subteam:
-        query = query.join(User).filter_by(subteam=subteam)
-    result = [stamp.as_list() for stamp in query.all()]
-    if headers:
-        result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
-    return result
-
-
-def scan(ev, name) -> StampEvent:
-    if not (ev and ev.is_active):
-        return
-
-    code = canonical_name(name)
-    if not code:
-        return
-
-    user = User.query.filter_by(code=code).one_or_none()
-    if not (user and user.approved):
-        return
-
-    active = Active.query.join(User).filter_by(code=code).one_or_none()
-    if not active:
-        active = Active(user=user, event=ev)
-        db.session.add(active)
-        db.session.commit()
-        return StampEvent(user.human_readable(), "in")
-
-    stamp = Stamps(user=user, event=ev, start=active.start)
-    db.session.delete(active)
-    db.session.add(stamp)
-    db.session.commit()
-    # Elapsed needs to be taken after committing to the DB
-    # otherwise it won't be populated
-    sign = f"out after {stamp.elapsed}"
-    return StampEvent(user.human_readable(), sign)
