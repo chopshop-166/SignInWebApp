@@ -16,32 +16,32 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
   <h1>{{user.name}}</h1>
   <h2>Role: {{user.role.name}}</h2>
   <h2>Subteam: {{user.subteam.name}}</h2>
-  <div class="d-flex flex-row justify-content-between">
-      <div class;="justify-content-start">
-        <h2>Time Recorded:</h2>
+  <div class="d-flex flex-wrap flex-row justify-content-between">
+    <div class="py-3">
+      <h2>Time Recorded:</h2>
+      <ul>
+        {%- for type_ in event_types -%}
+          <li>{{type_.name}}: {{user.total_stamps_for(type_)}}</li>
+        {%- endfor -%}
+      </ul>
+      <a class="btn btn-light" href="{{url_for('event.export')}}">Export</a>
+    </div>
+    <div id="badges" class="py-3">
+        <h2>Badges:</h2>
         <ul>
-          {%- for type_ in event_types -%}
-            <li>{{type_.name}}: {{user.total_stamps_for(type_)}}</li>
-          {%- endfor -%}
+          {% if user.badges %}
+          {% for award in user.badges|sort(attribute="name") %}
+            <li><a href="{{url_for('user.badge', badge_id=award.badge_id)}}">{{show_badge(award.badge)}}</a></li>
+          {% endfor %}
+          {% else %}
+          <li>None yet!</li>
+          {% endif %}
         </ul>
-        <a class="link-light" href="{{url_for('event.export')}}">Export</a>
       </div>
-      <div id="badges">
-          <h2>Badges:</h2>
-          <ul>
-            {% if user.badges %}
-            {% for award in user.badges|sort(attribute="name") %}
-              <li><a href="{{url_for('user.badge', badge_id=award.badge_id)}}">{{show_badge(award.badge)}}</a></li>
-            {% endfor %}
-            {% else %}
-            <li>None yet!</li>
-            {% endif %}
-          </ul>
-        </div>
-      <div>
-        <h2>QR Code:</h2>
-        <div class="border border-5" id="qrPlaceholder"></div>
-      </div>
+    <div class="py-3">
+      <h2>QR Code:</h2>
+      <div class="border border-5" id="qrPlaceholder"></div>
+    </div>
   </div>
 </div>
 {% endblock %}
