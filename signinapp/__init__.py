@@ -4,15 +4,15 @@ import datetime
 import os
 
 import flask_excel as excel
-from flask import Flask
+from flask import Flask, render_template
 from flask_bootstrap import Bootstrap5
 
 from .admin import admin
 from .auth import auth, login_manager
+from .event import eventbp
 from .model import Badge, Event, EventType, Role, Subteam, User, db
 from .team import team
 from .user import user
-from .views import qrbp
 
 app = Flask(__name__)
 
@@ -34,14 +34,20 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-app.register_blueprint(qrbp)
-app.register_blueprint(auth)
 app.register_blueprint(admin)
+app.register_blueprint(auth)
+app.register_blueprint(eventbp)
 app.register_blueprint(team)
 app.register_blueprint(user)
 
 login_manager.login_view = "auth.login"
 login_manager.init_app(app)
+
+
+@app.route("/")
+def index():
+    events = Event.query.filter_by(is_active=True).all()
+    return render_template("index.html.jinja2", events=events)
 
 def init_default_db():
 

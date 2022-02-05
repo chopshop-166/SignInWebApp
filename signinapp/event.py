@@ -9,16 +9,10 @@ from flask_login import current_user, login_required
 
 from .model import Active, Event, EventType, Stamps
 
-qrbp = Blueprint("qr", __name__)
+eventbp = Blueprint("event", __name__)
 
 
-@qrbp.route("/")
-def index():
-    events = Event.query.filter(Event.is_active).all()
-    return render_template("index.html.jinja2", events=events)
-
-
-@qrbp.route("/event")
+@eventbp.route("/event")
 def event():
     event_code = request.args.get("event_code")
     if not event_code:
@@ -26,7 +20,7 @@ def event():
     return render_template("event.html.jinja2", event_code=event_code)
 
 
-@qrbp.route("/scan", methods=['POST'])
+@eventbp.route("/scan", methods=['POST'])
 def scan():
     event = request.values['event']
     name = request.values['name']
@@ -48,7 +42,7 @@ def scan():
         return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
 
 
-@qrbp.route("/autoevent")
+@eventbp.route("/autoevent")
 def autoevent():
     ev = Event.query.filter_by(is_active=True).join(
         EventType).filter_by(autoload=True).first()
@@ -59,7 +53,7 @@ def autoevent():
     return jsonify({"event": ""})
 
 
-@qrbp.route("/active")
+@eventbp.route("/active")
 def active():
     event = request.args.get("event", None)
 
@@ -75,7 +69,7 @@ def active():
     })
 
 
-@qrbp.route("/export")
+@eventbp.route("/export")
 @login_required
 def export():
     if current_user.role.admin:
@@ -88,7 +82,7 @@ def export():
     return excel.make_response_from_array(Stamps.export(name, start, end, type_), "csv")
 
 
-@qrbp.route("/export/subteam")
+@eventbp.route("/export/subteam")
 @login_required
 def export_subteam():
     if not current_user.can_see_subteam or not current_user.subteam_id:

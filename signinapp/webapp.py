@@ -5,7 +5,7 @@ from flask.cli import with_appcontext
 # For application discovery by the 'flask' command.
 from . import app, init_default_db
 # For import side-effects of setting up routes.
-from . import auth, model, team, user, views
+from . import auth, event, model, team, user
 from .model import db
 
 
