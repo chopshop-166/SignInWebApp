@@ -72,7 +72,7 @@ class User(UserMixin, db.Model):
     @hybrid_property
     def is_active(self) -> bool:
         ' Required by Flask-Login '
-        return self.active and self.approved
+        return self.active & self.approved
 
     @hybrid_property
     def total_time(self) -> timedelta:
@@ -82,7 +82,7 @@ class User(UserMixin, db.Model):
     @hybrid_property
     def badges(self) -> list[BadgeAward]:
         ' The badges associated with this user '
-        return [award for award in BadgeAward.query.filter_by(user_id=self.id).all()]
+        return BadgeAward.query.filter_by(user_id=self.id).all()
 
     @hybrid_method
     def has_badge(self, badge_id: int) -> bool:
@@ -110,8 +110,7 @@ class User(UserMixin, db.Model):
     def stamps_for(self, type_: EventType):
         ' Get all stamps for an event type '
         return [s for s in self.stamps
-                if s.event.type_ == type_
-                and s.event.enabled]
+                if (s.event.type_ == type_) & s.event.enabled]
 
     @hybrid_method
     def total_stamps_for(self, type_: EventType) -> timedelta:
@@ -129,8 +128,8 @@ class User(UserMixin, db.Model):
         ' Human readable string for display on a web page '
         return f"{'*' if self.role.mentor else ''}{self.name}"
 
-    @classmethod
-    def make(cls, name: str, password: str, role: Role,
+    @staticmethod
+    def make(name: str, password: str, role: Role,
              subteam: Subteam = None, approved=False) -> User:
         ' Make a user, with password and hash '
         return User(name=name, password=generate_password_hash(password),
@@ -290,17 +289,18 @@ class Stamps(db.Model):
         ' Return a list for sending to the web page '
         return [self.user.human_readable(),
                 self.start, self.end,
-                self.elapsed, self.event.name]
+                self.elapsed,
+                self.event.name, self.event.type_.name]
 
     @staticmethod
     def get(name=None, event=None):
         ' Get stamps matching a requirement '
-        query = Stamps.query.filter(Stamps.event.enabled == True)
+        query = Stamps.query.join(Event).filter_by(enabled=True)
+        if event:
+            query = query.filter_by(code=event)
         if name:
             code = canonical_name(name)
             query = query.join(User).filter_by(code=code)
-        if event:
-            query = query.join(Event).filter_by(code=event)
         return [s.as_dict() for s in query.all()]
 
     @staticmethod
@@ -310,7 +310,7 @@ class Stamps(db.Model):
                type_: str = None,
                subteam: Subteam = None,
                headers=True) -> list[list[str]]:
-        query = Stamps.query.filter(Stamps.event.enabled == True)
+        query = Stamps.query.join(Event).filter_by(enabled=True)
         if name:
             code = mk_hash(name)
             query = query.join(User).filter_by(code=code)
@@ -324,7 +324,7 @@ class Stamps(db.Model):
             query = query.join(User).filter_by(subteam=subteam)
         result = [stamp.as_list() for stamp in query.all()]
         if headers:
-            result = [["Name", "Start", "End", "Elapsed", "Event"]] + result
+            result = [["Name", "Start", "End", "Elapsed", "Event", "Event Type"]] + result
         return result
 
 
