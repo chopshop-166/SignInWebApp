@@ -5,6 +5,7 @@ import os
 
 import flask_excel as excel
 from flask import Flask, render_template
+from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 
 from .admin import admin
@@ -15,6 +16,13 @@ from .team import team
 from .user import user
 
 app = Flask(__name__)
+
+scss = Bundle('custom.scss',
+              filters='libsass,cssmin',
+              depends="scss/*.scss",
+              output='custom.generated.css')
+assets = Environment(app)
+assets.register('custom_css', scss)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "1234")
 
