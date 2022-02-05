@@ -12,13 +12,13 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
 {% endblock %}
 
 {% block content %}
-<div class="container table table-responsive">
+<div class="container">
   <h1>{{user.name}}</h1>
-  <div class="row">
-    <div class="col">
-      <h2>Role: {{user.role.name}}</h2>
-      <h2>Subteam: {{user.subteam.name}}</h2>
-      <div>
+  <h2>Role: {{user.role.name}}</h2>
+  <h2>Subteam: {{user.subteam.name}}</h2>
+  <div class="d-flex flex-row justify-content-between">
+      <div class;="justify-content-start">
+        <h2>Time Recorded:</h2>
         <ul>
           {%- for type_ in event_types -%}
             <li>{{type_.name}}: {{user.total_stamps_for(type_)}}</li>
@@ -26,8 +26,6 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
         </ul>
         <a class="link-light" href="{{url_for('event.export')}}">Export</a>
       </div>
-    </div>
-    <div class="col">
       <div id="badges">
           <h2>Badges:</h2>
           <ul>
@@ -40,11 +38,10 @@ new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
             {% endif %}
           </ul>
         </div>
-    </div>
-    <div class="col">
-      <h2>QR Code:</h2>
-      <div id="qrPlaceholder"></div>
-    </div>
+      <div>
+        <h2>QR Code:</h2>
+        <div class="border border-5" id="qrPlaceholder"></div>
+      </div>
   </div>
 </div>
 {% endblock %}
