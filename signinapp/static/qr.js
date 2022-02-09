@@ -36,10 +36,10 @@ function populateUsers(userdata) {
 }
 
 function handleResponse(json) {
-    if(json["action"] === "update") {
+    if (json["action"] === "update") {
         populateUsers(json["users"])
         toast(json["message"])
-    } else if(json["action"] === "redirect") {
+    } else if (json["action"] === "redirect") {
         window.location.replace("/")
     }
 }
@@ -84,3 +84,8 @@ html5QrcodeScanner.render(onScanSuccess);
 
 setInterval(updateUserData, 300000)
 updateUserData()
+
+{
+    var element = document.getElementById('reader')
+    element.style.removeProperty('border')
+}

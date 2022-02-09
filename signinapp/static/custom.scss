@@ -27,4 +27,12 @@ $border-widths: (
     min-height: 80vH;
 }
 
+#reader button {
+    @extend .btn, .btn-primary;
+}
+
+#reader a {
+    @extend .link-light;
+}
+
 @import "scss/bootstrap.scss";
