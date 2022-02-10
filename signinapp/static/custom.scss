@@ -1,12 +1,14 @@
 //$primary: #2525db;
 $primary: #0f2b8e;
+$secondary: #1a46e4;
 $body-bg: #242526;
 $body-color: #e4e6eb;
 
 $border-radius-lg: 1rem;
 
 $border-widths: (
-  5: 10px
+    4: 3px,
+    5: 10px
 );
 
 .login {
