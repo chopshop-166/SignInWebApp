@@ -25,7 +25,6 @@ def subteams():
 @admin_required
 def new_subteam():
     form = SubteamForm()
-
     if form.validate_on_submit():
         st = Subteam(name=form.name.data)
         db.session.add(st)
@@ -39,18 +38,16 @@ def new_subteam():
 @admin.route("/admin/subteams/edit", methods=["GET", "POST"])
 @admin_required
 def edit_subteam():
-    form = SubteamForm()
     st = Subteam.query.get(request.args["st_id"])
-
     if not st:
         flash("Invalid subteam ID")
         return redirect(url_for("admin.subteams"))
 
+    form = SubteamForm(obj=st)
     if form.validate_on_submit():
-        st.name = form.name.data
+        form.populate_obj(st)
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
-    form.name.process_data(st.name)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit Subteam {st.name} - Chop Shop Sign In")

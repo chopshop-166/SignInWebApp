@@ -66,30 +66,25 @@ def new_user():
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
-    form = UserForm()
-    form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
-                                          for s in Subteam.query.all()]
     user = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("admin.users"))
 
+    form = UserForm(obj=user)
+    form.role.choices = [(r.id, r.name) for r in Role.query.all()]
+    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
+                                          for s in Subteam.query.all()]
+
     if form.validate_on_submit():
+        form.populate_obj(user)
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
-        user.role_id = form.role.data
         user.subteam_id = form.subteam.data or None
-        user.approved = form.approved.data
-        user.active = form.active.data
         db.session.commit()
         return redirect(url_for("admin.users"))
 
-    form.name.process_data(user.name)
-    form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
-    form.approved.process_data(user.approved)
-    form.active.process_data(user.active)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit User {user.name} - Chop Shop Sign In")
 

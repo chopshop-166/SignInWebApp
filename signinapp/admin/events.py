@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from dateutil.rrule import WEEKLY, rrule
-from flask import redirect, request, url_for
+from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import (BooleanField, DateField, DateTimeLocalField, SelectField,
@@ -83,8 +83,8 @@ def bulk_events():
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
 
     if form.validate_on_submit():
-        start_time = datetime.combine(
-            form.start_day.data, form.start_time.data)
+        start_time = datetime.combine(form.start_day.data,
+                                      form.start_time.data)
         end_time = datetime.combine(form.end_day.data, form.end_time.data)
         days = rrule(WEEKLY,
                      byweekday=[WEEKDAYS.index(d) for d in form.days.data]
@@ -109,19 +109,12 @@ def bulk_events():
 @admin.route("/admin/event/new", methods=["GET", "POST"])
 @admin_required
 def new_event():
-
     form = EventForm()
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
     if form.validate_on_submit():
-        ev = Event(
-            name=form.name.data,
-            description=form.description.data,
-            start=form.start.data,
-            end=form.end.data,
-            code=form.code.data,
-            type_=EventType.query.get(form.type_.data),
-            enabled=form.enabled.data
-        )
+        ev = Event()
+        form.populate_obj(ev)
+        ev.type_=EventType.query.get(form.type_.data)
         db.session.add(ev)
         db.session.commit()
         return redirect(url_for("admin.events"))
@@ -134,29 +127,19 @@ def new_event():
 @admin.route("/admin/event/edit", methods=["GET", "POST"])
 @admin_required
 def edit_event():
-    evid = request.args["event_id"]
+    event = Event.query.get(request.args["event_id"])
+    if not event:
+        flash("Event does not exist")
+        return redirect(url_for("admin.events"))
 
-    form = EventForm()
+    form = EventForm(obj=event)
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
-    event = Event.query.get(evid)
-
     if form.validate_on_submit():
-        event.name = form.name.data
-        event.description = form.description.data
-        event.start = form.start.data
-        event.end = form.end.data
-        event.code = form.code.data
+        form.populate_obj(event)
         event.type_ = EventType.query.get(form.type_.data)
-        event.enabled = form.enabled.data
         db.session.commit()
         return redirect(url_for("admin.events"))
 
-    form.name.process_data(event.name)
-    form.description.process_data(event.description)
-    form.code.process_data(event.code)
-    form.start.process_data(event.start)
-    form.end.process_data(event.end)
     form.type_.process_data(event.type_id)
-    form.enabled.process_data(event.enabled)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit Event {event.name} - Chop Shop Sign In")

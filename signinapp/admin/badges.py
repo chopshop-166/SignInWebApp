@@ -40,10 +40,8 @@ def new_badge():
 
     form = BadgeForm()
     if form.validate_on_submit():
-        badge = Badge(name=form.name.data,
-                      description=form.description.data,
-                      icon=form.icon.data,
-                      color=form.color.data)
+        badge = Badge()
+        form.populate_obj(badge)
         db.session.add(badge)
         db.session.commit()
         return redirect(url_for("admin.all_badges"))
@@ -56,26 +54,19 @@ def new_badge():
 @admin_required
 def edit_badge():
     badge_id = request.args["badge_id"]
-
-    form = BadgeForm()
     badge = Badge.query.get(badge_id)
 
     if not badge:
         flash("Badge does not exist")
         return redirect(url_for("admin.all_badges"))
 
+    form = BadgeForm(obj=badge)
+
     if form.validate_on_submit():
-        badge.name = form.name.data
-        badge.description = form.description.data
-        badge.icon = form.icon.data
-        badge.color = form.color.data
+        form.populate_obj(badge)
         db.session.commit()
         return redirect(url_for("admin.all_badges"))
 
-    form.name.process_data(badge.name)
-    form.description.process_data(badge.description)
-    form.icon.process_data(badge.icon)
-    form.color.process_data(badge.color)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit Badge {badge.name} - Chop Shop Sign In")
 
@@ -85,17 +76,17 @@ def edit_badge():
 def award_badge():
     badge_id = int(request.args["badge_id"])
 
-    form = BadgeAwardForm()
     people = User.query.filter_by(active=True).all()
-    form.users.choices = [p.name for p in people]
     badge = Badge.query.get(badge_id)
 
     if not badge:
         flash("Badge does not exist")
         return redirect(url_for("admin.all_badges"))
+        
+    form = BadgeAwardForm()
+    form.users.choices = [p.name for p in people]
 
     if form.validate_on_submit():
-        print(form.users.data)
         for user in people:
             if user.name in form.users.data:
                 user.award_badge(badge_id)
