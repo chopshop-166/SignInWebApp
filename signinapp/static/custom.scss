@@ -35,4 +35,10 @@ $border-widths: (
     @extend .link-light;
 }
 
+.inlineform {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
 @import "scss/bootstrap.scss";

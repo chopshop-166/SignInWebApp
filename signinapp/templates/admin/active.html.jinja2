@@ -9,7 +9,6 @@
     <thead>
       <tr>
         <th scope="col">User</th>
-        <th scope="col">ID</th>
         <th scope="col">Event</th>
         <th scope="col">Start</th>
         <th scope="col">Controls</th>
@@ -19,17 +18,16 @@
       {%- for ac in active -%}
       <tr>
         <th>{{ac.user.name}}</th>
-        <td>{{ac.id}}</td>
         <td>{{ac.event.name}}</td>
         <td>{{ac.start_local}}</td>
         <td>
-          <form id="signout{{ac.id}}" method="POST">
+          <form class="inlineform" id="signout{{ac.id}}" method="POST">
             <input type="hidden" value="{{ac.id}}" name="active_id">
-            <button class="btn btn-dark" type="submit">Sign Out</button></input>
+            <button class="btn btn-dark" type="submit">Sign Out</button>
           </form>
-          <form action="{{url_for('admin.active_delete')}}" id="drop{{ac.id}}" method="POST">
+          <form class="inlineform" action="{{url_for('admin.active_delete')}}" id="drop{{ac.id}}" method="POST">
             <input type="hidden" value="{{ac.id}}" name="active_id">
-            <button class="btn btn-danger" type="submit">Drop</button></input>
+            <button class="btn btn-danger" type="submit">Drop</button>
           </form>
         </td>
       </tr>
