@@ -30,16 +30,9 @@ def roles():
 @admin_required
 def new_role():
     form = RoleForm()
-
     if form.validate_on_submit():
-        r = Role(
-            name=form.name.data,
-            admin=form.admin.data,
-            mentor=form.mentor.data,
-            can_display=form.can_display.data,
-            autoload=form.autoload.data,
-            can_see_subteam=form.can_see_subteam.data
-        )
+        r = Role()
+        form.populate_obj(r)
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin.subteams"))
@@ -51,28 +44,16 @@ def new_role():
 @admin.route("/admin/roles/edit", methods=["GET", "POST"])
 @admin_required
 def edit_role():
-    form = RoleForm()
     r = Role.query.get(request.args["role_id"])
-
     if not r:
         flash("Invalid role ID")
         return redirect(url_for("admin.roles"))
 
+    form = RoleForm(obj=r)
     if form.validate_on_submit():
-        r.name = form.name.data
-        r.admin = form.admin.data
-        r.mentor = form.mentor.data
-        r.can_display = form.can_display.data
-        r.autoload = form.autoload.data
-        r.can_see_subteam = form.can_see_subteam.data
+        form.populate_obj(r)
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
-    form.name.process_data(r.name)
-    form.admin.process_data(r.admin)
-    form.mentor.process_data(r.mentor)
-    form.can_display.process_data(r.can_display)
-    form.autoload.process_data(r.autoload)
-    form.can_see_subteam.process_data(r.can_see_subteam)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit Role {r.name} - Chop Shop Sign In")

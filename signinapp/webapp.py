@@ -6,7 +6,6 @@ from flask.cli import with_appcontext
 from . import app, init_default_db
 # For import side-effects of setting up routes.
 from . import auth, event, model, team, user
-from .model import db
 
 
 @click.command('init-db')
@@ -14,7 +13,7 @@ from .model import db
 def init_db_command():
     """Clear the existing data and create new tables."""
 
-    db.create_all()
+    model.db.create_all()
     init_default_db()
 
     click.echo('Initialized the database.')

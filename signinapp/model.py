@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import annotations
 
 import base64
@@ -149,7 +147,7 @@ class Event(db.Model):
     # User-visible name
     name = db.Column(db.String)
     # Description of the event
-    description = db.Column(db.String)
+    description = db.Column(db.String, default="")
     # Unique code for tracking
     code = db.Column(db.String, unique=True)
     # Location the event takes place at

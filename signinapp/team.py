@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 from flask import Blueprint, request
 from flask.templating import render_template
 from flask_login import login_required
