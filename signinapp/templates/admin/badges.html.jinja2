@@ -3,12 +3,13 @@
 {% block title %}Badge Admin - Chop Shop Sign In{%endblock%}
 
 {% block content %}
-<div class="pt-3 container table-responsive">
+<div class="pt-3 container">
   <div class="d-flex flex-row align-items-center justify-content-between">
     <h1>Available Badges!</h1>
     <a href="{{url_for('admin.new_badge')}}"><button class="btn btn-primary">New Badge</button></a>
   </div>
   {{- render_messages() -}}
+  <div class="table-responsive">
   <table id="badges" class="table table-striped table-hover table-dark">
     <thead>
       <tr>
@@ -25,12 +26,13 @@
         <td>{{badge.id}}</td>
         <td>{{badge.description}}</td>
         <td>
-          <a class="link-light" href="{{url_for('admin.edit_badge', badge_id=badge.id)}}">Edit</a>
-          <a class="link-light" href="{{url_for('admin.award_badge', badge_id=badge.id)}}">Award</a>
+          <a class="btn btn-secondary" href="{{url_for('admin.edit_badge', badge_id=badge.id)}}" role="button">Edit</a>
+          <a class="btn btn-secondary" href="{{url_for('admin.award_badge', badge_id=badge.id)}}" role="button">Award</a>
         </td>
       </tr>
       {%- endfor -%}
     </tbody>
   </table>
+  </div>
 </div>
 {% endblock %}

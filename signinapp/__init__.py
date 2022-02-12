@@ -57,6 +57,7 @@ def index():
     events = Event.query.filter_by(is_active=True).all()
     return render_template("index.html.jinja2", events=events)
 
+
 def init_default_db():
 
     ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
@@ -98,6 +99,13 @@ if app.config["DEBUG"]:
         training = Event(
             name="Training",
             code="5678",
+            start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
+            end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
+            type_=EventType.query.filter_by(name="Training").one()
+        )
+        notTraining = Event(
+            name="Not Training",
+            code="5679",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
             type_=EventType.query.filter_by(name="Training").one()

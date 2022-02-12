@@ -1,44 +1,49 @@
 {% extends "base.html.jinja2" %}
-
-{% block title %}Event Admin - Chop Shop Sign In{%endblock%}
-
+{% block title %}Event Admin - Chop Shop Sign In{% endblock %}
 {% block content %}
-<div class="pt-3 container table-responsive">
-  <div class="d-flex flex-row align-items-center justify-content-between">
-  <h1>Events</h1>
-    <div>
-      <a href="{{url_for('admin.new_event')}}"><button class="btn btn-primary">New Event</button></a>
-      <a href="{{url_for('admin.bulk_events')}}"><button class="btn btn-primary">Bulk Add Events</button></a>
+  <div class="pt-3 container">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>Events</h1>
+      <div>
+        <a href="{{ url_for('admin.new_event')}}">
+          <button class="btn btn-primary">New Event</button>
+        </a>
+        <a href="{{ url_for('admin.bulk_events')}}">
+          <button class="btn btn-primary">Bulk Add Events</button>
+        </a>
+      </div>
+    </div>
+    {{- render_messages() -}}
+    <div class="table-responsive">
+      <table id="events" class="table table-striped table-hover table-dark">
+        <thead>
+          <tr>
+            <th scope="col">Event</th>
+            <th scope="col">Description</th>
+            <th scope="col">Code</th>
+            <th scope="col">Location</th>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col">Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for event in events|reverse -%}
+            <tr>
+              <th>
+                <a class="link-light"
+                   href="{{ url_for('admin.edit_event', event_id=event.id)}}">{{ event.name }}</a>
+              </th>
+              <td>{{ event.description }}</td>
+              <td>{{ event.code }}</td>
+              <td>{{ event.location }}</td>
+              <td>{{ event.start_local }}</td>
+              <td>{{ event.end_local }}</td>
+              <td>{{ event.type_.name }}</td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
     </div>
   </div>
-  {{- render_messages() -}}
-  <table id="events" class="table table-striped table-hover table-dark">
-    <thead>
-      <tr>
-        <th scope="col">Event</th>
-        <th scope="col">ID</th>
-        <th scope="col">Description</th>
-        <th scope="col">Code</th>
-        <th scope="col">Location</th>
-        <th scope="col">Start</th>
-        <th scope="col">End</th>
-        <th scope="col">Type</th>
-      </tr>
-    </thead>
-    <tbody>
-      {%- for event in events|reverse -%}
-      <tr>
-        <th><a class="link-light" href="{{url_for('admin.edit_event', event_id=event.id)}}">{{event.name}}</a></th>
-        <td>{{event.id}}</td>
-        <td>{{event.description}}</td>
-        <td>{{event.code}}</td>
-        <td>{{event.location}}</td>
-        <td>{{event.start_local}}</td>
-        <td>{{event.end_local}}</td>
-        <td>{{event.type_.name}}</td>
-      </tr>
-      {%- endfor -%}
-    </tbody>
-  </table>
-</div>
 {% endblock %}

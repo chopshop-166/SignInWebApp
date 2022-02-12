@@ -6,7 +6,7 @@
   {{ render_static('js', 'qr.js') }}
 {% endblock %}
 {% block content %}
-  <script type="text/javascript">const event_code = {{ event_code }}</script>
+  <script type="text/javascript">const event_code = "{{ event_code }}"</script>
   <div class="container pt-3">
     <div class="custom-row">
       <div class="content-secondary">
