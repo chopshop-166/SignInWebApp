@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from flask import Blueprint, flash, redirect, url_for
 from flask.templating import render_template
 from flask_login import (LoginManager, current_user, login_required,
