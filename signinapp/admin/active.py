@@ -1,7 +1,7 @@
 from flask import redirect, request, url_for
 from flask.templating import render_template
 
-from ..model import Active, Stamps, db
+from ..model import Active, Event, Stamps, db
 from ..util import admin_required
 from .util import admin
 
@@ -30,5 +30,21 @@ def active_post():
 def active_delete():
     active_event = Active.query.get(request.form["active_id"])
     db.session.delete(active_event)
+    db.session.commit()
+    return redirect(url_for("admin.active"))
+
+
+@admin.route("/admin/active/deleteexpired")
+@admin_required
+def active_deleteexpired():
+    Active.query.join(Event).filter(Event.is_active).delete()
+    db.session.commit()
+    return redirect(url_for("admin.active"))
+
+
+@admin.route("/admin/active/deleteall")
+@admin_required
+def active_deleteall():
+    Active.query.delete()
     db.session.commit()
     return redirect(url_for("admin.active"))

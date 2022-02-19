@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import and_, func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
@@ -183,6 +183,13 @@ class Event(db.Model):
                 (self.start < now) &
                 (now < self.end))
 
+    @is_active.expression
+    def is_active(cls):
+        ' Usable in queries '
+        return and_(cls.enabled,
+                    (cls.start < func.now()),
+                    (func.now() < cls.end))
+
     def scan(self, name) -> StampEvent:
         if not self.is_active:
             return
@@ -330,16 +337,30 @@ class Role(db.Model):
     __tablename__ = "account_types"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
     admin = db.Column(db.Boolean, nullable=False, default=False)
     mentor = db.Column(db.Boolean, nullable=False, default=False)
     can_display = db.Column(db.Boolean, nullable=False, default=False)
     autoload = db.Column(db.Boolean, nullable=False, default=False)
     can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
+    default_role = db.Column(db.Boolean, nullable=False, default=False)
 
     @classmethod
     def from_name(cls, name) -> Role:
         ' Get a role by name '
         return cls.query.filter_by(name=name).one_or_none()
+
+    @classmethod
+    def get_default(cls) -> Role:
+        'Get the default role'
+        return cls.query.filter_by(default_role=True).one_or_none()
+
+    @classmethod
+    def set_default(cls, def_role):
+        'Set the default role'
+        for role in cls.query.all():
+            role.default_role = (role == def_role)
+        db.session.commit()
 
 
 class Subteam(db.Model):
