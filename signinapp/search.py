@@ -1,11 +1,11 @@
 from flask import Blueprint
 from flask.templating import render_template
-from flask_login import current_user, login_required
+from flask_login import login_required
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, SelectField, SubmitField
-from wtforms.validators import DataRequired, EqualTo
 
-from .model import Badge, BadgeAward, Subteam, User
+from .model import Badge, EventType, Role, Subteam, User
+from .util import MultiCheckboxField
 
 search = Blueprint("search", __name__)
 
@@ -13,7 +13,13 @@ search = Blueprint("search", __name__)
 class BadgeSearchForm(FlaskForm):
     badge = SelectField()
     subteam = SelectField()
-    required = BooleanField()
+    required = BooleanField(label="Has Badge")
+    submit = SubmitField()
+
+
+class HoursForm(FlaskForm):
+    role = MultiCheckboxField()
+    category = SelectField()
     submit = SubmitField()
 
 
@@ -39,3 +45,22 @@ def badges():
         return render_template("searchform.html.jinja2",
                                form=form, results=results)
     return render_template("searchform.html.jinja2", form=form, results=None)
+
+
+@search.route("/search/hours", methods=["GET", "POST"])
+@login_required
+def hours():
+    form = HoursForm()
+    form.role.choices = [r.name for r in Role.query.all()]
+    form.category.choices = [(r.id, r.name) for r in EventType.query.all()]
+
+    if form.validate_on_submit():
+        results = User.query.all()
+        event_type = EventType.query.get(form.category.data)
+        roles = [Role.from_name(r).id for r in form.role.data]
+        results = [(u.name, u.total_stamps_for(event_type))
+                   for u in results if u.role_id in roles]
+        return render_template("hourssearchform.html.jinja2",
+                               form=form, results=results)
+
+    return render_template("hourssearchform.html.jinja2", form=form, results=None)

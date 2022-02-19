@@ -5,7 +5,7 @@ from wtforms import SelectMultipleField, StringField, SubmitField, widgets
 from wtforms.validators import DataRequired
 
 from ..model import Badge, User, db
-from ..util import admin_required
+from ..util import admin_required, MultiCheckboxField
 from .util import admin
 
 
@@ -15,11 +15,6 @@ class BadgeForm(FlaskForm):
     icon = StringField()
     color = StringField("Icon Color")
     submit = SubmitField()
-
-
-class MultiCheckboxField(SelectMultipleField):
-    widget = widgets.ListWidget(prefix_label=False)
-    option_widget = widgets.CheckboxInput()
 
 
 class BadgeAwardForm(FlaskForm):

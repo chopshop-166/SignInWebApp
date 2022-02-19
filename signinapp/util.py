@@ -3,6 +3,12 @@ from functools import wraps
 from flask import current_app, request
 from flask_login import current_user
 from flask_login.config import EXEMPT_METHODS
+from wtforms import SelectMultipleField, widgets
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
 
 
 def permission_required(perm):
