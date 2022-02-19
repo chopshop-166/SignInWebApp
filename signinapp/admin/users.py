@@ -85,7 +85,6 @@ def edit_user():
         db.session.commit()
         return redirect(url_for("admin.users"))
 
-    form.name.process_data(user.name)
     form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
     form.approved.process_data(user.approved)

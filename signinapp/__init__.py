@@ -63,7 +63,7 @@ def init_default_db():
     MENTOR = Role(name="mentor", mentor=True, can_display=True)
     DISPLAY = Role(name="display", can_display=True, autoload=True)
     LEAD = Role(name="lead", can_see_subteam=True)
-    STUDENT = Role(name="student")
+    STUDENT = Role(name="student", default_role=True)
 
     TRAINING = EventType(
         name="Training", description="Training Session", autoload=True)

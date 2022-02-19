@@ -57,17 +57,19 @@ def register():
         name = form.name.data
         password = form.password.data
 
-        # if this returns a user, then the email already exists in database
+        # if this returns a user, then the user already exists in database
         user = User.get_canonical(name)
 
-        # if a user is found, we want to redirect back to signup page so user can try again
+        # if a user is found, we want to redirect back to signup page
+        # so the user can try again
         if user:
             flash("User already exists")
             return redirect(url_for('auth.register'))
 
-        # Create a new user with the form data. Hash the password so the plaintext version isn't saved.
+        # Create a new user with the form data.
+        # Hash the password so the plaintext version isn't saved.
         new_user = User.make(name=name, password=password,
-                             role=Role.from_name("student"))
+                             role=Role.get_default())
 
         # add the new user to the database
         db.session.add(new_user)
