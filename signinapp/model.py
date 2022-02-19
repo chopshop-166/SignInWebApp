@@ -99,9 +99,7 @@ class User(UserMixin, db.Model):
     def remove_badge(self, badge_id: int):
         ' Remove a badge from a user '
         if self.has_badge(badge_id):
-            award = BadgeAward.query.filter_by(
-                badge_id=badge_id, owner=self).one_or_none()
-            db.session.delete(award)
+            BadgeAward.query.filter_by(badge_id=badge_id, owner=self).delete()
             db.session.commit()
 
     @hybrid_method
