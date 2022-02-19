@@ -34,6 +34,16 @@
                 {%- endif -%}
                 <ul class="navbar-nav ms-auto">
                     {%- if current_user.is_authenticated -%}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarSearchDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Search
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
+                            <li><a class="dropdown-item" href="{{url_for('search.badges')}}">Badges</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('search.hours')}}">Hours</a></li>
+                        </ul>
+                    </li>
                     {%- if current_user.role.admin -%}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarAdminDropdown" role="button"
