@@ -1,11 +1,18 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_form, render_messages %}
 
-{% block title %}{{title}}{%endblock%}
+{% block title %}Search - Chop Shop Sign In{%endblock%}
 
 {% block content %}
 <div class="container">
   {{ render_messages() }}
+  {%- if results -%}
+  <ul>
+    {%- for result in results -%}
+    <li>{{result.name}}</li>
+    {%- endfor -%}
+  </ul>
+  {%- endif -%}
   {{ render_form(form) }}
 </div>
 {% endblock %}

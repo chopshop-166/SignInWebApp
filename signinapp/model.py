@@ -387,6 +387,11 @@ class Badge(db.Model):
 
     awards = relationship("BadgeAward", back_populates="badge")
 
+    @classmethod
+    def from_name(cls, name) -> Subteam:
+        ' Get a badge by name '
+        return cls.query.filter_by(name=name).one_or_none()
+
 
 class BadgeAward(db.Model):
     ' Represents a pairing of user to badge, with received date '
