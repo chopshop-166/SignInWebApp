@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import and_, func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
@@ -184,6 +184,13 @@ class Event(db.Model):
         return (self.enabled &
                 (self.start < now) &
                 (now < self.end))
+
+    @is_active.expression
+    def is_active(cls):
+        ' Usable in queries '
+        return and_(cls.enabled,
+                    (cls.start < func.now()),
+                    (func.now() < cls.end))
 
     def scan(self, name) -> StampEvent:
         if not self.is_active:
