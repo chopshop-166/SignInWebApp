@@ -1,20 +1,45 @@
 {% extends "base.html.jinja2" %}
+{% from 'bootstrap5/utils.html' import render_static, render_icon %}
+{% block scripts %}
+  {{ super() }}
+  {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
+  <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");</script>
+{% endblock %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% block content %}
-  <div class="container">
-    {{ render_messages() }}
-    {% if current_user.is_authenticated and current_user.role.can_display %}
-      <h1 class="pt-3 pb-1">Available Events</h1>
-      <div class="d-grid gap-1 rounded-3">
-        {% if events %}
-          {% for event in events %}
-            <a class="btn btn-info text-start"
-               href="{{ url_for('event.event', event_code=event.code)}}"
-               role="button">{{ event.name }}</a>
-          {% endfor %}
-        {% else %}
-          <li>None</li>
-        {% endif %}
+  <div class="container pt-3">
+    {% if current_user.is_authenticated %}
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="container bg-secondary rounded-3">
+            {# justify-content-between to get QR take up only the space it needs #}
+            <div class="d-flex justify-content-center pt-3">
+              <div class="border border-5" id="qrPlaceholder"></div>
+            </div>
+            <h1 class="d-flex justify-content-center pt-3">{{ user.name }}</h1>
+            <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.subteam }}</h2>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="bg-primary rounded-3 py-3">
+            <ul>
+              {% if current_user.role.can_display %}
+                <h1 class="pb-1">Available Events</h1>
+                <div class="d-flex gap-1 rounded-3">
+                  {% if events %}
+                    {% for event in events %}
+                      <a class="btn btn-secondary"
+                         href="{{ url_for('event.event', event_code=event.code)}}"
+                         role="button">{{ event.name }}</a>
+                    {% endfor %}
+                  {% else %}
+                    <li>None</li>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
       </div>
     {% endif %}
   </div>
