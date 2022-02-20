@@ -84,6 +84,7 @@ def edit_user():
         db.session.commit()
         return redirect(url_for("admin.users"))
 
+    form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"Edit User {user.name} - Chop Shop Sign In")
