@@ -55,11 +55,8 @@ login_manager.init_app(app)
 
 @app.route("/")
 def index():
-    user = current_user
-    if uid := request.args.get("user_id"):
-        user = User.query.get(uid)
     events = Event.query.filter_by(is_active=True).all()
-    return render_template("index.html.jinja2", events=events, user=user)
+    return render_template("index.html.jinja2", events=events)
 
 
 def init_default_db():

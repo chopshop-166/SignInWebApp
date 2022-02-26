@@ -3,7 +3,7 @@
 {% block scripts %}
   {{ super() }}
   {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
-  <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");</script>
+  <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{current_user.code}}");</script>
 {% endblock %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% block content %}
@@ -16,14 +16,14 @@
             <div class="d-flex justify-content-center pt-3">
               <div class="border border-5" id="qrPlaceholder"></div>
             </div>
-            <h1 class="d-flex justify-content-center pt-3">{{ user.name }}</h1>
-            <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.subteam }}</h2>
+            <h1 class="d-flex justify-content-center pt-3">{{ current_user.name }}</h1>
+            <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ current_user.subteam.name }}</h2>
           </div>
         </div>
-        <div class="col-lg-9">
-          <div class="bg-primary rounded-3 py-3">
-            <ul>
-              {% if current_user.role.can_display %}
+        {% if current_user.role.can_display %}
+          <div class="col-lg-9">
+            <div class="bg-primary rounded-3 py-3">
+              <ul>
                 <h1 class="pb-1">Available Events</h1>
                 <div class="d-flex gap-1 rounded-3">
                   {% if events %}
@@ -36,10 +36,10 @@
                     <li>None</li>
                   {% endif %}
                 </div>
-              {% endif %}
-            </ul>
+              </ul>
+            </div>
           </div>
-        </div>
+        {% endif %}
       </div>
     {% endif %}
   </div>
