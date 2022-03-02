@@ -2,6 +2,7 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import SelectMultipleField, StringField, SubmitField, widgets
+from wtforms.widgets import ColorInput
 from wtforms.validators import DataRequired
 
 from ..model import Badge, User, db
@@ -13,7 +14,7 @@ class BadgeForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
     icon = StringField()
-    color = StringField("Icon Color")
+    color = StringField("Icon Color", widget=ColorInput())
     submit = SubmitField()
 
 
