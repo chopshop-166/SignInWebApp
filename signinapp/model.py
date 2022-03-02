@@ -190,7 +190,7 @@ class Event(db.Model):
         ' Usable in queries '
         return and_(cls.enabled,
                     (cls.start < func.now()),
-                    (func.now() < cls.end))
+                    (func.now() < cls.end)).label('is_active')
 
     def scan(self, name) -> StampEvent:
         if not self.is_active:
