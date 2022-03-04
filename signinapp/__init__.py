@@ -4,9 +4,10 @@ import datetime
 import os
 
 import flask_excel as excel
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
+from flask_login import current_user
 
 from .admin import admin
 from .auth import auth, login_manager
@@ -110,7 +111,7 @@ if app.config["DEBUG"]:
             code="5679",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
-            type_=EventType.query.filter_by(name="Training").one()
+            type_=EventType.query.filter_by(name="Build").one()
         )
         db.session.add_all([training])
         db.session.commit()

@@ -16,6 +16,7 @@ class RoleForm(FlaskForm):
     can_display = BooleanField("Can display event pages")
     autoload = BooleanField("Automatically load event pages")
     can_see_subteam = BooleanField("Can view subteam stamps")
+    default_role = BooleanField("Is the default role for new accounts")
     submit = SubmitField()
 
 
@@ -33,6 +34,8 @@ def new_role():
     if form.validate_on_submit():
         r = Role()
         form.populate_obj(r)
+        if form.default_role.data:
+            Role.set_default(r)
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin.subteams"))
@@ -52,6 +55,8 @@ def edit_role():
     form = RoleForm(obj=r)
     if form.validate_on_submit():
         form.populate_obj(r)
+        if form.default_role.data:
+            Role.set_default(r)
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 

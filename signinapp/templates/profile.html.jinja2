@@ -1,47 +1,56 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static, render_icon %}
-
-{% block title %}Profile for {{user.name}} - Chop Shop Sign In{% endblock %}
-
+{% block title %}Profile for {{ user.name }} - Chop Shop Sign In{% endblock %}
 {% block scripts %}
-{{ super() }}
-{{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
-<script type="text/javascript">
-new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");
-</script>
+  {{ super() }}
+  {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
+  <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");</script>
 {% endblock %}
-
 {% block content %}
-<div class="container">
-  <h1>{{user.name}}</h1>
-  <h2>Role: {{user.role.name}}</h2>
-  <h2>Subteam: {{user.subteam.name}}</h2>
-  <div class="d-flex flex-wrap flex-row justify-content-between">
-    <div class="py-3">
-      <h2>Time Recorded:</h2>
-      <ul>
-        {%- for type_ in event_types -%}
-          <li>{{type_.name}}: {{user.total_stamps_for(type_)}}</li>
-        {%- endfor -%}
-      </ul>
-      <a class="btn btn-light" href="{{url_for('event.export')}}">Export</a>
-    </div>
-    <div id="badges" class="py-3">
-        <h2>Badges:</h2>
-        <ul>
-          {% if user.badges %}
-          {% for award in user.badges|sort(attribute="name") %}
-            <li><a class="link-light" href="{{url_for('user.badge', badge_id=award.badge_id)}}">{{show_badge(award.badge)}}</a></li>
-          {% endfor %}
-          {% else %}
-          <li>None yet!</li>
-          {% endif %}
-        </ul>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3 pt-3">
+        <div class="container bg-secondary rounded-3">
+          {# justify-content-between to get QR take up only the space it needs #}
+          <div class="d-flex justify-content-center pt-3">
+            <div class="border border-5" id="qrPlaceholder"></div>
+          </div>
+          <h1 class="d-flex justify-content-center pt-3">{{ user.name }}</h1>
+          <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.subteam.name }}</h2>
+        </div>
       </div>
-    <div class="py-3">
-      <h2>QR Code:</h2>
-      <div class="border border-5" id="qrPlaceholder"></div>
+      <div class="col-lg-9 pt-3">
+        <div class="row">
+          <div class="bg-primary rounded-3 py-3">
+            <div class="d-flex flex-row align-items-center justify-content-between">
+              <h2>Time Recorded:</h2>
+              <a class="btn btn-light" href="{{ url_for('event.export')}}">Export</a>
+            </div>
+            <ul>
+              {%- for type_ in event_types -%}
+                <li>{{ type_.name }}: {{ user.total_stamps_for(type_)}}</li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+        <div class="row pt-3">
+          <div id="badges" class="bg-primary rounded-3 py-3">
+            <h2>Badges:</h2>
+            <ul>
+              {% if user.badges %}
+                {% for award in user.badges|sort(attribute="name") %}
+                  <li>
+                    <a class="link-light"
+                       href="{{ url_for('user.badge', badge_id=award.badge_id)}}">{{ show_badge(award.badge)}}</a>
+                  </li>
+                {% endfor %}
+              {% else %}
+                <li>None yet!</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 {% endblock %}
