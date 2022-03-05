@@ -39,29 +39,6 @@
             {%- endif -%}
             <ul class="navbar-nav ms-auto">
               {%- if current_user.is_authenticated -%}
-              {%- if current_user.role.mentor -%}
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle btn btn-primary"
-                     href="#"
-                     id="navbarSearchDropdown"
-                     role="button"
-                     data-bs-toggle="dropdown"
-                     aria-expanded="false">
-                    Mentor
-                  </a>
-                  <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('mentor.active')}}">Active Stamps</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('mentor.all_badges')}}">Badges</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
-                    </li>
-                  </ul>
-                </li>
-              {%- endif-%}
               {%- if current_user.role.admin -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
@@ -88,6 +65,29 @@
                   </ul>
                 </li>
               {%- endif -%}
+              {%- if current_user.role.mentor -%}
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle btn btn-primary"
+                     href="#"
+                     id="navbarSearchDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false">
+                    Mentor
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('mentor.active')}}">Active Stamps</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('mentor.all_badges')}}">Badges</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
+                    </li>
+                  </ul>
+                </li>
+              {%- endif-%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
                      href="#"
