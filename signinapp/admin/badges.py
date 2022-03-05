@@ -18,13 +18,6 @@ class BadgeForm(FlaskForm):
     submit = SubmitField()
 
 
-@admin.route("/admin/badges", methods=["GET"])
-@admin_required
-def all_badges():
-    badges = Badge.query.all()
-    return render_template("admin/badges.html.jinja2", badges=badges)
-
-
 @admin.route("/admin/badges/new", methods=["GET", "POST"])
 @admin_required
 def new_badge():

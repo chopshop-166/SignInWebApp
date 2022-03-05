@@ -57,6 +57,13 @@ def active_delete_expired():
     return redirect(url_for("mentor.active"))
 
 
+@mentor.route("/badges", methods=["GET"])
+@mentor_required
+def all_badges():
+    badges = Badge.query.all()
+    return render_template("badges.html.jinja2", badges=badges)
+
+
 @mentor.route("/badges/award", methods=["GET", "POST"])
 @mentor_required
 def award_badge():

@@ -1,12 +1,19 @@
 {% extends "base.html.jinja2" %}
-
 {% block title %}Badge Admin - Chop Shop Sign In{%endblock%}
-
 {% block content %}
 <div class="pt-3 container">
   <div class="d-flex flex-row align-items-center justify-content-between">
     <h1>Available Badges!</h1>
-    <a href="{{url_for('admin.new_badge')}}"><button class="btn btn-primary">New Badge</button></a>
+    <div>
+      {%- if current_user.is_authenticated and current_user.role.admin -%}
+      <a href="{{url_for('admin.new_badge')}}">
+        <button class="btn btn-primary">New Badge</button>
+      </a>
+      {%- endif -%}
+      <a href="{{ url_for('search.badges')}}">
+        <button class="btn btn-primary">Search Badges</button>
+      </a>
+    </div>
   </div>
   {{- render_messages() -}}
   <div class="table-responsive">
