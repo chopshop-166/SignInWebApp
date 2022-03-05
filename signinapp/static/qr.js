@@ -16,6 +16,11 @@ function toast(texte) {
     setTimeout(function () { let alert = new bootstrap.Alert(wrapper); alert.close() }, 3500);
 }
 
+function updateTime() {
+    var cDate = new Date()
+    document.getElementById("dateTimeBlock").innerHTML = cDate.toLocaleTimeString()
+}
+
 function populateUsers(userdata) {
     let usersroot = document.getElementById("userbody")
     // Clear current users
@@ -80,6 +85,7 @@ const config = { fps: 10, rememberLastUsedCamera: true };
 // If you want to prefer front camera
 html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
 setInterval(updateUserData, 300000)
+setInterval(updateTime, 1000)
 updateUserData()
 
 {
