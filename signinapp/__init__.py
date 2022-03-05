@@ -4,10 +4,9 @@ import datetime
 import os
 
 import flask_excel as excel
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
-from flask_login import current_user
 
 from .admin import admin
 from .auth import auth, login_manager
@@ -38,7 +37,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 excel.init_excel(app)
 
 bootstrap = Bootstrap5(app)
-login_manager.init_app(app)
 
 db.init_app(app)
 with app.app_context():

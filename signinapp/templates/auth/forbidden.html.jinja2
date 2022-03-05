@@ -1,0 +1,15 @@
+{% extends "base.html.jinja2" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}Access Forbidden - Chop Shop Sign In{% endblock %}
+
+{% block bodyAttrs %}class="forbidden bg-robot"{% endblock %}
+
+{% block content %}
+<div class="parent d-flex align-items-center">
+  <div class="p-5 bg-dark rounded-3 container">
+    <h1>Access Forbidden</h1>
+    <p>You do not have permission to access this page.</p>
+  </div>
+</div>
+{% endblock %}

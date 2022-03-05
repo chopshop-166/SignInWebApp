@@ -121,3 +121,8 @@ def password():
         return redirect(url_for('user.profile'))
 
     return render_template("auth/password.html.jinja2", form=form)
+
+
+@auth.route("/forbidden")
+def forbidden():
+    return render_template("auth/forbidden.html.jinja2")
