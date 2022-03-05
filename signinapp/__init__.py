@@ -29,7 +29,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "1234")
 if app.config["DEBUG"]:
     db_name = ':memory:'
 else:
-    db_name = 'signin.db'
+    db_name = os.environ.get('CS_SIGNIN_DB', 'signin.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
