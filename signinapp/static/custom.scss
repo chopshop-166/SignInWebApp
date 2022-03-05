@@ -88,4 +88,17 @@ $border-widths: (
     display: inline;
 }
 
+.search-form ul {
+    @extend .list-group;
+}
+
+.search-form li {
+    @extend .list-group-item, .list-group-item-primary;
+}
+
 @import "scss/bootstrap.scss";
+
+#role {
+    padding: 0;
+    border: 0;
+}

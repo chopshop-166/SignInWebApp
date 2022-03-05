@@ -1,17 +1,11 @@
 {% extends "base.html.jinja2" %}
-{% from 'bootstrap5/form.html' import render_form %}
+{% from 'bootstrap5/form.html' import render_form, render_messages %}
 
 {% block title %}{{title}}{%endblock%}
 
 {% block content %}
 <div class="container">
-  {%- with messages = get_flashed_messages() %}
-  {%- for m in messages %}
-      <div class="notification is-danger">
-          {{ m }}
-      </div>
-  {%- endfor %}
-  {%- endwith %}
-  {{render_form(form)}}
+  {{ render_messages() }}
+  {{ render_form(form) }}
 </div>
 {% endblock %}

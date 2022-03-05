@@ -13,6 +13,7 @@ from .admin import admin
 from .auth import auth, login_manager
 from .event import eventbp
 from .model import Badge, Event, EventType, Role, Subteam, User, db
+from .search import search
 from .team import team
 from .user import user
 
@@ -46,6 +47,7 @@ with app.app_context():
 app.register_blueprint(admin)
 app.register_blueprint(auth)
 app.register_blueprint(eventbp)
+app.register_blueprint(search)
 app.register_blueprint(team)
 app.register_blueprint(user)
 

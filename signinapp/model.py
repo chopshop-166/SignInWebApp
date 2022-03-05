@@ -99,9 +99,7 @@ class User(UserMixin, db.Model):
     def remove_badge(self, badge_id: int):
         ' Remove a badge from a user '
         if self.has_badge(badge_id):
-            award = BadgeAward.query.filter_by(
-                badge_id=badge_id, owner=self).one_or_none()
-            db.session.delete(award)
+            BadgeAward.query.filter_by(badge_id=badge_id, owner=self).delete()
             db.session.commit()
 
     @hybrid_method
@@ -386,6 +384,11 @@ class Badge(db.Model):
     color = db.Column(db.String, default="black")
 
     awards = relationship("BadgeAward", back_populates="badge")
+
+    @classmethod
+    def from_name(cls, name) -> Subteam:
+        ' Get a badge by name '
+        return cls.query.filter_by(name=name).one_or_none()
 
 
 class BadgeAward(db.Model):
