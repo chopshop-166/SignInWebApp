@@ -17,7 +17,7 @@ def load_user(user_id):
     # since the user_id is just the primary key of our user table,
     # use it in the query for the user
     user = User.query.get(int(user_id))
-    if user.approved:
+    if user and user.approved:
         return user
 
 
