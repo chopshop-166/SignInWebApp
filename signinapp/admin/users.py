@@ -29,12 +29,25 @@ class DeleteUserForm(FlaskForm):
     submit = SubmitField()
 
 
-@admin.route("/admin/users", methods=["GET", "POST"])
+@admin.route("/admin/users")
 @admin_required
 def users():
     users = User.query.all()
     roles = Role.query.all()
     return render_template("admin/users.html.jinja2", users=users, roles=roles)
+
+
+@admin.route("/admin/users/approve", methods=["POST"])
+@admin_required
+def user_approve():
+    user_id = request.args.get("user_id", None)
+    user = User.query.get(user_id)
+    if user:
+        user.approved = True
+        db.session.commit()
+    else:
+        flash("Invalid user ID")
+    return redirect(url_for("admin.users"))
 
 
 @admin.route("/admin/users/new", methods=["GET", "POST"])
@@ -66,7 +79,7 @@ def new_user():
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
-    user = User.query.get(request.args["user_id"])
+    user : User = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("admin.users"))
@@ -77,10 +90,14 @@ def edit_user():
                                           for s in Subteam.query.all()]
 
     if form.validate_on_submit():
-        form.populate_obj(user)
+        # Cannot use form.populate_data because of the password
+        user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
+        user.role_id = form.role.data
         user.subteam_id = form.subteam.data or None
+        user.approved = form.approved.data
+        user.active = form.active.data
         db.session.commit()
         return redirect(url_for("admin.users"))
 

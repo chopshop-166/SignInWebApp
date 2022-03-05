@@ -31,12 +31,23 @@
               <td>{{ user.total_time }}</td>
               <td>{{ user.approved }}</td>
               <td>
-                <a class="btn btn-secondary"
-                   href="{{ url_for('admin.edit_user', user_id=user.id)}}"
-                   role="button">Edit</a>
-                <a class="btn btn-danger"
-                   href="{{ url_for('admin.delete_user', user_id=user.id)}}"
-                   role="button">Delete</a>
+                <div class="btn-group" role="group" aria-label="User Actions">
+                  <a class="btn btn-secondary"
+                    href="{{ url_for('admin.edit_user', user_id=user.id)}}"
+                    role="button">Edit</a>
+                  <a class="btn btn-danger"
+                    href="{{ url_for('admin.delete_user', user_id=user.id)}}"
+                    role="button">Delete</a>
+                </div>
+                {%- if not user.approved -%}
+                <form class="inlineform"
+                      action="{{ url_for('admin.user_approve', user_id=user.id)}}"
+                      id="approve{{ user.id }}"
+                      method="POST">
+                  <button class="btn btn-warning"
+                    action="submit">Approve</button>
+                </form>
+                {%- endif -%}
               </td>
             </tr>
           {%- endfor -%}
