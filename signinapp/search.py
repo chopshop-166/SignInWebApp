@@ -42,9 +42,9 @@ def badges():
         else:
             results = [u for u in results
                        if not u.has_badge(int(form.badge.data))]
-        return render_template("searchform.html.jinja2",
+        return render_template("search/badges.html.jinja2",
                                form=form, results=results)
-    return render_template("searchform.html.jinja2", form=form, results=None)
+    return render_template("search/badges.html.jinja2", form=form, results=None)
 
 
 @search.route("/search/hours", methods=["GET", "POST"])
@@ -60,7 +60,7 @@ def hours():
         roles = [Role.from_name(r).id for r in form.role.data]
         results = [(u.name, u.total_stamps_for(event_type))
                    for u in results if u.role_id in roles]
-        return render_template("hourssearchform.html.jinja2",
+        return render_template("search/hours.html.jinja2",
                                form=form, results=results)
 
-    return render_template("hourssearchform.html.jinja2", form=form, results=None)
+    return render_template("search/hours.html.jinja2", form=form, results=None)
