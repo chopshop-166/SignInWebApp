@@ -11,6 +11,7 @@ from flask_bootstrap import Bootstrap5
 from .admin import admin
 from .auth import auth, login_manager
 from .event import eventbp
+from .mentor import mentor
 from .model import Badge, Event, EventType, Role, Subteam, User, db
 from .search import search
 from .team import team

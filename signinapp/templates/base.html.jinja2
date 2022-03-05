@@ -39,6 +39,7 @@
             {%- endif -%}
             <ul class="navbar-nav ms-auto">
               {%- if current_user.is_authenticated -%}
+              {%- if current_user.role.mentor -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
                      href="#"
@@ -57,6 +58,7 @@
                     </li>
                   </ul>
                 </li>
+              {%- endif-%}
               {%- if current_user.role.admin -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"

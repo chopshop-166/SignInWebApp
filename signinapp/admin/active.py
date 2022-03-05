@@ -34,7 +34,7 @@ def active_delete():
     return redirect(url_for("admin.active"))
 
 
-@admin.route("/admin/active/deleteexpired")
+@admin.route("/admin/active/delete_expired")
 @admin_required
 def active_deleteexpired():
     Active.query.join(Event).filter(Event.is_active).delete()

@@ -1,11 +1,10 @@
 from flask import Blueprint
 from flask.templating import render_template
-from flask_login import login_required
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, SelectField, SubmitField
 
 from .model import Badge, EventType, Role, Subteam, User
-from .util import MultiCheckboxField
+from .util import MultiCheckboxField, mentor_required
 
 search = Blueprint("search", __name__)
 
@@ -13,7 +12,7 @@ search = Blueprint("search", __name__)
 class BadgeSearchForm(FlaskForm):
     badge = SelectField()
     subteam = SelectField()
-    required = BooleanField(label="Has Badge")
+    required = BooleanField(label="Has Badge", default=True)
     submit = SubmitField()
 
 
@@ -24,7 +23,7 @@ class HoursForm(FlaskForm):
 
 
 @search.route("/search/badges", methods=["GET", "POST"])
-@login_required
+@mentor_required
 def badges():
     form = BadgeSearchForm()
     form.badge.choices = [(b.id, b.name) for b in Badge.query.all()]
@@ -48,7 +47,7 @@ def badges():
 
 
 @search.route("/search/hours", methods=["GET", "POST"])
-@login_required
+@mentor_required
 def hours():
     form = HoursForm()
     form.role.choices = [r.name for r in Role.query.all()]
