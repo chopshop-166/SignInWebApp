@@ -1,3 +1,104 @@
-$primary: #2525db;
+//$primary: #2525db;
+$primary: #0f2b8e;
+$secondary: #1a46e4;
+$info: #60a0ff;
+$body-bg: #242526;
+$body-color: #e4e6eb;
+
+$border-radius-lg: 1rem;
+
+$border-widths: (
+    4: 3px,
+    5: 10px
+);
+
+@import "scss/bootstrap-utilities.scss"; 
+
+.login {
+    background-image: url('LoginBackground.png');
+}
+
+.register {
+    background-image: url('RegisterBackground.png');
+}
+
+.bg-robot {
+    background-repeat: repeat;
+    background-attachment: scroll;
+    background-size: cover;
+};
+
+.parent {
+    min-height: 80vH;
+}
+
+#reader button {
+    @extend .btn, .btn-primary;
+}
+
+#reader a {
+    @extend .link-light;
+}
+
+.custom-row {
+    @include make-row();
+  }
+  
+.content-primary {
+    @include make-col-ready();
+
+    @include media-breakpoint-up(sm) {
+        @include make-col(6);
+        .hidesmall {
+            visibility: hidden !important;
+        }
+    }
+    @include media-breakpoint-up(xs) {
+        @include make-col(6);
+        .hidesmall {
+            visibility: hidden !important;
+        }
+    }
+    @include media-breakpoint-up(lg) {
+        .hidesmall {
+            visibility: visible !important;
+        }
+        @include make-col(6);
+    }
+}
+  
+.content-secondary {
+    @include make-col-ready();
+  
+    @include media-breakpoint-up(sm) {
+        @include make-col(6);
+    }
+    @include media-breakpoint-up(lg) {
+        @include make-col(6);
+    }
+}
+
+.table td, th {
+    white-space: nowrap;
+}
+
+.inlineform {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+.search-form ul {
+    @extend .list-group;
+}
+
+.search-form li {
+    @extend .list-group-item, .list-group-item-primary;
+}
 
 @import "scss/bootstrap.scss";
+
+#role {
+    padding: 0;
+    border: 0;
+}

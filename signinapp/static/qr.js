@@ -36,10 +36,10 @@ function populateUsers(userdata) {
 }
 
 function handleResponse(json) {
-    if(json["action"] === "update") {
+    if (json["action"] === "update") {
         populateUsers(json["users"])
         toast(json["message"])
-    } else if(json["action"] === "redirect") {
+    } else if (json["action"] === "redirect") {
         window.location.replace("/")
     }
 }
@@ -50,10 +50,11 @@ function updateUserData() {
         .then(handleResponse)
 }
 
-function onScanSuccess(decodedText, decodedResult) {
-    if (html5QrcodeScanner.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
-        html5QrcodeScanner.pause();
-        setTimeout(function () { html5QrcodeScanner.resume() }, 2000);
+const onScanSuccess = (decodedText, decodedResult) => {
+    console.log(decodedText)
+    if (html5QrCode.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
+        html5QrCode.pause();
+        setTimeout(function () { html5QrCode.resume() }, 2000);
     }
 
     let formData = new FormData();
@@ -73,14 +74,15 @@ function onScanSuccess(decodedText, decodedResult) {
         })
 }
 
-let html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader",
-    {
-        fps: 10,
-        rememberLastUsedCamera: true
-    },
-      /* verbose= */ false);
-html5QrcodeScanner.render(onScanSuccess);
+const html5QrCode = new Html5Qrcode("reader");
+const config = { fps: 10, rememberLastUsedCamera: true };
 
+// If you want to prefer front camera
+html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
 setInterval(updateUserData, 300000)
 updateUserData()
+
+{
+    var element = document.getElementById('reader')
+    element.style.removeProperty('border')
+}

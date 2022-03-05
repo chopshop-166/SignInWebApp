@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from flask.templating import render_template
 
 from .active import *

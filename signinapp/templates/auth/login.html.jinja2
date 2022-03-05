@@ -1,0 +1,16 @@
+{% extends "base.html.jinja2" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}Sign In - Chop Shop Sign In{% endblock %}
+
+{% block bodyAttrs %}class="login bg-robot"{% endblock %}
+
+{% block content %}
+<div class="parent d-flex align-items-center">
+  <div class="p-5 bg-dark rounded-3 container">
+    <h1>Log In</h1>
+    {{-render_messages()-}}
+    {{ render_form(form) }}
+  </div>
+</div>
+{% endblock %}

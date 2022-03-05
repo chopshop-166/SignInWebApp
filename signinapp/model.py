@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import annotations
 
 import base64
@@ -101,9 +99,7 @@ class User(UserMixin, db.Model):
     def remove_badge(self, badge_id: int):
         ' Remove a badge from a user '
         if self.has_badge(badge_id):
-            award = BadgeAward.query.filter_by(
-                badge_id=badge_id, owner=self).one_or_none()
-            db.session.delete(award)
+            BadgeAward.query.filter_by(badge_id=badge_id, owner=self).delete()
             db.session.commit()
 
     @hybrid_method
@@ -149,7 +145,7 @@ class Event(db.Model):
     # User-visible name
     name = db.Column(db.String)
     # Description of the event
-    description = db.Column(db.String)
+    description = db.Column(db.String, default="")
     # Unique code for tracking
     code = db.Column(db.String, unique=True)
     # Location the event takes place at
@@ -388,6 +384,11 @@ class Badge(db.Model):
     color = db.Column(db.String, default="black")
 
     awards = relationship("BadgeAward", back_populates="badge")
+
+    @classmethod
+    def from_name(cls, name) -> Subteam:
+        ' Get a badge by name '
+        return cls.query.filter_by(name=name).one_or_none()
 
 
 class BadgeAward(db.Model):

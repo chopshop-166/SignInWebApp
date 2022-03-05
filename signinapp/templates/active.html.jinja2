@@ -1,0 +1,53 @@
+{% extends "base.html.jinja2" %}
+{% block title %}Active User Admin - Chop Shop Sign In{% endblock %}
+{% block content %}
+  <div class="container pt-3">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>Active Users</h1>
+      <div>
+        <a href="{{ url_for('mentor.active_delete_expired')}}">
+          <button class="btn btn-danger">Delete Expired Stamps</button>
+        </a>
+        {%- if current_user.is_authenticated and current_user.role.admin -%}
+        <a href="{{ url_for('admin.active_deleteall')}}">
+          <button class="btn btn-danger">Delete All Stamps</button>
+        </a>
+        {%- endif -%}
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table id="actives" class="table table-striped table-hover table-dark">
+        <thead>
+          <tr>
+            <th scope="col">User</th>
+            <th scope="col">Event</th>
+            <th scope="col">Start</th>
+            <th scope="col">Controls</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for ac in active -%}
+            <tr>
+              <th>{{ ac.user.name }}</th>
+              <td>{{ ac.event.name }}</td>
+              <td>{{ ac.start_local }}</td>
+              <td>
+                <form class="inlineform" id="signout{{ ac.id }}" method="POST">
+                  <input type="hidden" value="{{ ac.id }}" name="active_id">
+                  <button class="btn btn-secondary" type="submit">Sign Out</button>
+                </form>
+                <form class="inlineform"
+                      action="{{ url_for('admin.active_delete')}}"
+                      id="drop{{ ac.id }}"
+                      method="POST">
+                  <input type="hidden" value="{{ ac.id }}" name="active_id">
+                  <button class="btn btn-danger" type="submit">Drop</button>
+                </form>
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

@@ -4,14 +4,14 @@
 {% block title %}Badge {{badge.name}} - Chop Shop Sign In{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container table-responsive">
   <div class="row">
     <div class="col">
       <h1>{{badge.name}}</h1>
       {{badge.description}}
     </div>
     <div class="col">
-      <table id="users" class="table table-sm table-striped table-hover table-bordered table-responsive">
+      <table id="users" class="table table-striped table-hover table-dark">
         <thead>
           <tr>
             <th scope="col">User</th>
@@ -22,7 +22,7 @@
         <tbody id="userbody">
         {%- for award in awards -%}
           <tr>
-            <td><a href="{{url_for('user.profile', user_id=award.user_id)}}">{{award.owner.name}}</a></td>
+            <td><a class="link-light" href="{{url_for('user.profile', user_id=award.user_id)}}">{{award.owner.name}}</a></td>
             <td>{{award.owner.subteam.name}}</td>
             <td>{{award.received}}</td>
           </tr>

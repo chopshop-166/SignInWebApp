@@ -15,6 +15,7 @@
             },
             "args": [
                 "run",
+                "--host=0.0.0.0",
                 "--no-debugger"
             ],
             "jinja": true
@@ -30,6 +31,7 @@
             },
             "args": [
                 "run",
+                "--host=0.0.0.0",
                 "--no-debugger"
             ],
             "jinja": true

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from flask import Blueprint, flash, redirect, url_for
 from flask.templating import render_template
 from flask_login import (LoginManager, current_user, login_required,
@@ -19,7 +17,7 @@ def load_user(user_id):
     # since the user_id is just the primary key of our user table,
     # use it in the query for the user
     user = User.query.get(int(user_id))
-    if user.approved:
+    if user and user.approved:
         return user
 
 
@@ -75,7 +73,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         return redirect('/login')
-    return render_template("register.html.jinja2", form=form)
+    return render_template("auth/register.html.jinja2", form=form)
 
 
 @auth.route('/login', methods=["GET", "POST"])
@@ -100,7 +98,7 @@ def login():
         login_user(user, remember=remember)
 
         return redirect('/')
-    return render_template("login.html.jinja2", form=form)
+    return render_template("auth/login.html.jinja2", form=form)
 
 
 @auth.route('/logout')
@@ -122,4 +120,9 @@ def password():
         db.session.commit()
         return redirect(url_for('user.profile'))
 
-    return render_template("password.html.jinja2", form=form)
+    return render_template("auth/password.html.jinja2", form=form)
+
+
+@auth.route("/forbidden")
+def forbidden():
+    return render_template("auth/forbidden.html.jinja2")
