@@ -46,6 +46,7 @@ with app.app_context():
 app.register_blueprint(admin)
 app.register_blueprint(auth)
 app.register_blueprint(eventbp)
+app.register_blueprint(mentor)
 app.register_blueprint(search)
 app.register_blueprint(team)
 app.register_blueprint(user)
