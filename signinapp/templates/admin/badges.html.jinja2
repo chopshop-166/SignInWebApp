@@ -27,7 +27,7 @@
         <td>{{badge.description}}</td>
         <td>
           <a class="btn btn-secondary" href="{{url_for('admin.edit_badge', badge_id=badge.id)}}" role="button">Edit</a>
-          <a class="btn btn-secondary" href="{{url_for('admin.award_badge', badge_id=badge.id)}}" role="button">Award</a>
+          <a class="btn btn-secondary" href="{{url_for('mentor.award_badge', badge_id=badge.id)}}" role="button">Award</a>
         </td>
       </tr>
       {%- endfor -%}

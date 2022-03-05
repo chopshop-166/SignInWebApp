@@ -47,14 +47,17 @@
                      role="button"
                      data-bs-toggle="dropdown"
                      aria-expanded="false">
-                    Search
+                    Mentor
                   </a>
                   <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('search.badges')}}">Badges</a>
+                      <a class="dropdown-item" href="{{ url_for('mentor.active')}}">Active Stamps</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('search.hours')}}">Hours</a>
+                      <a class="dropdown-item" href="{{ url_for('search.badges')}}">Search Badges</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
                     </li>
                   </ul>
                 </li>
@@ -70,9 +73,6 @@
                     Admin
                   </a>
                   <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('admin.active')}}">Active</a>
-                    </li>
                     <li>
                       <a class="dropdown-item" href="{{ url_for('admin.all_badges')}}">Badges</a>
                     </li>

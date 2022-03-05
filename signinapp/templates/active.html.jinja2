@@ -8,9 +8,11 @@
         <a href="{{ url_for('mentor.active_delete_expired')}}">
           <button class="btn btn-danger">Delete Expired Stamps</button>
         </a>
+        {%- if current_user.is_authenticated and current_user.role.admin -%}
         <a href="{{ url_for('admin.active_deleteall')}}">
           <button class="btn btn-danger">Delete All Stamps</button>
         </a>
+        {%- endif -%}
       </div>
     </div>
     <div class="table-responsive">

@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from sqlalchemy import not_, select
 from wtforms import SubmitField
 
-from .model import Active, Badge, Event, User, db
+from .model import Active, Badge, Event, Stamps, User, db
 from .util import MultiCheckboxField, mentor_required
 
 mentor = Blueprint("mentor", __name__)
@@ -14,6 +14,34 @@ mentor = Blueprint("mentor", __name__)
 class BadgeAwardForm(FlaskForm):
     users = MultiCheckboxField()
     submit = SubmitField()
+
+
+@mentor.route("/mentor/active", methods=["GET"])
+@mentor_required
+def active():
+    actives = Active.query.all()
+    return render_template("active.html.jinja2", active=actives)
+
+
+@mentor.route("/mentor/active", methods=["POST"])
+@mentor_required
+def active_post():
+    active_event = Active.query.get(request.form["active_id"])
+    stamp = Stamps(user=active_event.user,
+                   event=active_event.event, start=active_event.start)
+    db.session.delete(active_event)
+    db.session.add(stamp)
+    db.session.commit()
+    return redirect(url_for("mentor.active"))
+
+
+@mentor.route("/mentor/active/delete", methods=["POST"])
+@mentor_required
+def active_delete():
+    active_event = Active.query.get(request.form["active_id"])
+    db.session.delete(active_event)
+    db.session.commit()
+    return redirect(url_for("mentor.active"))
 
 
 @mentor.route("/active/delete_expired")
@@ -26,7 +54,7 @@ def active_delete_expired():
     flash("Deleted all expired stamps")
     if current_user.role.admin:
         return redirect(url_for("admin.active"))
-    return redirect(url_for("index"))
+    return redirect(url_for("mentor.active"))
 
 
 @mentor.route("/badges/award", methods=["GET", "POST"])
