@@ -2,7 +2,17 @@
 {% block title %}Active User Admin - Chop Shop Sign In{% endblock %}
 {% block content %}
   <div class="container pt-3">
-    <h1>Active Users</h1>
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>Active Users</h1>
+      <div>
+        <a href="{{ url_for('mentor.active_delete_expired')}}">
+          <button class="btn btn-danger">Delete Expired Stamps</button>
+        </a>
+        <a href="{{ url_for('admin.active_deleteall')}}">
+          <button class="btn btn-danger">Delete All Stamps</button>
+        </a>
+      </div>
+    </div>
     <div class="table-responsive">
       <table id="actives" class="table table-striped table-hover table-dark">
         <thead>

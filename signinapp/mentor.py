@@ -1,11 +1,12 @@
 from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
+from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import SelectMultipleField, StringField, SubmitField, widgets
-from wtforms.validators import DataRequired
+from sqlalchemy import not_, select
+from wtforms import SubmitField
 
-from .model import Badge, User, db
-from .util import mentor_required, MultiCheckboxField
+from .model import Active, Badge, Event, User, db
+from .util import MultiCheckboxField, mentor_required
 
 mentor = Blueprint("mentor", __name__)
 
@@ -15,7 +16,20 @@ class BadgeAwardForm(FlaskForm):
     submit = SubmitField()
 
 
-@mentor.route("/mentor/badges/award", methods=["GET", "POST"])
+@mentor.route("/active/delete_expired")
+@mentor_required
+def active_delete_expired():
+    inactive_events = select(Event.id).where(not_(Event.is_active))
+    q = Active.query.filter(Active.event_id.in_(inactive_events))
+    q.delete(synchronize_session=False)
+    db.session.commit()
+    flash("Deleted all expired stamps")
+    if current_user.role.admin:
+        return redirect(url_for("admin.active"))
+    return redirect(url_for("index"))
+
+
+@mentor.route("/badges/award", methods=["GET", "POST"])
 @mentor_required
 def award_badge():
     badge_id = int(request.args["badge_id"])

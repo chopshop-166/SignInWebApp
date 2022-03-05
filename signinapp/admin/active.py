@@ -35,15 +35,7 @@ def active_delete():
     return redirect(url_for("admin.active"))
 
 
-@admin.route("/admin/active/delete_expired")
-@admin_required
-def active_deleteexpired():
-    Active.query.join(Event).filter(not_(Event.is_active)).delete()
-    db.session.commit()
-    return redirect(url_for("admin.active"))
-
-
-@admin.route("/admin/active/deleteall")
+@admin.route("/admin/active/delete_all")
 @admin_required
 def active_deleteall():
     Active.query.delete()
