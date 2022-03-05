@@ -1,5 +1,6 @@
 from flask import redirect, request, url_for
 from flask.templating import render_template
+from sqlalchemy.sql.expression import not_
 
 from ..model import Active, Event, Stamps, db
 from ..util import admin_required
@@ -37,7 +38,7 @@ def active_delete():
 @admin.route("/admin/active/delete_expired")
 @admin_required
 def active_deleteexpired():
-    Active.query.join(Event).filter(Event.is_active).delete()
+    Active.query.join(Event).filter(not_(Event.is_active)).delete()
     db.session.commit()
     return redirect(url_for("admin.active"))
 
