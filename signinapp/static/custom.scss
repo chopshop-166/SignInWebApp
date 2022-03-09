@@ -22,6 +22,14 @@ $border-widths: (
     background-image: url('RegisterBackground.png');
 }
 
+.password {
+    background-image: url('PasswordBackground.png');
+}
+
+.forbidden {
+    background-image: url('DeniedBackground.png');
+}
+
 .bg-robot {
     background-repeat: repeat;
     background-attachment: scroll;
