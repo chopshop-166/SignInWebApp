@@ -41,10 +41,19 @@
           </div>
         {% endif %}
       </div>
-    {% endif %}
-  </div>
-  {%- if current_user.is_authenticated and current_user.role.autoload -%}
-    <script type="text/javascript">
+    {% else %}
+      <div class="card mb-3 bg-primary">
+        <img src={{ url_for('static', filename='carLogo.png')}} class="card-img-top p-5">
+        <div class="card-body">
+          <h1 class="card-title">FIRST Robotics Team Chop Shop 166</h1>
+          <p class="card-text">
+            We are Merrimack High School FIRST Robotics Competition Team 166, Chop Shop, from Merrimack, New Hampshire. Our mission is to build teamwork and a great robot, along with fostering a love for Science, Technology, Engineering, and Mathematics.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+    {%- if current_user.is_authenticated and current_user.role.autoload -%}
+      <script type="text/javascript">
 function checkNewEvent() {
   fetch("/autoevent")
       .then(data => data.json())
@@ -56,6 +65,6 @@ function checkNewEvent() {
       })
 }
 setInterval(checkNewEvent, 300000)
-    </script>
-  {%- endif -%}
-{% endblock %}
+      </script>
+    {%- endif -%}
+  {% endblock %}
