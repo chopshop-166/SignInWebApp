@@ -59,6 +59,10 @@ def new_user():
                                           for s in Subteam.query.all()]
 
     if form.validate_on_submit():
+        if User.get_canonical(form.name.data) is not None:
+            flash("User already exists")
+            return redirect(url_for("admin.new_user"))
+
         user = User.make(
             name=form.name.data,
             password=form.password.data,
@@ -66,7 +70,7 @@ def new_user():
             role=Role.query.get(form.role.data)
         )
         if form.subteam.data:
-            user.subteam_id = form.subteam.data
+            user.subteam = Subteam.query.get(form.subteam.data)
         user.active = form.active.data
         db.session.add(user)
         db.session.commit()
