@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  chopshopsignin:
+    container_name: chopshop_signin
+    build:
+      context: .
+      network: host
+    ports:
+      - "8100:80/tcp"
+    # Volumes store your data between container upgrades
+    volumes:
+      - './appdata:/appdata'
+    restart: unless-stopped
