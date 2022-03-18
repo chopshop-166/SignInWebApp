@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  chopshopsignin:
+  chopshop_signin:
     container_name: chopshop_signin
     build:
       context: .
@@ -12,3 +12,5 @@ services:
     volumes:
       - './appdata:/appdata'
     restart: unless-stopped
+    environment:
+      - FLASK_SECRET_KEY=1234

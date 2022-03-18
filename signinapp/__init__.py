@@ -7,6 +7,7 @@ import flask_excel as excel
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
+from get_docker_secret import get_docker_secret
 
 from .admin import admin
 from .auth import auth, login_manager
@@ -26,7 +27,7 @@ scss = Bundle('custom.scss',
 assets = Environment(app)
 assets.register('custom_css', scss)
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "1234")
+app.secret_key = get_docker_secret("FLASK_SECRET_KEY", default="1234")
 
 if app.config["DEBUG"]:
     db_name = ':memory:'
