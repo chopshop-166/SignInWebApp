@@ -2,7 +2,7 @@
 {% from 'bootstrap5/form.html' import render_form, render_messages %}
 {% block title %}Search - Chop Shop Sign In{% endblock %}
 {% block content %}
-  <div class="container">
+  <div id="hoursSearchContainer" class="container">
     {{ render_messages() }}
     <div class="row">
       <div class="col">{{ render_form(form, extra_classes="search-form") }}</div>
