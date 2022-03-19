@@ -76,6 +76,8 @@ def new_user():
         db.session.commit()
         return redirect(url_for("admin.users"))
 
+    form.role.process_data(Role.get_default().id)
+
     return render_template("admin/form.html.jinja2", form=form,
                            title=f"New User - Chop Shop Sign In")
 
