@@ -8,6 +8,6 @@ ENV MODULE_NAME signinapp.webapp
 ENV CS_SIGNIN_DB /appdata/signin.db
 ENV STATIC_PATH /app/signinapp/static
 
-COPY ./requirements.txt ./ewsgi.ini ./init-db ./signinapp /app/
+COPY . /app
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
