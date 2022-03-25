@@ -12,11 +12,11 @@ Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.0.0
 get-docker-secret==1.0.2
 greenlet==1.1.2
-itsdangerous==2.1.0
-Jinja2==3.0.3
+itsdangerous==2.1.2
+Jinja2==3.1.0
 libsass==0.21.0
 lml==0.1.0
-MarkupSafe==2.1.0
+MarkupSafe==2.1.1
 pycodestyle==2.8.0
 pyexcel==0.7.0
 pyexcel-io==0.6.6
@@ -24,10 +24,10 @@ pyexcel-webio==0.1.4
 pysass==0.1.0
 python-dateutil==2.8.2
 six==1.16.0
-SQLAlchemy==1.4.31
+SQLAlchemy==1.4.32
 texttable==1.6.4
 toml==0.10.2
-watchdog==2.1.6
+watchdog==2.1.7
 webassets==2.0
 Werkzeug==2.0.3
 WTForms==3.0.1

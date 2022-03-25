@@ -12,5 +12,3 @@ services:
     volumes:
       - './appdata:/appdata'
     restart: unless-stopped
-    environment:
-      - FLASK_SECRET_KEY=1234
