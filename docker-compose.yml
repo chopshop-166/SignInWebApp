@@ -12,3 +12,5 @@ services:
     volumes:
       - './appdata:/appdata'
     restart: unless-stopped
+    environment:
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}

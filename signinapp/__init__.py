@@ -27,7 +27,7 @@ scss = Bundle('custom.scss',
 assets = Environment(app)
 assets.register('custom_css', scss)
 
-app.secret_key = get_docker_secret("FLASK_SECRET_KEY", default="1234")
+app.secret_key = get_docker_secret("FLASK_SECRET_KEY") or "1234"
 
 if app.config["DEBUG"]:
     db_name = ':memory:'
