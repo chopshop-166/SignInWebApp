@@ -51,9 +51,6 @@
                   </a>
                   <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('admin.events')}}">Events</a>
-                    </li>
-                    <li>
                       <a class="dropdown-item" href="{{ url_for('admin.roles')}}">Roles</a>
                     </li>
                     <li>
@@ -81,6 +78,9 @@
                     </li>
                     <li>
                       <a class="dropdown-item" href="{{ url_for('mentor.all_badges')}}">Badges</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('events.list_events')}}">Events</a>
                     </li>
                     <li>
                       <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>

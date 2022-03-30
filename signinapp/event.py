@@ -15,7 +15,7 @@ def event():
     event_code = request.args.get("event_code")
     if not event_code:
         return Response("Error: Invalid Event Code", HTTPStatus.BAD_REQUEST)
-    return render_template("event.html.jinja2", event_code=event_code)
+    return render_template("scan.html.jinja2", event_code=event_code)
 
 
 @eventbp.route("/scan", methods=['POST'])

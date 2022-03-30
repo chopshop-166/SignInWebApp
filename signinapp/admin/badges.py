@@ -30,7 +30,7 @@ def new_badge():
         db.session.commit()
         return redirect(url_for("admin.all_badges"))
 
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title="New Badge - Chop Shop Sign In")
 
 
@@ -51,5 +51,5 @@ def edit_badge():
         db.session.commit()
         return redirect(url_for("admin.all_badges"))
 
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title=f"Edit Badge {badge.name} - Chop Shop Sign In")

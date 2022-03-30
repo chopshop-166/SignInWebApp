@@ -78,7 +78,7 @@ def new_user():
 
     form.role.process_data(Role.get_default().id)
 
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title=f"New User - Chop Shop Sign In")
 
 
@@ -109,7 +109,7 @@ def edit_user():
 
     form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title=f"Edit User {user.name} - Chop Shop Sign In")
 
 
@@ -128,5 +128,5 @@ def delete_user():
         return redirect(url_for("admin.users"))
 
     form.name.process_data(user.name)
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title=f"Delete User {user.name} - Chop Shop Sign In")

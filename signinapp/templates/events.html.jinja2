@@ -5,10 +5,10 @@
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Events</h1>
       <div>
-        <a href="{{ url_for('admin.new_event')}}">
+        <a href="{{ url_for('events.new_event')}}">
           <button class="btn btn-primary">New Event</button>
         </a>
-        <a href="{{ url_for('admin.bulk_events')}}">
+        <a href="{{ url_for('events.bulk_events')}}">
           <button class="btn btn-primary">Bulk Add Events</button>
         </a>
       </div>
@@ -32,7 +32,7 @@
             <tr>
               <th>
                 <a class="link-light"
-                   href="{{ url_for('admin.edit_event', event_id=event.id)}}">{{ event.name }}</a>
+                   href="{{ url_for('events.event_stats', event_id=event.id) }}">{{ event.name }}</a>
               </th>
               <td>{{ event.description }}</td>
               <td>{{ event.code }}</td>
@@ -40,6 +40,10 @@
               <td>{{ event.start_local }}</td>
               <td>{{ event.end_local }}</td>
               <td>{{ event.type_.name }}</td>
+              <td>
+                <a class="btn btn-secondary" role="button"
+                   href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit</a>
+              </td>
             </tr>
           {%- endfor -%}
         </tbody>

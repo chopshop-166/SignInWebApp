@@ -1,16 +1,18 @@
-from datetime import datetime
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 from dateutil.rrule import WEEKLY, rrule
-from flask import flash, redirect, request, url_for
+from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import (BooleanField, DateField, DateTimeLocalField, SelectField,
                      SelectMultipleField, StringField, SubmitField, TimeField)
 from wtforms.validators import DataRequired
 
-from ..model import Event, EventType, db, event_code
-from ..util import admin_required
-from .util import admin
+from .mentor import mentor_required
+from .model import Event, EventType, Stamps, db, event_code
+
+events = Blueprint("events", __name__)
 
 DATE_FORMATS = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S',
                 '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M']
@@ -69,15 +71,28 @@ class BulkEventForm(FlaskForm):
         return rv
 
 
-@admin.route("/admin/event")
-@admin_required
-def events():
+@events.route("/events")
+@mentor_required
+def list_events():
     events = Event.query.filter_by(enabled=True).all()
-    return render_template("admin/events.html.jinja2", events=events)
+    return render_template("events.html.jinja2", events=events)
 
 
-@admin.route("/admin/event/bulk", methods=["GET", "POST"])
-@admin_required
+@events.route("/events/stats")
+@mentor_required
+def event_stats():
+    event = Event.query.get(request.args["event_id"])
+    stamps = Stamps.query.filter_by(event_id=event.id).all()
+    users = defaultdict(timedelta)
+    for stamp in stamps:
+        users[stamp.user.name] += stamp.elapsed
+    users = sorted(users.items())
+    return render_template("event_stats.html.jinja2",
+                           event=event, users=users)
+
+
+@events.route("/events/bulk", methods=["GET", "POST"])
+@mentor_required
 def bulk_events():
     form = BulkEventForm()
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
@@ -101,13 +116,13 @@ def bulk_events():
             db.session.add(ev)
         db.session.commit()
 
-        return redirect(url_for("admin.events"))
-    return render_template("admin/form.html.jinja2", form=form,
+        return redirect(url_for("events.list_events"))
+    return render_template("form.html.jinja2", form=form,
                            title="Bulk Event Add - Chop Shop Sign In")
 
 
-@admin.route("/admin/event/new", methods=["GET", "POST"])
-@admin_required
+@events.route("/events/new", methods=["GET", "POST"])
+@mentor_required
 def new_event():
     form = EventForm()
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
@@ -117,20 +132,20 @@ def new_event():
         ev.type_=EventType.query.get(form.type_.data)
         db.session.add(ev)
         db.session.commit()
-        return redirect(url_for("admin.events"))
+        return redirect(url_for("events.list_events"))
 
     form.code.process_data(event_code())
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title="New Event - Chop Shop Sign In")
 
 
-@admin.route("/admin/event/edit", methods=["GET", "POST"])
-@admin_required
+@events.route("/events/edit", methods=["GET", "POST"])
+@mentor_required
 def edit_event():
     event = Event.query.get(request.args["event_id"])
     if not event:
         flash("Event does not exist")
-        return redirect(url_for("admin.events"))
+        return redirect(url_for("events.list_events"))
 
     form = EventForm(obj=event)
     form.type_.choices = [(t.id, t.name) for t in EventType.query.all()]
@@ -138,8 +153,8 @@ def edit_event():
         form.populate_obj(event)
         event.type_ = EventType.query.get(form.type_.data)
         db.session.commit()
-        return redirect(url_for("admin.events"))
+        return redirect(url_for("events.list_events"))
 
     form.type_.process_data(event.type_id)
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title=f"Edit Event {event.name} - Chop Shop Sign In")

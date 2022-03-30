@@ -90,5 +90,5 @@ def award_badge():
 
     form.users.process_data([p.name for p in people if p.has_badge(badge_id)])
 
-    return render_template("admin/form.html.jinja2", form=form,
+    return render_template("form.html.jinja2", form=form,
                            title=f"Award Badge {badge.name} - Chop Shop Sign In")

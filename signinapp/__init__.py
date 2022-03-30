@@ -11,6 +11,7 @@ from flask_bootstrap import Bootstrap5
 from .admin import admin
 from .auth import auth, login_manager
 from .event import eventbp
+from .events import events
 from .mentor import mentor
 from .model import Badge, Event, EventType, Role, Subteam, User, db
 from .search import search
@@ -49,6 +50,7 @@ with app.app_context():
 app.register_blueprint(admin)
 app.register_blueprint(auth)
 app.register_blueprint(eventbp)
+app.register_blueprint(events)
 app.register_blueprint(mentor)
 app.register_blueprint(search)
 app.register_blueprint(team)
