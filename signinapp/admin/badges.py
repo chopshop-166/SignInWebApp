@@ -1,12 +1,12 @@
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from wtforms import SelectMultipleField, StringField, SubmitField, widgets
-from wtforms.widgets import ColorInput
+from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from wtforms.widgets import ColorInput
 
-from ..model import Badge, User, db
-from ..util import admin_required, MultiCheckboxField
+from ..model import Badge, db
+from ..util import admin_required
 from .util import admin
 
 

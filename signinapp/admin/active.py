@@ -2,7 +2,7 @@ from flask import redirect, request, url_for
 from flask.templating import render_template
 from sqlalchemy.sql.expression import not_
 
-from ..model import Active, Event, Stamps, db
+from ..model import Active, db
 from ..util import admin_required
 from .util import admin
 

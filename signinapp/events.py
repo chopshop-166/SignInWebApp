@@ -10,7 +10,7 @@ from wtforms import (BooleanField, DateField, DateTimeLocalField, SelectField,
 from wtforms.validators import DataRequired
 
 from .mentor import mentor_required
-from .model import Event, EventType, Stamps, db, event_code
+from .model import Event, EventType, db, event_code
 
 events = Blueprint("events", __name__)
 
