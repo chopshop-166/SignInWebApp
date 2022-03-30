@@ -82,9 +82,8 @@ def list_events():
 @mentor_required
 def event_stats():
     event = Event.query.get(request.args["event_id"])
-    stamps = Stamps.query.filter_by(event_id=event.id).all()
     users = defaultdict(timedelta)
-    for stamp in stamps:
+    for stamp in event.stamps:
         users[stamp.user.name] += stamp.elapsed
     users = sorted(users.items())
     return render_template("event_stats.html.jinja2",
