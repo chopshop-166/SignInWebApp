@@ -6,8 +6,9 @@ services:
     build:
       context: .
       network: host
+    command: gunicorn --bind 0.0.0.0:8100 --workers 2 signinapp:app
     ports:
-      - "8100:80/tcp"
+      - "8100:8100/tcp"
     # Volumes store your data between container upgrades
     volumes:
       - './appdata:/appdata'
