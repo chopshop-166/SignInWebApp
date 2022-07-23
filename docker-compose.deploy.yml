@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:1.23.1
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./appdata/nginx:/etc/nginx/conf.d
+      - ./appdata/certbot/conf:/etc/letsencrypt
+      - ./appdata/certbot/www:/var/www/certbot
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./appdata/certbot/conf:/etc/letsencrypt
+      - ./appdata/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    restart: unless-stopped
+
+  chopshop_signin:
+    container_name: chopshop_signin
+    build:
+      context: .
+      network: host
+    command: gunicorn --bind 0.0.0.0:8100 --workers 2 signinapp:app
+    ports:
+      - "8100:8100/tcp"
+    # Volumes store your data between container upgrades
+    volumes:
+      - './appdata:/appdata'
+    restart: unless-stopped
+    environment:
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
