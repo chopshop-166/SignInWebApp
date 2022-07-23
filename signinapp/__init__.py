@@ -83,11 +83,12 @@ def init_default_db():
     MECH = Subteam(name="Mechanical")
     CAD = Subteam(name="CAD")
     MARKETING = Subteam(name="Marketing")
+    OUTREACH = Subteam(name="Outreach")
 
     db.session.add_all([
         ADMIN, MENTOR, DISPLAY, LEAD, STUDENT,
         TRAINING, BUILD, FUNDRAISER, COMPETITION,
-        SOFTWARE, MECH, CAD, MARKETING
+        SOFTWARE, MECH, CAD, MARKETING, OUTREACH
     ])
     db.session.commit()
 
