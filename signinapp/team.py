@@ -7,7 +7,7 @@ from .model import Role, Subteam, User
 team = Blueprint("team", __name__)
 
 
-@team.route("/admin/users")
+@team.route("/users")
 @login_required
 def users():
     users = User.query.all()
