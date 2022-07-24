@@ -39,7 +39,7 @@
                     href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                     role="button">Delete</a>
                 </div>
-                {%- if not user.approved -%}
+                {%- if current_user.is_authenticated and current_user.role.admin and not user.approved -%}
                 <form class="inlineform"
                       action="{{ url_for('admin.user_approve', user_id=user.id)}}"
                       id="approve{{ user.id }}"
