@@ -8,7 +8,7 @@ team = Blueprint("team", __name__)
 
 
 @team.route("/users")
-@login_required
+@mentor_required
 def users():
     users = User.query.all()
     roles = Role.query.all()
