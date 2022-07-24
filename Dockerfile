@@ -13,3 +13,5 @@ COPY . /app
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 WORKDIR /app
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8100", "--workers", "2", "signinapp:app"]
