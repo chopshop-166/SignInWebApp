@@ -56,9 +56,6 @@
                     <li>
                       <a class="dropdown-item" href="{{ url_for('admin.subteams')}}">Subteams</a>
                     </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('admin.users')}}">Users</a>
-                    </li>
                   </ul>
                 </li>
               {%- endif -%}
@@ -84,6 +81,9 @@
                     </li>
                     <li>
                       <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('team.users')}}">Users</a>
                     </li>
                   </ul>
                 </li>

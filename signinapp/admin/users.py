@@ -29,14 +29,6 @@ class DeleteUserForm(FlaskForm):
     submit = SubmitField()
 
 
-@admin.route("/admin/users")
-@admin_required
-def users():
-    users = User.query.all()
-    roles = Role.query.all()
-    return render_template("admin/users.html.jinja2", users=users, roles=roles)
-
-
 @admin.route("/admin/users/approve", methods=["POST"])
 @admin_required
 def user_approve():
@@ -47,7 +39,7 @@ def user_approve():
         db.session.commit()
     else:
         flash("Invalid user ID")
-    return redirect(url_for("admin.users"))
+    return redirect(url_for("team.users"))
 
 
 @admin.route("/admin/users/new", methods=["GET", "POST"])
@@ -74,7 +66,7 @@ def new_user():
         user.active = form.active.data
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for("admin.users"))
+        return redirect(url_for("team.users"))
 
     form.role.process_data(Role.get_default().id)
 
@@ -88,7 +80,7 @@ def edit_user():
     user : User = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
-        return redirect(url_for("admin.users"))
+        return redirect(url_for("team.users"))
 
     form = UserForm(obj=user)
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
@@ -105,7 +97,7 @@ def edit_user():
         user.approved = form.approved.data
         user.active = form.active.data
         db.session.commit()
-        return redirect(url_for("admin.users"))
+        return redirect(url_for("team.users"))
 
     form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
@@ -120,12 +112,12 @@ def delete_user():
     user = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
-        return redirect(url_for("admin.users"))
+        return redirect(url_for("team.users"))
 
     if form.validate_on_submit():
         db.session.delete(user)
         db.session.commit()
-        return redirect(url_for("admin.users"))
+        return redirect(url_for("team.users"))
 
     form.name.process_data(user.name)
     return render_template("form.html.jinja2", form=form,
