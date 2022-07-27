@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM tiangolo/uwsgi-nginx-flask:python3.10
+FROM python:3.10
 
 LABEL maintainer="Matt Soucy <first@msoucy.me>"
 
@@ -11,3 +11,7 @@ ENV STATIC_PATH /app/signinapp/static
 COPY . /app
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+
+WORKDIR /app
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8100", "--workers", "2", "signinapp:app"]
