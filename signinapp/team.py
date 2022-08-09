@@ -3,6 +3,7 @@ from flask.templating import render_template
 from flask_login import current_user, login_required
 
 from .model import Role, Subteam, User
+from .util import mentor_required
 
 team = Blueprint("team", __name__)
 
