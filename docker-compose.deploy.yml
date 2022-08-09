@@ -22,9 +22,7 @@ services:
 
   chopshop_signin:
     container_name: chopshop_signin
-    build:
-      context: .
-      network: host
+    image: 166first/signinwebapp:latest
     ports:
       - "8100:8100/tcp"
     # Volumes store your data between container upgrades
