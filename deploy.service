@@ -1,0 +1,9 @@
+[Unit]
+Description=Update Signin Web App deployment service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/g166_first/SignInWebApp
+ExecStart=docker compose -f docker-compose.deploy.yml pull
+ExecStart=docker compose -f docker-compose.deploy.yml up -d
+User=g166_first

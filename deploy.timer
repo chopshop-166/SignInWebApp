@@ -1,0 +1,8 @@
+[Unit]
+Description=Update Signin Web App deployment Timer
+
+[Timer]
+OnCalendar=daily
+
+[Install]
+WantedBy=timers.target
