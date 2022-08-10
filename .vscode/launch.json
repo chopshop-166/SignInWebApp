@@ -11,7 +11,7 @@
             "module": "flask",
             "env": {
                 "FLASK_APP": "signinapp/webapp.py",
-                "FLASK_ENV": "development"
+                "FLASK_DEBUG": "1"
             },
             "args": [
                 "run",
@@ -26,8 +26,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "signinapp/webapp.py",
-                "FLASK_ENV": "production"
+                "FLASK_APP": "signinapp/webapp.py"
             },
             "args": [
                 "run",
@@ -42,8 +41,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "signinapp/webapp.py",
-                "FLASK_ENV": "production"
+                "FLASK_APP": "signinapp/webapp.py"
             },
             "args": [
                 "init-db"
