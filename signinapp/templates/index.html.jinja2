@@ -57,7 +57,6 @@ function checkNewEvent() {
   fetch("/autoevent")
       .then(data => data.json())
       .then(json => {
-        alert(json)
         if (json["event"] !== "") {
           window.location = "{{url_for('event.event')}}?event_code="+json["event"]
         }
