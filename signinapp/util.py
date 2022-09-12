@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 from functools import wraps
+from zoneinfo import ZoneInfo
 
 from flask import current_app, redirect, request, url_for
 from flask_login import current_user
@@ -30,5 +32,22 @@ def permission_required(perm):
         return decorated_view
     return wrapper
 
+
 admin_required = permission_required(lambda u: u.role.admin)
 mentor_required = permission_required(lambda u: u.role.mentor)
+
+
+def correct_time_for_storage(time: datetime):
+    # Check if datetime has a tz already:
+    if time.tzinfo is None:
+        # If not, set TZ to ET
+        time.replace(tzinfo=ZoneInfo("America/New_York"))
+    return time.astimezone(timezone.utc)
+
+
+def correct_time_from_storage(time: datetime):
+    # Check if datetime has a tz already:
+    if time.tzinfo is None:
+        # If not, set TZ to ET
+        time = time.replace(tzinfo=timezone.utc)
+    return time.astimezone(ZoneInfo("America/New_York"))

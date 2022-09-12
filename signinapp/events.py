@@ -11,6 +11,7 @@ from wtforms.validators import DataRequired
 
 from .mentor import mentor_required
 from .model import Event, EventType, db, event_code
+from .util import correct_time_for_storage
 
 events = Blueprint("events", __name__)
 
@@ -106,8 +107,10 @@ def bulk_events():
             ev = Event(
                 name=form.name.data,
                 description=form.description.data,
-                start=datetime.combine(d, form.start_time.data).astimezone(timezone.utc),
-                end=datetime.combine(d, form.end_time.data).astimezone(timezone.utc),
+                start=correct_time_for_storage(
+                    datetime.combine(d, form.start_time.data)),
+                end=correct_time_for_storage(
+                    datetime.combine(d, form.end_time.data)),
                 code=event_code(),
                 type_id=form.type_id.data
             )
@@ -126,8 +129,8 @@ def new_event():
     form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
     if form.validate_on_submit():
         ev = Event()
-        form.start.data = form.start.data.astimezone(timezone.utc)
-        form.end.data = form.end.data.astimezone(timezone.utc)
+        form.start.data = correct_time_for_storage(form.start.data)
+        form.end.data = correct_time_for_storage(form.end.data)
         form.populate_obj(ev)
         db.session.add(ev)
         db.session.commit()
@@ -149,8 +152,8 @@ def edit_event():
     form = EventForm(obj=event)
     form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
     if form.validate_on_submit():
-        form.start.data = form.start.data.astimezone(timezone.utc)
-        form.end.data = form.end.data.astimezone(timezone.utc)
+        form.start.data = correct_time_for_storage(form.start.data)
+        form.end.data = correct_time_for_storage(form.end.data)
         form.populate_obj(event)
         db.session.commit()
         return redirect(url_for("events.list_events"))
