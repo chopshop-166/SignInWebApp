@@ -1,0 +1,6 @@
+signin.chopshoplib.info {
+  reverse_proxy localhost:8100
+  log {
+      output file /var/log/caddy/signin-access.log
+  }
+}
