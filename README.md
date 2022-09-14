@@ -51,13 +51,12 @@ docker-compose up -d
 ```
 
 ## Deployment with TLS
-A separate docker-compose file has been provided to deploy the project running under gunicorn, with nginx as a TLS terminating reverse proxy. It will also run certbot to renew TLS certificates from Let's Encrypt automatically.
+A separate docker-compose file has been provided to deploy the project running under gunicorn, with Caddy2 as a TLS terminating reverse proxy.
 
 We are currently running this on a E2-Micro instance in GCP as Google provides one instance for free. The instance was based on the default Debian 11 image and had docker manually installed as this provides the most flexibility.
 
-You'll need to boot strap the certificates when using this docker-compose file as nginx won't start without some form of certificate to load. This can be done with the [init-letsencrypt.sh](https://github.com/wmnnd/nginx-certbot/blob/master/init-letsencrypt.sh). Or the steps in this script can be run manually to have more control over the process.
+It's a simple matter of running docker compose. The compose file has restart set to always so the containers should be started automatically if they crash or the system reboots.
 
-From there it's a simple matter of running docker compose. The compose file has restart set to always so the containers should be started automatically if they crash or the system reboots.
 ```sh
 # Initialize the database
 docker-compose run chopshop_signin ./init-db
