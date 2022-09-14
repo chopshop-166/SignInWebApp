@@ -2,8 +2,10 @@
 {% from 'bootstrap5/utils.html' import render_static, render_icon, render_messages %}
 {% block scripts %}
   {{ super() }}
-  {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
-  <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{current_user.code}}");</script>
+  {% if current_user.is_authenticated %}
+    {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
+    <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{current_user.code}}");</script>
+  {% endif %}
 {% endblock %}
 {% block content %}
   <div class="container pt-3">
@@ -46,7 +48,7 @@
         <div class="card-body">
           <h1 class="card-title">FIRST Robotics Team Chop Shop 166</h1>
           <p class="card-text">
-            We are Merrimack High School FIRST Robotics Competition Team 166, Chop Shop, from Merrimack, New Hampshire. Our mission is to build teamwork and a great robot, along with fostering a love for Science, Technology, Engineering, and Mathematics.
+            {{ config["BLURB"] }}
           </p>
         </div>
       {% endif %}

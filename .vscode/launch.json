@@ -11,7 +11,8 @@
             "module": "flask",
             "env": {
                 "FLASK_APP": "signinapp/webapp.py",
-                "FLASK_DEBUG": "1"
+                "FLASK_DEBUG": "1",
+                "CSSIGNIN_CONFIG": "${fileWorkspaceFolder}/appdata/cssignin.yaml"
             },
             "args": [
                 "run",
@@ -26,7 +27,8 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "signinapp/webapp.py"
+                "FLASK_APP": "signinapp/webapp.py",
+                "CSSIGNIN_CONFIG": "${fileWorkspaceFolder}/appdata/cssignin.yaml"
             },
             "args": [
                 "run",
@@ -41,7 +43,8 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "signinapp/webapp.py"
+                "FLASK_APP": "signinapp/webapp.py",
+                "CSSIGNIN_CONFIG": "${fileWorkspaceFolder}/appdata/cssignin.yaml"
             },
             "args": [
                 "init-db"
