@@ -1,24 +1,18 @@
 version: "3"
 
 services:
-  nginx:
-    image: nginx:1.23.1
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"
     volumes:
-      - ./appdata/nginx:/etc/nginx/conf.d
-      - ./appdata/certbot/conf:/etc/letsencrypt
-      - ./appdata/certbot/www:/var/www/certbot
-    restart: unless-stopped
-
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./appdata/certbot/conf:/etc/letsencrypt
-      - ./appdata/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    restart: unless-stopped
+      - $PWD/appdata/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/appdata/data:/data
+      - $PWD/appdata/config:/config
+      - $PWD/appdata/logs:/var/log/caddy
 
   chopshop_signin:
     container_name: chopshop_signin
