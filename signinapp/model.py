@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from .util import correct_time_from_storage, correct_time_for_storage
+
 import base64
 import dataclasses
 import datetime
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -22,9 +25,6 @@ NAME_RE = re.compile(
 
 HASH_RE = re.compile(
     r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
-
-
-LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
 
 
 def mk_hash(name: str):
@@ -166,20 +166,22 @@ class Event(db.Model):
     @hybrid_property
     def start_local(self) -> str:
         ' Start time in local time zone '
-        return self.start.astimezone(LOCAL_TIMEZONE).strftime("%c")
+        return correct_time_from_storage(self.start).strftime("%c")
 
     @hybrid_property
     def end_local(self) -> str:
         ' End time in local time zone '
-        return self.end.astimezone(LOCAL_TIMEZONE).strftime("%c")
+        return correct_time_from_storage(self.end).strftime("%c")
 
     @hybrid_property
     def is_active(self) -> bool:
         ' Test for if the event is currently active '
-        now = datetime.now()
+        now = datetime.now(tz=timezone.utc)
+        start = correct_time_from_storage(self.start)
+        end = correct_time_from_storage(self.end)
         return (self.enabled &
-                (self.start < now) &
-                (now < self.end))
+                (start < now) &
+                (now < end))
 
     @is_active.expression
     def is_active(cls):
@@ -241,7 +243,7 @@ class Active(db.Model):
     @hybrid_property
     def start_local(self) -> str:
         ' Start time in local time zone '
-        return self.start.astimezone(LOCAL_TIMEZONE).strftime("%c")
+        return correct_time_from_storage(self.start).strftime("%c")
 
     @hybrid_method
     def as_dict(self):
@@ -282,8 +284,8 @@ class Stamps(db.Model):
         return {
             "user": self.user.human_readable(),
             "elapsed": str(self.elapsed),
-            "start": self.start,
-            "end": self.end,
+            "start": correct_time_from_storage(self.start),
+            "end": correct_time_from_storage(self.end),
             "event": self.event.name
         }
 
@@ -291,9 +293,12 @@ class Stamps(db.Model):
     def as_list(self):
         ' Return a list for sending to the web page '
         return [self.user.human_readable(),
-                self.start, self.end,
+                correct_time_from_storage(self.start),
+                correct_time_from_storage(self.end),
                 self.elapsed,
-                self.event.name, self.event.type_.name]
+                self.event.name,
+                self.event.type_.name
+                ]
 
     @staticmethod
     def get(name=None, event=None):
@@ -318,16 +323,19 @@ class Stamps(db.Model):
             code = mk_hash(name)
             query = query.join(User).filter_by(code=code)
         if start:
-            query = query.filter(Stamps.start < start)
+            query = query.filter(
+                Stamps.start < correct_time_for_storage(start))
         if end:
-            query = query.filter(Stamps.end > end)
+            query = query.filter(
+                Stamps.end > correct_time_for_storage(end))
         if type_:
             query = query.join(Event).filter_by(type_=type_)
         if subteam:
             query = query.join(User).filter_by(subteam=subteam)
         result = [stamp.as_list() for stamp in query.all()]
         if headers:
-            result = [["Name", "Start", "End", "Elapsed", "Event", "Event Type"]] + result
+            result = [["Name", "Start", "End", "Elapsed",
+                       "Event", "Event Type"]] + result
         return result
 
 

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from dateutil.rrule import WEEKLY, rrule
 from flask import Blueprint, flash, redirect, request, url_for
@@ -11,6 +11,7 @@ from wtforms.validators import DataRequired
 
 from .mentor import mentor_required
 from .model import Event, EventType, db, event_code
+from .util import correct_time_for_storage
 
 events = Blueprint("events", __name__)
 
@@ -97,8 +98,7 @@ def bulk_events():
     form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
 
     if form.validate_on_submit():
-        start_time = datetime.combine(form.start_day.data,
-                                      form.start_time.data)
+        start_time = datetime.combine(form.start_day.data, form.start_time.data)
         end_time = datetime.combine(form.end_day.data, form.end_time.data)
         days = rrule(WEEKLY,
                      byweekday=[WEEKDAYS.index(d) for d in form.days.data]
@@ -107,10 +107,12 @@ def bulk_events():
             ev = Event(
                 name=form.name.data,
                 description=form.description.data,
-                start=datetime.combine(d, form.start_time.data),
-                end=datetime.combine(d, form.end_time.data),
+                start=correct_time_for_storage(
+                    datetime.combine(d, form.start_time.data)),
+                end=correct_time_for_storage(
+                    datetime.combine(d, form.end_time.data)),
                 code=event_code(),
-                type_=EventType.query.get(form.type_id.data)
+                type_id=form.type_id.data
             )
             db.session.add(ev)
         db.session.commit()
@@ -127,8 +129,9 @@ def new_event():
     form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
     if form.validate_on_submit():
         ev = Event()
+        form.start.data = correct_time_for_storage(form.start.data)
+        form.end.data = correct_time_for_storage(form.end.data)
         form.populate_obj(ev)
-        ev.type_=EventType.query.get(form.type_id.data)
         db.session.add(ev)
         db.session.commit()
         return redirect(url_for("events.list_events"))
@@ -149,8 +152,9 @@ def edit_event():
     form = EventForm(obj=event)
     form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
     if form.validate_on_submit():
+        form.start.data = correct_time_for_storage(form.start.data)
+        form.end.data = correct_time_for_storage(form.end.data)
         form.populate_obj(event)
-        event.type_ = EventType.query.get(form.type_id.data)
         db.session.commit()
         return redirect(url_for("events.list_events"))
 
