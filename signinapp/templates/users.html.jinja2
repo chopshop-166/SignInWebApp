@@ -16,7 +16,10 @@
             <th scope="col">User</th>
             <th scope="col">Subteam</th>
             <th scope="col">Total Time</th>
-            <th scope="col">Approved</th>
+            <th scope="col">Phone Number</th>
+            <th scope="col">email</th>
+            <th scope="col">Address</th>
+            <th scope="col">T-Shirt Size</th>
             <th scope="col">Edit</th>
           </tr>
         </thead>
@@ -25,11 +28,14 @@
             <tr>
               <th>
                 <a class="link-light"
-                   href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.name }}</a>
+                   href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.preferred_name }}</a>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
-              <td>{{ user.approved }}</td>
+              <td>{{ user.phone_number }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.address }}</td>
+              <td>{{ user.tshirt_size }}</td>
               <td>
                 <div class="btn-group" role="group" aria-label="User Actions">
                   <a class="btn btn-secondary"

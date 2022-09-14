@@ -5,6 +5,7 @@ from .util import correct_time_from_storage, correct_time_for_storage
 import base64
 import dataclasses
 import datetime
+import enum
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -51,14 +52,33 @@ class StampEvent():
     event: str
 
 
+class ShirtSizes(enum.Enum):
+    Small = 1
+    Medium = 2
+    Large = 3
+    X_Large = 4
+    XX_Large = 5
+    XXX_Large = 6
+
+    @classmethod
+    def get_size_names(cls):
+        return [(size.name, size.name.replace("_", "-")) for size in cls]
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+    preferred_name = db.Column(db.String, nullable=True)
     password = db.Column(db.String)
+    subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
+    phone_number = db.Column(db.String)
+    email = db.Column(db.String)
+    address = db.Column(db.String)
+    tshirt_size = db.Column(db.Enum(ShirtSizes))
+
     code = db.Column(db.String, nullable=False, unique=True)
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
-    subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
     approved = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
 
@@ -125,14 +145,26 @@ class User(UserMixin, db.Model):
         return f"{'*' if self.role.mentor else ''}{self.name}"
 
     @staticmethod
-    def make(name: str, password: str, role: Role,
+    def make(name: str, password: str, role: Role, preferred_name: str = None,
+             phone_number: str = None, email: str = None, address: str = None,
+             tshirt_size: ShirtSizes = None,
              subteam: Subteam = None, approved=False) -> User:
         ' Make a user, with password and hash '
-        return User(name=name, password=generate_password_hash(password),
-                    code=mk_hash(name), role_id=role.id, subteam=subteam,
+        if not preferred_name:
+            preferred_name = name
+        return User(name=name,
+                    password=generate_password_hash(password),
+                    code=mk_hash(name),
+                    role_id=role.id,
+                    preferred_name=preferred_name,
+                    phone_number=phone_number,
+                    email=email,
+                    address=address,
+                    tshirt_size=tshirt_size,
+                    subteam=subteam,
                     approved=approved)
 
-    @staticmethod
+    @ staticmethod
     def get_canonical(name) -> User | None:
         ' Look up user by name '
         code = mk_hash(name)
@@ -380,6 +412,10 @@ class Subteam(db.Model):
     def from_name(cls, name) -> Subteam:
         ' Get a subteam by name '
         return cls.query.filter_by(name=name).one_or_none()
+
+    @classmethod
+    def get_subteam(cls) -> List[str]:
+        return [subteam.name for subteam in cls.query.all()]
 
 
 class Badge(db.Model):

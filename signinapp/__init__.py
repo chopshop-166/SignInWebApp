@@ -124,9 +124,10 @@ if app.config["DEBUG"]:
         STUDENT = Role.from_name("student")
         SOFTWARE = Subteam.from_name("Software")
 
-        mentor = User.make("Matt Soucy", password="1234", role=MENTOR)
+        mentor = User.make("Matt Soucy", preferred_name="Matt",
+                           password="1234", role=MENTOR)
         mentor.approved = True
-        student = User.make("Jeff Burke", password="1234",
+        student = User.make("Jeff Burke", preferred_name="Jeff", password="1234",
                             role=STUDENT, subteam=SOFTWARE)
         student.approved = True
         safe = Badge(name="Safety Certified",
