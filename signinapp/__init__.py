@@ -124,7 +124,12 @@ if app.config["DEBUG"]:
         STUDENT = Role.from_name("student")
         SOFTWARE = Subteam.from_name("Software")
 
-        mentor = User.make("Matt Soucy", preferred_name="Matt",
+        mentor = User.make("Matt Soucy",
+                           preferred_name="Matt",
+                           phone_number="603 555-5555",
+                           email="first@test.com",
+                           address="123 First Street",
+                           tshirt_size="Large",
                            password="1234", role=MENTOR)
         mentor.approved = True
         student = User.make("Jeff Burke", preferred_name="Jeff", password="1234",
