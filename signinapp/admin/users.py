@@ -47,8 +47,7 @@ def user_approve():
 def new_user():
     form = UserForm()
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
-                                          for s in Subteam.query.all()]
+    form.subteam.choices = Subteam.get_subteams()
 
     if form.validate_on_submit():
         if User.get_canonical(form.name.data) is not None:
@@ -77,15 +76,14 @@ def new_user():
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
-    user : User = User.query.get(request.args["user_id"])
+    user: User = User.query.get(request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("team.users"))
 
     form = UserForm(obj=user)
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
-                                          for s in Subteam.query.all()]
+    form.subteam.choices = Subteam.get_subteams()
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password

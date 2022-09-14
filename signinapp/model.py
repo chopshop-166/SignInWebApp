@@ -69,7 +69,7 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    preferred_name = db.Column(db.String, nullable=True)
+    preferred_name = db.Column(db.String)
     password = db.Column(db.String)
     subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
     phone_number = db.Column(db.String)
@@ -414,8 +414,9 @@ class Subteam(db.Model):
         return cls.query.filter_by(name=name).one_or_none()
 
     @classmethod
-    def get_subteam(cls) -> List[str]:
-        return [subteam.name for subteam in cls.query.all()]
+    def get_subteams(cls) -> List[str]:
+        return [(0, "None")]+[(s.id, s.name)
+                              for s in Subteam.query.all()]
 
 
 class Badge(db.Model):

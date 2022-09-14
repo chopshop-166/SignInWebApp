@@ -60,7 +60,7 @@ class ChangePasswordForm(FlaskForm):
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
-    form.subteam.choices = Subteam.get_subteam()
+    form.subteam.choices = Subteam.get_subteams()
     if form.validate_on_submit():
         # code to validate and add user to database goes here
         name = form.name.data
@@ -71,7 +71,7 @@ def register():
         address = form.address.data
         tshirt_size = ShirtSizes[form.tshirt_size.data]
 
-        subteam = Subteam.from_name(form.subteam.data)
+        subteam = Subteam.query.get(form.subteam.data)
 
         # if this returns a user, then the user already exists in database
         user = User.get_canonical(name)
