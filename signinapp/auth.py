@@ -27,7 +27,7 @@ auth = Blueprint("auth", __name__)
 
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    preferred_name = StringField("Preferred Name", validators=[DataRequired()])
+    preferred_name = StringField("Preferred Name")
 
     phone_number = TelField("Phone Number", validators=[DataRequired()])
     email = EmailField("Email Address", validators=[DataRequired()])
