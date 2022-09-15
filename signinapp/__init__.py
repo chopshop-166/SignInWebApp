@@ -8,6 +8,7 @@ from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from get_docker_secret import get_docker_secret
+import yaml
 
 from .admin import admin
 from .auth import auth, login_manager
@@ -21,21 +22,41 @@ from .user import user
 
 app = Flask(__name__)
 
+class Config(object):
+    TITLE = "Chop Shop Sign In"
+    BLURB = """
+We are Merrimack High School FIRST Robotics Competition Team 166, Chop Shop, from Merrimack, New Hampshire.
+Our mission is to build teamwork and a great robot, along with fostering a love for Science, Technology, Engineering, and Mathematics.""".strip()
+    DB_NAME = "signin.db"
+    TIME_ZONE = "America/New_York"
+
+class DebugConfig(Config):
+    TITLE = "Chop Shop Sign In (debug)"
+    DB_NAME = ':memory:'
+
+# First load the default config...
+if app.config["DEBUG"]:
+    app.config.from_object(DebugConfig)
+else:
+    app.config.from_object(Config)
+# ...then load the config file if it exists...
+rv = os.environ.get("CSSIGNIN_CONFIG")
+if rv:
+    app.config.from_file(rv, load=yaml.safe_load, silent=True)
+# ...then load from environment variables...
+app.config.from_prefixed_env()
+# ...finally load the secret key
+app.secret_key = get_docker_secret("FLASK_SECRET_KEY", default="1234")
+
+app.config.setdefault('SQLALCHEMY_DATABASE_URI', 'sqlite:///' + app.config['DB_NAME'])
+app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', True)
+
 scss = Bundle('custom.scss',
               filters='libsass,cssmin',
               depends="scss/*.scss",
               output='custom.generated.css')
 assets = Environment(app)
 assets.register('custom_css', scss)
-
-app.secret_key = get_docker_secret("FLASK_SECRET_KEY") or "1234"
-
-if app.config["DEBUG"]:
-    db_name = ':memory:'
-else:
-    db_name = os.environ.get('CS_SIGNIN_DB', 'signin.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 excel.init_excel(app)
 

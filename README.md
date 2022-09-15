@@ -17,6 +17,9 @@ FLASK_SECRET_KEY=1234
 Replace the key with a secret value.
 It will be ignored via the `.gitignore` file, so no need to worry about not checking it in.
 
+Remaining configuration is done via `appdata/cssignin.yaml`.
+Copy the `appdata/cssignin.defaults.yaml` file to that name, then customize any variables found in it.
+
 Then, run the following commands:
 
 ```sh
