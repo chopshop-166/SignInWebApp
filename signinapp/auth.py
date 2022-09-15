@@ -8,7 +8,7 @@ from wtforms import BooleanField, PasswordField, StringField, SubmitField, TelFi
 from wtforms.validators import DataRequired, EqualTo
 from wtforms.fields import SelectField
 
-from .model import Role, User, db, Subteam, ShirtSizes
+from .model import Role, User, db, Subteam, ShirtSizes, Guardian
 
 login_manager = LoginManager()
 
@@ -36,6 +36,21 @@ class RegisterForm(FlaskForm):
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()])
 
     subteam = SelectField("Subteam", validators=[DataRequired()])
+
+    first_guardian_name = StringField(
+        "1st Parent Name", validators=[DataRequired()])
+    first_guardian_phone_number = TelField(
+        "1st Parent Phone Number", validators=[DataRequired()])
+    first_guardian_email = EmailField(
+        "1st Parent email", validators=[DataRequired()])
+
+    second_guardian_name = StringField(
+        "2nd Parent Name")
+    second_guardian_phone_number = TelField(
+        "2nd Parent Phone Number")
+    second_guardian_email = EmailField(
+        "2nd Parent email")
+
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Register")
 
@@ -95,9 +110,30 @@ def register():
                              role=Role.get_default(),
                              subteam=subteam,
                              )
-
-        # add the new user to the database
         db.session.add(new_user)
+
+        first_guardian_name = form.first_guardian_name.data
+        first_guardian_phone_number = form.first_guardian_phone_number.data
+        first_guardian_email = form.first_guardian_email.data
+
+        first_guardian = User.get_canonical(first_guardian_name)
+        if first_guardian:
+            first_guardian.guardian.update_guardian(new_user)
+        else:
+            first_guardian = User.make_guardian(
+                student=new_user, name=first_guardian_name, phone_number=first_guardian_phone_number, email=first_guardian_email)
+
+        if form.second_guardian_name.data:
+            second_guardian_name = form.second_guardian_name.data
+            second_guardian_phone_number = form.second_guardian_phone_number.data
+            second_guardian_email = form.second_guardian_email.data
+            second_guardian = User.get_canonical(second_guardian_name)
+            if second_guardian:
+                second_guardian.guardian.update_guardian(new_user)
+            else:
+                second_guardian = User.make_guardian(
+                    student=new_user, name=second_guardian_name, phone_number=second_guardian_phone_number, email=second_guardian_email)
+
         db.session.commit()
         return redirect('/login')
     return render_template("auth/register.html.jinja2", form=form)

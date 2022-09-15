@@ -11,7 +11,7 @@ team = Blueprint("team", __name__)
 @team.route("/users")
 @mentor_required
 def users():
-    users = User.query.all()
+    users = User.get_visible_users()
     roles = Role.query.all()
     return render_template("users.html.jinja2", users=users, roles=roles)
 

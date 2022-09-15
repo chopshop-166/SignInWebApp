@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from functools import wraps
+import string
 from zoneinfo import ZoneInfo
 
 from flask import current_app, redirect, request, url_for
@@ -51,3 +52,18 @@ def correct_time_from_storage(time: datetime):
         # If not, set TZ to ET
         time = time.replace(tzinfo=timezone.utc)
     return time.astimezone(ZoneInfo(current_app.config['TIME_ZONE']))
+
+
+def normalize_phone_number_for_storage(number: str):
+    """ Remove all extra whitespace and characters from a phone number"""
+    stripped = ''.join(c for c in number.strip() if c in string.digits)
+    if len(stripped) != 10:
+        return None
+    return stripped
+
+
+def normalize_phone_number_from_storage(number: str):
+    """Format the phone number for display"""
+    if number:
+        return f"({number[0:3]}) {number[3:6]}-{number[6:10]}"
+    return "N/A"
