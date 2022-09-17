@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, request
+from flask import Blueprint, current_app, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import current_user, login_required
 
@@ -28,4 +28,4 @@ def badge():
         awards = BadgeAward.query.filter_by(badge_id=bid).all()
         awards.sort(key=lambda u: u.owner.name)
         return render_template("badge.html.jinja2", badge=badge, awards=awards)
-    return current_app.login_manager.unauthorized()
+    return redirect(url_for('mentor.all_badges', badge_id=badge.id))

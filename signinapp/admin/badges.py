@@ -28,7 +28,7 @@ def new_badge():
         form.populate_obj(badge)
         db.session.add(badge)
         db.session.commit()
-        return redirect(url_for("admin.all_badges"))
+        return redirect(url_for("mentor.all_badges"))
 
     return render_template("form.html.jinja2", form=form,
                            title="New Badge - Chop Shop Sign In")
@@ -42,14 +42,14 @@ def edit_badge():
 
     if not badge:
         flash("Badge does not exist")
-        return redirect(url_for("admin.all_badges"))
+        return redirect(url_for("mentor.all_badges"))
 
     form = BadgeForm(obj=badge)
 
     if form.validate_on_submit():
         form.populate_obj(badge)
         db.session.commit()
-        return redirect(url_for("admin.all_badges"))
+        return redirect(url_for("mentor.all_badges"))
 
     return render_template("form.html.jinja2", form=form,
                            title=f"Edit Badge {badge.name} - Chop Shop Sign In")

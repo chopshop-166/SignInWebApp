@@ -74,7 +74,7 @@ def award_badge():
 
     if not badge:
         flash("Badge does not exist")
-        return redirect(url_for("admin.all_badges"))
+        return redirect(url_for("mentor.all_badges"))
         
     form = BadgeAwardForm()
     form.users.choices = [p.name for p in people]
@@ -86,7 +86,7 @@ def award_badge():
             else:
                 user.remove_badge(badge_id)
         db.session.commit()
-        return redirect(url_for("admin.all_badges"))
+        return redirect(url_for("mentor.all_badges"))
 
     form.users.process_data([p.name for p in people if p.has_badge(badge_id)])
 
