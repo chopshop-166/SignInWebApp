@@ -12,6 +12,7 @@ from .util import admin
 
 
 class UserForm(FlaskForm):
+    username = StringField(validators=[DataRequired()])
     name = StringField(validators=[DataRequired()])
     preferred_name = StringField("Preferred Name")
     password = PasswordField()
@@ -63,6 +64,7 @@ def new_user():
             return redirect(url_for("admin.new_user"))
 
         user = User.make(
+            username=form.username.data,
             name=form.name.data,
             password=form.password.data,
             approved=form.approved.data,
@@ -101,6 +103,7 @@ def edit_user():
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
+        user.username = form.username.data
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)

@@ -4,11 +4,11 @@ import datetime
 import os
 
 import flask_excel as excel
+import yaml
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from get_docker_secret import get_docker_secret
-import yaml
 
 from .admin import admin
 from .auth import auth, login_manager
@@ -116,8 +116,8 @@ def init_default_db():
     ])
     db.session.commit()
 
-    admin_user = User.make("admin", password="1234", role=ADMIN, approved=True)
-    display = User.make("display", password="1234",
+    admin_user = User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
+    display = User.make("display", "display", password="1234",
                         role=DISPLAY, approved=True)
     db.session.add_all([admin_user, display])
     db.session.commit()
@@ -148,17 +148,18 @@ if app.config["DEBUG"]:
         STUDENT = Role.from_name("student")
         SOFTWARE = Subteam.from_name("Software")
 
-        mentor = User.make("Matt Soucy",
+        mentor = User.make("msoucy",
+                           "Matt Soucy",
                            preferred_name="Matt",
                            phone_number="603 555-5555",
                            email="first@test.com",
                            address="123 First Street",
                            tshirt_size="Large",
-                           password="1234", role=MENTOR)
-        mentor.approved = True
-        student = User.make("Jeff Burke", preferred_name="Jeff", password="1234",
-                            role=STUDENT, subteam=SOFTWARE)
-        student.approved = True
+                           password="1234",
+                           role=MENTOR,
+                           approved=True)
+        student = User.make("jburke", "Jeff Burke", preferred_name="Jeff",
+                            password="1234", role=STUDENT, subteam=SOFTWARE, approved=True)
         safe = Badge(name="Safety Certified",
                      icon="cone-striped", color="orange",
                      description="Passed Safety Training")
