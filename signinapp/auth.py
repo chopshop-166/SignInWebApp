@@ -9,7 +9,7 @@ from wtforms import (BooleanField, EmailField, PasswordField, StringField,
 from wtforms.fields import SelectField
 from wtforms.validators import DataRequired, EqualTo
 
-from .model import Guardian, Role, ShirtSizes, Subteam, User, db
+from .model import Guardian, Role, ShirtSizes, Subteam, User, db, get_form_ids
 
 login_manager = LoginManager()
 
@@ -17,8 +17,8 @@ login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(user_id):
     # since the user_id is just the primary key of our user table,
-    # use it in the query for the user
-    user = User.query.get(int(user_id))
+    # use it to look up the user
+    user = db.session.get(User, int(user_id))
     if user and user.approved:
         return user
 
@@ -77,7 +77,7 @@ class ChangePasswordForm(FlaskForm):
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
-    form.subteam.choices = Subteam.get_subteams()
+    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
         username = form.username.data

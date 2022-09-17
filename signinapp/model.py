@@ -7,11 +7,11 @@ import enum
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.future import select
 from sqlalchemy.orm import relationship
@@ -49,6 +49,13 @@ def canonical_name(name: str):
         return mk_hash(f"{m['first']} {m['last']}")
 
 
+def get_form_ids(model, add_null_id=False):
+    return ([(0, "None")] if add_null_id else []) + [
+        (x.id, x.name)
+        for x in db.session.scalars(select(model))
+    ]
+
+
 @dataclasses.dataclass
 class StampEvent():
     name: str
@@ -66,6 +73,38 @@ class ShirtSizes(enum.Enum):
     @classmethod
     def get_size_names(cls):
         return [(size.name, size.value) for size in cls]
+
+
+class Badge(db.Model):
+    ' Represents an "achievement", accomplishment, or certification '
+    __tablename__ = "badges"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String)
+    icon = db.Column(db.String)
+    color = db.Column(db.String, default="black")
+
+    awards = db.relationship("BadgeAward", back_populates="badge")
+
+    @classmethod
+    def from_name(cls, name) -> Badge:
+        ' Get a badge by name '
+        return db.session.scalar(select(cls).filter_by(name=name))
+
+
+class BadgeAward(db.Model):
+    ' Represents a pairing of user to badge, with received date '
+    __tablename__ = "badge_awards"
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"), primary_key=True)
+    received = db.Column(db.DateTime, server_default=func.now())
+
+    owner = db.relationship("User", back_populates="awards", uselist=False)
+    badge = db.relationship("Badge")
+
+    def __init__(self, badge=None, owner=None):
+        self.owner = owner
+        self.badge = badge
 
 
 parent_child_association_table = db.Table(
@@ -94,14 +133,16 @@ class User(UserMixin, db.Model):
     approved = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
 
-    stamps = relationship("Stamps", back_populates="user")
-    role = relationship("Role")
-    subteam = relationship("Subteam", back_populates="members")
-    awards = relationship("BadgeAward", back_populates="owner")
+    stamps = db.relationship("Stamps", back_populates="user")
+    role = db.relationship("Role")
+    subteam = db.relationship("Subteam", back_populates="members")
 
-    guardian_user_data = relationship(
+    awards = db.relationship("BadgeAward", back_populates="owner", cascade="all, delete-orphan")
+    badges = association_proxy("awards", "badge")
+
+    guardian_user_data = db.relationship(
         "Guardian", back_populates="user", uselist=False)
-    guardians = relationship(
+    guardians = db.relationship(
         "Guardian", secondary=parent_child_association_table, back_populates="students")
 
     @hybrid_property
@@ -114,11 +155,6 @@ class User(UserMixin, db.Model):
         ' Total time for all stamps '
         return sum((s.elapsed for s in self.stamps), start=timedelta())
 
-    @hybrid_property
-    def badges(self) -> list[BadgeAward]:
-        ' The badges associated with this user '
-        return BadgeAward.query.filter_by(user_id=self.id).all()
-
     @property
     def formatted_phone_number(self) -> str:
         return normalize_phone_number_from_storage(self.phone_number)
@@ -126,21 +162,23 @@ class User(UserMixin, db.Model):
     @hybrid_method
     def has_badge(self, badge_id: int) -> bool:
         ' Test if a badge is assigned to a user '
-        return badge_id in [b.badge_id for b in self.badges]
+        badge = db.session.get(Badge, badge_id)
+        return badge in self.badges
 
     @hybrid_method
     def award_badge(self, badge_id: int):
         ' Assign a badge to a user '
         if not self.has_badge(badge_id):
-            award = BadgeAward(badge_id=badge_id, owner=self)
-            db.session.add(award)
+            badge = db.session.get(Badge, badge_id)
+            self.badges.append(badge)
             db.session.commit()
 
     @hybrid_method
     def remove_badge(self, badge_id: int):
         ' Remove a badge from a user '
         if self.has_badge(badge_id):
-            BadgeAward.query.filter_by(badge_id=badge_id, owner=self).delete()
+            badge = db.session.get(Badge, badge_id)
+            self.badges.remove(badge)
             db.session.commit()
 
     @hybrid_method
@@ -171,10 +209,12 @@ class User(UserMixin, db.Model):
 
     @classmethod
     def get_visible_users(cls) -> list[User]:
-        return db.session.query(cls).join(Role).filter(Role.visible == True)
+        return db.session.scalars(
+            select(cls).join(Role).where(Role.visible == True)
+        )
 
     @staticmethod
-    def make(username: str, name: str, password: str, role: Role, approved=False, **kwargs) -> User:
+    def make(username: str, name: str, password: str, role: Role, approved=False, subteam=None, **kwargs) -> User:
         ' Make a user, with password and hash '
         if "phone_number" in kwargs:
             kwargs["phone_number"] = normalize_phone_number_for_storage(
@@ -184,6 +224,7 @@ class User(UserMixin, db.Model):
                     password=generate_password_hash(password),
                     code=mk_hash(name),
                     role_id=role.id,
+                    subteam_id=subteam.id if subteam else 0,
                     approved=approved, **kwargs)
 
     @staticmethod
@@ -204,7 +245,7 @@ class User(UserMixin, db.Model):
     def get_canonical(name) -> User | None:
         ' Look up user by name '
         code = mk_hash(name)
-        return User.query.filter_by(code=code).one_or_none()
+        return db.session.scalar(select(User).filter_by(code=code))
 
     @staticmethod
     def from_username(username) -> User | None:
@@ -228,10 +269,10 @@ class Guardian(db.Model):
     contact_order = db.Column(db.Integer)
 
     # One to One: Links User to row in Guardian table
-    user = relationship("User", back_populates="guardian_user_data")
+    user = db.relationship("User", back_populates="guardian_user_data")
 
     # Many to Many: Links Guardian to Children
-    students = relationship(
+    students = db.relationship(
         "User", secondary=parent_child_association_table, back_populates="guardians")
 
     @classmethod
@@ -270,9 +311,9 @@ class Event(db.Model):
     # Whether the event is enabled
     enabled = db.Column(db.Boolean, default=True, nullable=False)
 
-    stamps = relationship("Stamps", back_populates="event")
-    active = relationship("Active", back_populates="event")
-    type_ = relationship("EventType", back_populates="events")
+    stamps = db.relationship("Stamps", back_populates="event")
+    active = db.relationship("Active", back_populates="event")
+    type_ = db.relationship("EventType", back_populates="events")
 
     @hybrid_property
     def start_local(self) -> str:
@@ -309,12 +350,13 @@ class Event(db.Model):
         if not code:
             return
 
-        user = User.query.filter_by(code=code).one_or_none()
+        user = db.session.scalar(select(User).filter_by(code=code))
         if not (user and user.approved):
             return
 
-        active = Active.query.filter_by(event=self).join(
-            User).filter_by(code=code).one_or_none()
+        active = db.session.scalar(
+            select(Active).where(Active.user == user, Active.event == self)
+        )
         if not active:
             active = Active(user=user, event=self)
             db.session.add(active)
@@ -338,7 +380,7 @@ class EventType(db.Model):
     description = db.Column(db.String)
     autoload = db.Column(db.Boolean, nullable=False, default=False)
 
-    events = relationship("Event", back_populates="type_")
+    events = db.relationship("Event", back_populates="type_")
 
 
 class Active(db.Model):
@@ -348,8 +390,8 @@ class Active(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
     start = db.Column(db.DateTime, server_default=func.now())
 
-    user = relationship("User")
-    event = relationship("Event")
+    user = db.relationship("User")
+    event = db.relationship("Event")
 
     @hybrid_property
     def start_local(self) -> str:
@@ -366,11 +408,11 @@ class Active(db.Model):
         }
 
     @staticmethod
-    def get(event=None) -> list[dict]:
-        query = Active.query
-        if event:
-            query = query.join(Event).filter(Event.code == event)
-        return [active.as_dict() for active in query.all()]
+    def get(event_code=None) -> list[dict]:
+        stmt = select(Active)
+        if event_code:
+            stmt = stmt.filter(Active.event.code == event_code)
+        return [active.as_dict() for active in db.session.scalars(stmt)]
 
 
 class Stamps(db.Model):
@@ -381,8 +423,8 @@ class Stamps(db.Model):
     start = db.Column(db.DateTime)
     end = db.Column(db.DateTime, server_default=func.now())
 
-    user = relationship("User", back_populates="stamps")
-    event = relationship("Event", back_populates="stamps")
+    user = db.relationship("User", back_populates="stamps")
+    event = db.relationship("Event", back_populates="stamps")
 
     @hybrid_property
     def elapsed(self) -> timedelta:
@@ -412,15 +454,15 @@ class Stamps(db.Model):
                 ]
 
     @staticmethod
-    def get(name=None, event=None):
+    def get(name=None, event_code=None):
         ' Get stamps matching a requirement '
-        query = Stamps.query.join(Event).filter_by(enabled=True)
-        if event:
-            query = query.filter_by(code=event)
+        stmt = select(Stamps).where(Stamps.event.enabled == True)
+        if event_code:
+            stmt = stmt.where(Stamps.event.code == event_code)
         if name:
-            code = canonical_name(name)
-            query = query.join(User).filter_by(code=code)
-        return [s.as_dict() for s in query.all()]
+            user_code = canonical_name(name)
+            stmt = stmt.where(Stamps.user.code == user_code)
+        return [s.as_dict() for s in db.session.scalars(stmt)]
 
     @staticmethod
     def export(name: str = None,
@@ -429,21 +471,19 @@ class Stamps(db.Model):
                type_: str = None,
                subteam: Subteam = None,
                headers=True) -> list[list[str]]:
-        query = Stamps.query.join(Event).filter_by(enabled=True)
+        stmt = select(Stamps).join(Stamps.event.enabled == True)
         if name:
             code = mk_hash(name)
-            query = query.join(User).filter_by(code=code)
+            stmt = stmt.where(Stamps.user.code == code)
         if start:
-            query = query.filter(
-                Stamps.start < correct_time_for_storage(start))
+            stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
         if end:
-            query = query.filter(
-                Stamps.end > correct_time_for_storage(end))
+            stmt = stmt.where(Stamps.end > correct_time_for_storage(end))
         if type_:
-            query = query.join(Event).filter_by(type_=type_)
+            stmt = stmt.where(Stamps.event.type_ == type_)
         if subteam:
-            query = query.join(User).filter_by(subteam=subteam)
-        result = [stamp.as_list() for stamp in query.all()]
+            stmt.where(Stamps.user.subteam == subteam)
+        result = [stamp.as_list() for stamp in db.session.scalars(stmt)]
         if headers:
             result = [["Name", "Start", "End", "Elapsed",
                        "Event", "Event Type"]] + result
@@ -467,23 +507,23 @@ class Role(db.Model):
     @classmethod
     def from_name(cls, name) -> Role:
         ' Get a role by name '
-        return cls.query.filter_by(name=name).one_or_none()
+        return db.session.scalar(select(cls).where(cls.name == name))
 
     @classmethod
     def get_default(cls) -> Role:
         'Get the default role'
-        return cls.query.filter_by(default_role=True).one_or_none()
+        return db.session.scalar(select(cls).where(cls.default_role == True))
 
     @classmethod
     def set_default(cls, def_role):
         'Set the default role'
-        for role in cls.query.all():
+        for role in db.session.scalar(select(cls)):
             role.default_role = (role == def_role)
         db.session.commit()
 
     @classmethod
     def get_visible(cls):
-        return cls.query.filter(cls.visible == True)
+        return db.session.scalars(select(cls).where(cls.visible == True))
 
 
 class Subteam(db.Model):
@@ -491,43 +531,9 @@ class Subteam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
 
-    members = relationship("User", back_populates="subteam")
+    members = db.relationship("User", back_populates="subteam")
 
     @classmethod
     def from_name(cls, name) -> Subteam:
         ' Get a subteam by name '
-        return cls.query.filter_by(name=name).one_or_none()
-
-    @classmethod
-    def get_subteams(cls) -> list[str]:
-        return [(0, "None")]+[(s.id, s.name)
-                              for s in Subteam.query.all()]
-
-
-class Badge(db.Model):
-    ' Represents an "achievement", accomplishment, or certification '
-    __tablename__ = "badges"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    description = db.Column(db.String)
-    icon = db.Column(db.String)
-    color = db.Column(db.String, default="black")
-
-    awards = relationship("BadgeAward", back_populates="badge")
-
-    @classmethod
-    def from_name(cls, name) -> Subteam:
-        ' Get a badge by name '
-        return cls.query.filter_by(name=name).one_or_none()
-
-
-class BadgeAward(db.Model):
-    ' Represents a pairing of user to badge, with received date '
-    __tablename__ = "badge_awards"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"))
-    received = db.Column(db.DateTime, server_default=func.now())
-
-    owner = relationship("User", uselist=False)
-    badge = relationship("Badge", back_populates="awards")
+        return db.session.scalar(select(cls).filter_by(name=name))

@@ -2,7 +2,8 @@ from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from sqlalchemy import not_, select
+from sqlalchemy import not_
+from sqlalchemy.future import select
 from wtforms import SubmitField
 
 from .model import Active, Badge, Event, Stamps, User, db
@@ -19,14 +20,14 @@ class BadgeAwardForm(FlaskForm):
 @mentor.route("/mentor/active", methods=["GET"])
 @mentor_required
 def active():
-    actives = Active.query.all()
+    actives = db.session.scalars(select(Active))
     return render_template("active.html.jinja2", active=actives)
 
 
 @mentor.route("/mentor/active", methods=["POST"])
 @mentor_required
 def active_post():
-    active_event = Active.query.get(request.form["active_id"])
+    active_event = db.session.get(Active, request.form["active_id"])
     stamp = Stamps(user=active_event.user,
                    event=active_event.event, start=active_event.start)
     db.session.delete(active_event)
@@ -38,7 +39,7 @@ def active_post():
 @mentor.route("/mentor/active/delete", methods=["POST"])
 @mentor_required
 def active_delete():
-    active_event = Active.query.get(request.form["active_id"])
+    active_event = db.session.get(Active, request.form["active_id"])
     db.session.delete(active_event)
     db.session.commit()
     return redirect(url_for("mentor.active"))
@@ -47,9 +48,9 @@ def active_delete():
 @mentor.route("/active/delete_expired")
 @mentor_required
 def active_delete_expired():
-    inactive_events = select(Event.id).where(not_(Event.is_active))
-    q = Active.query.filter(Active.event_id.in_(inactive_events))
-    q.delete(synchronize_session=False)
+    db.session.delete(
+        select(Active).where(Active.event.is_active == False)
+    )
     db.session.commit()
     flash("Deleted all expired stamps")
     if current_user.role.admin:
@@ -60,7 +61,7 @@ def active_delete_expired():
 @mentor.route("/badges", methods=["GET"])
 @mentor_required
 def all_badges():
-    badges = Badge.query.all()
+    badges = db.session.scalars(select(Badge))
     return render_template("badges.html.jinja2", badges=badges)
 
 
@@ -69,8 +70,8 @@ def all_badges():
 def award_badge():
     badge_id = int(request.args["badge_id"])
 
-    people = User.query.filter_by(active=True).all()
-    badge = Badge.query.get(badge_id)
+    people = db.session.scalars(select(User).filter_by(active=True))
+    badge = db.session.get(Badge, badge_id)
 
     if not badge:
         flash("Badge does not exist")

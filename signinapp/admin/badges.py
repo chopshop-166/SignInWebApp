@@ -38,7 +38,7 @@ def new_badge():
 @admin_required
 def edit_badge():
     badge_id = request.args["badge_id"]
-    badge = Badge.query.get(badge_id)
+    badge = db.session.get(Badge, badge_id)
 
     if not badge:
         flash("Badge does not exist")

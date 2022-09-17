@@ -1,6 +1,7 @@
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
+from sqlalchemy.future import select
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
@@ -17,7 +18,7 @@ class SubteamForm(FlaskForm):
 @admin.route("/admin/subteams", methods=["GET", "POST"])
 @admin_required
 def subteams():
-    subteams = Subteam.query.all()
+    subteams = db.session.scalars(select(Subteam))
     return render_template("admin/subteams.html.jinja2", subteams=subteams)
 
 
@@ -38,7 +39,7 @@ def new_subteam():
 @admin.route("/admin/subteams/edit", methods=["GET", "POST"])
 @admin_required
 def edit_subteam():
-    st = Subteam.query.get(request.args["st_id"])
+    st = db.session.get(Subteam, request.args["st_id"])
     if not st:
         flash("Invalid subteam ID")
         return redirect(url_for("admin.subteams"))
