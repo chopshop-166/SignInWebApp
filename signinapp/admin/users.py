@@ -3,19 +3,27 @@ from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import (BooleanField, PasswordField, SelectField, StringField,
-                     SubmitField)
+                     SubmitField, TelField, EmailField)
 from wtforms.validators import DataRequired, EqualTo
 
-from ..model import Role, Subteam, User, db
+from ..model import Role, Subteam, User, db, ShirtSizes
 from ..util import admin_required
 from .util import admin
 
 
 class UserForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
+    preferred_name = StringField("Preferred Name")
     password = PasswordField()
     role = SelectField()
     subteam = SelectField()
+
+    phone_number = TelField("Phone Number")
+    email = EmailField("Email Address")
+    address = StringField("Street Address")
+    tshirt_size = SelectField(
+        "T-Shirt Size", choices=ShirtSizes.get_size_names())
+
     approved = BooleanField()
     active = BooleanField()
     submit = SubmitField()
@@ -47,8 +55,7 @@ def user_approve():
 def new_user():
     form = UserForm()
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
-                                          for s in Subteam.query.all()]
+    form.subteam.choices = Subteam.get_subteams()
 
     if form.validate_on_submit():
         if User.get_canonical(form.name.data) is not None:
@@ -59,10 +66,16 @@ def new_user():
             name=form.name.data,
             password=form.password.data,
             approved=form.approved.data,
-            role=Role.query.get(form.role.data)
+            role=db.session.get(Role, form.role.data),
+            preferred_name=form.preferred_name.data,
+            phone_number=form.phone_number.data,
+            email=form.email.data,
+            address=form.address.data,
+            tshirt_size=ShirtSizes[form.tshirt_size.data],
         )
         if form.subteam.data:
-            user.subteam = Subteam.query.get(form.subteam.data)
+            user.subteam = db.session.get(Subteam, form.subteam.data)
+
         user.active = form.active.data
         db.session.add(user)
         db.session.commit()
@@ -77,15 +90,14 @@ def new_user():
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
-    user : User = User.query.get(request.args["user_id"])
+    user: User = db.session.get(User, request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("team.users"))
 
     form = UserForm(obj=user)
     form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
-                                          for s in Subteam.query.all()]
+    form.subteam.choices = Subteam.get_subteams()
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
@@ -96,6 +108,11 @@ def edit_user():
         user.subteam_id = form.subteam.data or None
         user.approved = form.approved.data
         user.active = form.active.data
+        user.preferred_name = form.preferred_name.data
+        user.phone_number = form.phone_number.data
+        user.email = form.email.data
+        user.address = form.address.data
+        user.tshirt_size = ShirtSizes[form.tshirt_size.data]
         db.session.commit()
         return redirect(url_for("team.users"))
 

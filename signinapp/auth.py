@@ -4,10 +4,11 @@ from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import BooleanField, PasswordField, StringField, SubmitField
+from wtforms import BooleanField, PasswordField, StringField, SubmitField, TelField, EmailField
 from wtforms.validators import DataRequired, EqualTo
+from wtforms.fields import SelectField
 
-from .model import Role, User, db
+from .model import Role, User, db, Subteam, ShirtSizes
 
 login_manager = LoginManager()
 
@@ -26,6 +27,15 @@ auth = Blueprint("auth", __name__)
 
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
+    preferred_name = StringField("Preferred Name")
+
+    phone_number = TelField("Phone Number", validators=[DataRequired()])
+    email = EmailField("Email Address", validators=[DataRequired()])
+    address = StringField("Street Address", validators=[DataRequired()])
+    tshirt_size = SelectField(
+        "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()])
+
+    subteam = SelectField("Subteam", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Register")
 
@@ -50,10 +60,10 @@ class ChangePasswordForm(FlaskForm):
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
+    form.subteam.choices = Subteam.get_subteams()
     if form.validate_on_submit():
         # code to validate and add user to database goes here
         name = form.name.data
-        password = form.password.data
 
         # if this returns a user, then the user already exists in database
         user = User.get_canonical(name)
@@ -64,10 +74,27 @@ def register():
             flash("User already exists")
             return redirect(url_for('auth.register'))
 
+        password = form.password.data
+        preferred_name = form.preferred_name.data
+        phone_number = form.phone_number.data
+        email = form.email.data
+        address = form.address.data
+        tshirt_size = ShirtSizes[form.tshirt_size.data]
+
+        subteam = db.session.get(Subteam, form.subteam.data)
+
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
-        new_user = User.make(name=name, password=password,
-                             role=Role.get_default())
+        new_user = User.make(name=name,
+                             password=password,
+                             preferred_name=preferred_name,
+                             phone_number=phone_number,
+                             email=email,
+                             address=address,
+                             tshirt_size=tshirt_size,
+                             role=Role.get_default(),
+                             subteam=subteam,
+                             )
 
         # add the new user to the database
         db.session.add(new_user)
