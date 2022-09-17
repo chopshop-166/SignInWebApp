@@ -97,7 +97,8 @@ class User(UserMixin, db.Model):
     subteam = relationship("Subteam", back_populates="members")
     awards = relationship("BadgeAward", back_populates="owner")
 
-    guardian = relationship("Guardian", back_populates="user", uselist=False)
+    guardian_user_data = relationship(
+        "Guardian", back_populates="user", uselist=False)
     guardians = relationship(
         "Guardian", secondary=parent_child_association_table, back_populates="students")
 
@@ -168,13 +169,14 @@ class User(UserMixin, db.Model):
 
     @classmethod
     def get_visible_users(cls) -> list[User]:
-        return cls.query.join(cls.role).filter(Role.visible == True)
+        return db.session.query(cls).join(Role).filter(Role.visible == True)
 
     @staticmethod
     def make(name: str, password: str, role: Role, approved=False, **kwargs) -> User:
         ' Make a user, with password and hash '
         if "phone_number" in kwargs:
-            kwargs["phone_number"] = normalize_phone_number_for_storage(kwargs["phone_number"])
+            kwargs["phone_number"] = normalize_phone_number_for_storage(
+                kwargs["phone_number"])
         return User(name=name,
                     password=generate_password_hash(password),
                     code=mk_hash(name),
@@ -182,19 +184,17 @@ class User(UserMixin, db.Model):
                     approved=approved, **kwargs)
 
     @staticmethod
-    def make_guardian(student: User, name: str, phone_number: str, email: str, preference: int = 1):
-        guardian_limted = Role.from_name("guardian_limited")
+    def make_guardian(name: str, phone_number: str, email: str, contact_order: int = 1):
+        role = Role.from_name("guardian_limited")
         guardian = User(name=name,
                         code=mk_hash(name),
-                        role_id=guardian_limted.id,
+                        role_id=role.id,
                         phone_number=normalize_phone_number_for_storage(
                             phone_number),
                         email=email
                         )
         db.session.add(guardian)
         db.session.flush()
-        guardian.guardian = Guardian.add_guardian(
-            student=student, parent_id=guardian.id, preference=preference)
         return guardian
 
     @staticmethod
@@ -202,6 +202,10 @@ class User(UserMixin, db.Model):
         ' Look up user by name '
         code = mk_hash(name)
         return User.query.filter_by(code=code).one_or_none()
+
+    def add_guardian(self, guardian: Guardian):
+        if guardian not in self.guardians:
+            self.guardians.append(guardian)
 
 
 class Guardian(db.Model):
@@ -213,23 +217,29 @@ class Guardian(db.Model):
     __tablename__ = "guardians"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    preference = db.Column(db.Integer)
+    contact_order = db.Column(db.Integer)
 
     # One to One: Links User to row in Guardian table
-    user = relationship("User", back_populates="guardian")
+    user = relationship("User", back_populates="guardian_user_data")
 
     # Many to Many: Links Guardian to Children
     students = relationship(
         "User", secondary=parent_child_association_table, back_populates="guardians")
 
     @classmethod
-    def add_guardian(cls, student: User, parent_id: int, preference: int = None) -> Guardian:
-        guardian = Guardian(user_id=parent_id,
-                            preference=preference, students=[student])
-        db.session.add(guardian)
-
-    def update_guardian(self, student: User):
-        self.students.append(student)
+    def get_from(cls, name: str, phone_number: str, email: str, contact_order: int) -> Guardian:
+        guardian = User.get_canonical(name)
+        if guardian:
+            # If we found the guardian user, then return the extra guardian data (This object/table)
+            return guardian.guardian_user_data
+        # Create the guardian user, and add the guardian use robject
+        guardian = User.make_guardian(
+            name=name, phone_number=phone_number, email=email)
+        guardian_user_data = Guardian(user_id=guardian.id,
+                                      contact_order=contact_order)
+        guardian.guardian_user_data = guardian_user_data
+        db.session.add(guardian_user_data)
+        return guardian_user_data
 
 
 class Event(db.Model):
