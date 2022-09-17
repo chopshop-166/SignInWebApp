@@ -34,7 +34,7 @@ def badges():
         query = User.query
         if int(form.subteam.data) != 0:
             query = query.filter_by(subteam_id=form.subteam.data)
-        results : list[User] = query.all()
+        results: list[User] = query.all()
         if form.required.data:
             results = [u for u in results
                        if u.has_badge(int(form.badge.data))]
@@ -50,11 +50,11 @@ def badges():
 @mentor_required
 def hours():
     form = HoursForm()
-    form.role.choices = [r.name for r in Role.query.all()]
+    form.role.choices = [r.name for r in Role.get_visible()]
     form.category.choices = [(r.id, r.name) for r in EventType.query.all()]
 
     if form.validate_on_submit():
-        results = User.query.all()
+        results = User.get_visible_users()
         event_type = EventType.query.get(form.category.data)
         roles = [Role.from_name(r).id for r in form.role.data]
         results = [(u.name, u.total_stamps_for(event_type))

@@ -18,6 +18,8 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
 
+from .util import normalize_phone_number_from_storage, normalize_phone_number_for_storage
+
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
 
@@ -65,6 +67,14 @@ class ShirtSizes(enum.Enum):
         return [(size.name, size.value) for size in cls]
 
 
+parent_child_association_table = db.Table(
+    "parent_child_association",
+    db.metadata,
+    db.Column("guardians", db.ForeignKey("guardians.id"), primary_key=True),
+    db.Column("user_id", db.ForeignKey("users.id"), primary_key=True),
+)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -87,6 +97,11 @@ class User(UserMixin, db.Model):
     subteam = relationship("Subteam", back_populates="members")
     awards = relationship("BadgeAward", back_populates="owner")
 
+    guardian_user_data = relationship(
+        "Guardian", back_populates="user", uselist=False)
+    guardians = relationship(
+        "Guardian", secondary=parent_child_association_table, back_populates="students")
+
     @hybrid_property
     def is_active(self) -> bool:
         ' Required by Flask-Login '
@@ -101,6 +116,10 @@ class User(UserMixin, db.Model):
     def badges(self) -> list[BadgeAward]:
         ' The badges associated with this user '
         return BadgeAward.query.filter_by(user_id=self.id).all()
+
+    @property
+    def formatted_phone_number(self) -> str:
+        return normalize_phone_number_from_storage(self.phone_number)
 
     @hybrid_method
     def has_badge(self, badge_id: int) -> bool:
@@ -148,9 +167,16 @@ class User(UserMixin, db.Model):
     def display_name(self) -> str:
         return self.preferred_name or self.name
 
+    @classmethod
+    def get_visible_users(cls) -> list[User]:
+        return db.session.query(cls).join(Role).filter(Role.visible == True)
+
     @staticmethod
     def make(name: str, password: str, role: Role, approved=False, **kwargs) -> User:
         ' Make a user, with password and hash '
+        if "phone_number" in kwargs:
+            kwargs["phone_number"] = normalize_phone_number_for_storage(
+                kwargs["phone_number"])
         return User(name=name,
                     password=generate_password_hash(password),
                     code=mk_hash(name),
@@ -158,10 +184,62 @@ class User(UserMixin, db.Model):
                     approved=approved, **kwargs)
 
     @staticmethod
+    def make_guardian(name: str, phone_number: str, email: str, contact_order: int = 1):
+        role = Role.from_name("guardian_limited")
+        guardian = User(name=name,
+                        code=mk_hash(name),
+                        role_id=role.id,
+                        phone_number=normalize_phone_number_for_storage(
+                            phone_number),
+                        email=email
+                        )
+        db.session.add(guardian)
+        db.session.flush()
+        return guardian
+
+    @staticmethod
     def get_canonical(name) -> User | None:
         ' Look up user by name '
         code = mk_hash(name)
         return User.query.filter_by(code=code).one_or_none()
+
+    def add_guardian(self, guardian: Guardian):
+        if guardian not in self.guardians:
+            self.guardians.append(guardian)
+
+
+class Guardian(db.Model):
+    """
+    This table is a bit strange as it has a one to one link with a User (Parent) as well as
+    Many to Many links with User (Children).
+
+    """
+    __tablename__ = "guardians"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    contact_order = db.Column(db.Integer)
+
+    # One to One: Links User to row in Guardian table
+    user = relationship("User", back_populates="guardian_user_data")
+
+    # Many to Many: Links Guardian to Children
+    students = relationship(
+        "User", secondary=parent_child_association_table, back_populates="guardians")
+
+    @classmethod
+    def get_from(cls, name: str, phone_number: str, email: str, contact_order: int) -> Guardian:
+        guardian = User.get_canonical(name)
+        if guardian:
+            # If we found the guardian user, then return the extra guardian data (This object/table)
+            return guardian.guardian_user_data
+        # Create the guardian user, and add the guardian use robject
+        guardian = User.make_guardian(
+            name=name, phone_number=phone_number, email=email)
+        guardian_user_data = Guardian(user_id=guardian.id,
+                                      contact_order=contact_order)
+        guardian.guardian_user_data = guardian_user_data
+        db.session.add(guardian_user_data)
+        return guardian_user_data
 
 
 class Event(db.Model):
@@ -371,10 +449,12 @@ class Role(db.Model):
 
     admin = db.Column(db.Boolean, nullable=False, default=False)
     mentor = db.Column(db.Boolean, nullable=False, default=False)
+    guardian = db.Column(db.Boolean, nullable=False, default=False)
     can_display = db.Column(db.Boolean, nullable=False, default=False)
     autoload = db.Column(db.Boolean, nullable=False, default=False)
     can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
     default_role = db.Column(db.Boolean, nullable=False, default=False)
+    visible = db.Column(db.Boolean, nullable=False, default=True)
 
     @classmethod
     def from_name(cls, name) -> Role:
@@ -393,6 +473,10 @@ class Role(db.Model):
             role.default_role = (role == def_role)
         db.session.commit()
 
+    @classmethod
+    def get_visible(cls):
+        return cls.query.filter(cls.visible == True)
+
 
 class Subteam(db.Model):
     __tablename__ = "subteams"
@@ -407,7 +491,7 @@ class Subteam(db.Model):
         return cls.query.filter_by(name=name).one_or_none()
 
     @classmethod
-    def get_subteams(cls) -> List[str]:
+    def get_subteams(cls) -> list[str]:
         return [(0, "None")]+[(s.id, s.name)
                               for s in Subteam.query.all()]
 

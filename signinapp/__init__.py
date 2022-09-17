@@ -92,6 +92,8 @@ def init_default_db():
     DISPLAY = Role(name="display", can_display=True, autoload=True)
     LEAD = Role(name="lead", can_see_subteam=True)
     STUDENT = Role(name="student", default_role=True)
+    GUARDIAN_LIMITED = Role(name="guardian_limited",
+                            guardian=True, visible=False)
 
     TRAINING = EventType(
         name="Training", description="Training Session", autoload=True)
@@ -108,6 +110,7 @@ def init_default_db():
 
     db.session.add_all([
         ADMIN, MENTOR, DISPLAY, LEAD, STUDENT,
+        GUARDIAN_LIMITED,
         TRAINING, BUILD, FUNDRAISER, COMPETITION,
         SOFTWARE, MECH, CAD, MARKETING, OUTREACH
     ])
