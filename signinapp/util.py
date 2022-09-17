@@ -41,7 +41,7 @@ def correct_time_for_storage(time: datetime):
     # Check if datetime has a tz already:
     if time.tzinfo is None:
         # If not, set TZ to ET
-        time.replace(tzinfo=ZoneInfo(current_app.config['time_zone']))
+        time.replace(tzinfo=ZoneInfo(current_app.config['TIME_ZONE']))
     return time.astimezone(timezone.utc)
 
 
@@ -50,4 +50,4 @@ def correct_time_from_storage(time: datetime):
     if time.tzinfo is None:
         # If not, set TZ to ET
         time = time.replace(tzinfo=timezone.utc)
-    return time.astimezone(ZoneInfo(current_app.config['time_zone']))
+    return time.astimezone(ZoneInfo(current_app.config['TIME_ZONE']))
