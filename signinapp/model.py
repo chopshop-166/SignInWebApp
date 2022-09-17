@@ -53,16 +53,16 @@ class StampEvent():
 
 
 class ShirtSizes(enum.Enum):
-    Small = 1
-    Medium = 2
-    Large = 3
-    X_Large = 4
-    XX_Large = 5
-    XXX_Large = 6
+    Small = "Small"
+    Medium = "Medium"
+    Large = "Large"
+    X_Large = "X-Large"
+    XX_Large = "XX-Large"
+    XXX_Large = "XXX-Large"
 
     @classmethod
     def get_size_names(cls):
-        return [(size.name, size.name.replace("_", "-")) for size in cls]
+        return [(size.name, size.value) for size in cls]
 
 
 class User(UserMixin, db.Model):
@@ -142,29 +142,22 @@ class User(UserMixin, db.Model):
     @hybrid_method
     def human_readable(self) -> str:
         ' Human readable string for display on a web page '
-        return f"{'*' if self.role.mentor else ''}{self.name}"
+        return f"{'*' if self.role.mentor else ''}{self.display_name}"
+
+    @hybrid_property
+    def display_name(self) -> str:
+        return self.preferred_name or self.name
 
     @staticmethod
-    def make(name: str, password: str, role: Role, preferred_name: str = None,
-             phone_number: str = None, email: str = None, address: str = None,
-             tshirt_size: ShirtSizes = None,
-             subteam: Subteam = None, approved=False) -> User:
+    def make(name: str, password: str, role: Role, approved=False, **kwargs) -> User:
         ' Make a user, with password and hash '
-        if not preferred_name:
-            preferred_name = name
         return User(name=name,
                     password=generate_password_hash(password),
                     code=mk_hash(name),
                     role_id=role.id,
-                    preferred_name=preferred_name,
-                    phone_number=phone_number,
-                    email=email,
-                    address=address,
-                    tshirt_size=tshirt_size,
-                    subteam=subteam,
-                    approved=approved)
+                    approved=approved, **kwargs)
 
-    @ staticmethod
+    @staticmethod
     def get_canonical(name) -> User | None:
         ' Look up user by name '
         code = mk_hash(name)

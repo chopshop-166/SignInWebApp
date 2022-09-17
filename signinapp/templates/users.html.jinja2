@@ -28,14 +28,14 @@
             <tr>
               <th>
                 <a class="link-light"
-                   href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.preferred_name }}</a>
+                   href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.display_name }}</a>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
               <td>{{ user.phone_number }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
-              <td>{{ user.tshirt_size }}</td>
+              <td>{{ user.tshirt_size.value }}</td>
               <td>
                 <div class="btn-group" role="group" aria-label="User Actions">
                   <a class="btn btn-secondary"

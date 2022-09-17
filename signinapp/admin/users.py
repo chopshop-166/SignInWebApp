@@ -66,7 +66,7 @@ def new_user():
             name=form.name.data,
             password=form.password.data,
             approved=form.approved.data,
-            role=Role.query.get(form.role.data),
+            role=db.session.get(Role, form.role.data),
             preferred_name=form.preferred_name.data,
             phone_number=form.phone_number.data,
             email=form.email.data,
@@ -74,11 +74,8 @@ def new_user():
             tshirt_size=ShirtSizes[form.tshirt_size.data],
         )
         if form.subteam.data:
-            user.subteam = Subteam.query.get(form.subteam.data)
+            user.subteam = db.session.get(Subteam, form.subteam.data)
 
-        # If no preferred name was provided default to their name
-        if not form.preferred_name.data:
-            user.preferred_name = user.form.name
         user.active = form.active.data
         db.session.add(user)
         db.session.commit()
@@ -93,7 +90,7 @@ def new_user():
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
-    user: User = User.query.get(request.args["user_id"])
+    user: User = db.session.get(User, request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("team.users"))
@@ -111,13 +108,7 @@ def edit_user():
         user.subteam_id = form.subteam.data or None
         user.approved = form.approved.data
         user.active = form.active.data
-
-        # If no preferred name was provided default to their name
-        if form.preferred_name.data:
-            user.preferred_name = form.preferred_name.data
-        else:
-            user.preferred_name = user.form.name
-
+        user.preferred_name = form.preferred_name.data
         user.phone_number = form.phone_number.data
         user.email = form.email.data
         user.address = form.address.data

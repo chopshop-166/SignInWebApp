@@ -64,14 +64,6 @@ def register():
     if form.validate_on_submit():
         # code to validate and add user to database goes here
         name = form.name.data
-        password = form.password.data
-        preferred_name = form.preferred_name.data
-        phone_number = form.phone_number.data
-        email = form.email.data
-        address = form.address.data
-        tshirt_size = ShirtSizes[form.tshirt_size.data]
-
-        subteam = Subteam.query.get(form.subteam.data)
 
         # if this returns a user, then the user already exists in database
         user = User.get_canonical(name)
@@ -81,6 +73,15 @@ def register():
         if user:
             flash("User already exists")
             return redirect(url_for('auth.register'))
+
+        password = form.password.data
+        preferred_name = form.preferred_name.data
+        phone_number = form.phone_number.data
+        email = form.email.data
+        address = form.address.data
+        tshirt_size = ShirtSizes[form.tshirt_size.data]
+
+        subteam = db.session.get(Subteam, form.subteam.data)
 
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
