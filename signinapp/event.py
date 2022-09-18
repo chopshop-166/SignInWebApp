@@ -4,8 +4,9 @@ import flask_excel as excel
 from flask import Blueprint, Response, current_app, jsonify, request
 from flask.templating import render_template
 from flask_login import current_user, login_required
+from sqlalchemy.future import select
 
-from .model import Active, Event, EventType, Stamps
+from .model import Active, Event, EventType, Stamps, db
 
 eventbp = Blueprint("event", __name__)
 
@@ -23,7 +24,9 @@ def scan():
     event = request.values['event']
     name = request.values['name']
 
-    ev: Event = Event.query.filter_by(code=event, enabled=True).one_or_none()
+    ev: Event = db.session.scalar(
+        select(Event).filter_by(code=event, enabled=True)
+    )
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
@@ -42,26 +45,26 @@ def scan():
 
 @eventbp.route("/autoevent")
 def autoevent():
-    ev = Event.query.filter_by(is_active=True).join(
-        EventType).filter_by(autoload=True).first()
+    ev: Event = db.session.scalar(
+        select(Event).filter_by(is_active=True).join(EventType).filter_by(autoload=True)
+    )
 
-    if ev:
-        return jsonify({"event": ev.code})
-
-    return jsonify({"event": ""})
+    return jsonify({"event": ev.code if ev else ""})
 
 
 @eventbp.route("/active")
 def active():
     event = request.args.get("event", None)
 
-    ev = Event.query.filter_by(code=event, enabled=True).one_or_none()
+    ev: Event = db.session.scalar(
+        select(Event).filter_by(code=event, enabled=True)
+    )
 
     if ev and not ev.is_active:
         return jsonify({"action": "redirect"})
 
     return jsonify({
-        "users": Active.get(event),
+        "users": db.session.get(Active, event),
         "action": "update",
         "message": "Updated user data"
     })

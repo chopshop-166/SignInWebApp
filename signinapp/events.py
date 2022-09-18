@@ -5,12 +5,13 @@ from dateutil.rrule import WEEKLY, rrule
 from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
+from sqlalchemy.future import select
 from wtforms import (BooleanField, DateField, DateTimeLocalField, SelectField,
                      SelectMultipleField, StringField, SubmitField, TimeField)
 from wtforms.validators import DataRequired
 
 from .mentor import mentor_required
-from .model import Event, EventType, db, event_code
+from .model import Event, EventType, db, event_code, get_form_ids
 from .util import correct_time_for_storage
 
 events = Blueprint("events", __name__)
@@ -75,14 +76,16 @@ class BulkEventForm(FlaskForm):
 @events.route("/events")
 @mentor_required
 def list_events():
-    events = Event.query.filter_by(enabled=True).all()
+    events: Event = db.session.execute(
+        select(Event).filter_by(enabled=True)
+    ).scalars()
     return render_template("events.html.jinja2", events=events)
 
 
 @events.route("/events/stats")
 @mentor_required
 def event_stats():
-    event = Event.query.get(request.args["event_id"])
+    event = db.session.get(Event, request.args["event_id"])
     users = defaultdict(timedelta)
     for stamp in event.stamps:
         users[stamp.user.name] += stamp.elapsed
@@ -95,7 +98,7 @@ def event_stats():
 @mentor_required
 def bulk_events():
     form = BulkEventForm()
-    form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
+    form.type_id.choices = get_form_ids(EventType)
 
     if form.validate_on_submit():
         start_time = datetime.combine(form.start_day.data, form.start_time.data)
@@ -103,6 +106,7 @@ def bulk_events():
         days = rrule(WEEKLY,
                      byweekday=[WEEKDAYS.index(d) for d in form.days.data]
                      ).between(start_time, end_time, inc=True)
+        event_type = db.session.get(EventType, form.type_id.data)
         for d in [d.date() for d in days]:
             ev = Event(
                 name=form.name.data,
@@ -112,7 +116,7 @@ def bulk_events():
                 end=correct_time_for_storage(
                     datetime.combine(d, form.end_time.data)),
                 code=event_code(),
-                type_id=form.type_id.data
+                type_=event_type
             )
             db.session.add(ev)
         db.session.commit()
@@ -126,7 +130,7 @@ def bulk_events():
 @mentor_required
 def new_event():
     form = EventForm()
-    form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
+    form.type_id.choices = get_form_ids(EventType)
     if form.validate_on_submit():
         ev = Event()
         form.start.data = correct_time_for_storage(form.start.data)
@@ -144,13 +148,13 @@ def new_event():
 @events.route("/events/edit", methods=["GET", "POST"])
 @mentor_required
 def edit_event():
-    event = Event.query.get(request.args["event_id"])
+    event = db.session.get(Event, request.args["event_id"])
     if not event:
         flash("Event does not exist")
         return redirect(url_for("events.list_events"))
 
     form = EventForm(obj=event)
-    form.type_id.choices = [(t.id, t.name) for t in EventType.query.all()]
+    form.type_id.choices = get_form_ids(EventType)
     if form.validate_on_submit():
         form.start.data = correct_time_for_storage(form.start.data)
         form.end.data = correct_time_for_storage(form.end.data)

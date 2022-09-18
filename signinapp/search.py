@@ -1,9 +1,10 @@
 from flask import Blueprint
 from flask.templating import render_template
 from flask_wtf import FlaskForm
+from sqlalchemy.future import select
 from wtforms import BooleanField, SelectField, SubmitField
 
-from .model import Badge, EventType, Role, Subteam, User
+from .model import Badge, EventType, Role, Subteam, User, db, get_form_ids
 from .util import MultiCheckboxField, mentor_required
 
 search = Blueprint("search", __name__)
@@ -26,15 +27,14 @@ class HoursForm(FlaskForm):
 @mentor_required
 def badges():
     form = BadgeSearchForm()
-    form.badge.choices = [(b.id, b.name) for b in Badge.query.all()]
-    form.subteam.choices = [(0, "None")]+[(s.id, s.name)
-                                          for s in Subteam.query.all()]
+    form.badge.choices = get_form_ids(Badge)
+    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
 
     if form.validate_on_submit():
-        query = User.query
+        stmt = select(User)
         if int(form.subteam.data) != 0:
-            query = query.filter_by(subteam_id=form.subteam.data)
-        results: list[User] = query.all()
+            stmt = stmt.filter_by(subteam_id=form.subteam.data)
+        results = db.session.scalars(stmt)
         if form.required.data:
             results = [u for u in results
                        if u.has_badge(int(form.badge.data))]
@@ -51,11 +51,11 @@ def badges():
 def hours():
     form = HoursForm()
     form.role.choices = [r.name for r in Role.get_visible()]
-    form.category.choices = [(r.id, r.name) for r in EventType.query.all()]
+    form.category.choices = get_form_ids(EventType)
 
     if form.validate_on_submit():
         results = User.get_visible_users()
-        event_type = EventType.query.get(form.category.data)
+        event_type = db.session.get(EventType, form.category.data)
         roles = [Role.from_name(r).id for r in form.role.data]
         results = [(u.name, u.total_stamps_for(event_type))
                    for u in results if u.role_id in roles]

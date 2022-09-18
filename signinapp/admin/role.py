@@ -1,6 +1,7 @@
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
+from sqlalchemy.future import select
 from wtforms import BooleanField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
@@ -23,7 +24,7 @@ class RoleForm(FlaskForm):
 @admin.route("/admin/roles", methods=["GET", "POST"])
 @admin_required
 def roles():
-    roles = Role.query.all()
+    roles = db.session.scalars(select(Role))
     return render_template("admin/roles.html.jinja2", roles=roles)
 
 
@@ -47,7 +48,7 @@ def new_role():
 @admin.route("/admin/roles/edit", methods=["GET", "POST"])
 @admin_required
 def edit_role():
-    r = Role.query.get(request.args["role_id"])
+    r = db.session.get(Role, request.args["role_id"])
     if not r:
         flash("Invalid role ID")
         return redirect(url_for("admin.roles"))

@@ -1,12 +1,13 @@
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
+from sqlalchemy.future import select
 from werkzeug.security import generate_password_hash
 from wtforms import (BooleanField, PasswordField, SelectField, StringField,
                      SubmitField, TelField, EmailField)
 from wtforms.validators import DataRequired, EqualTo
 
-from ..model import Role, Subteam, User, db, ShirtSizes
+from ..model import Role, Subteam, User, db, ShirtSizes, get_form_ids
 from ..util import admin_required
 from .util import admin
 
@@ -42,7 +43,7 @@ class DeleteUserForm(FlaskForm):
 @admin_required
 def user_approve():
     user_id = request.args.get("user_id", None)
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user:
         user.approved = True
         db.session.commit()
@@ -55,8 +56,8 @@ def user_approve():
 @admin_required
 def new_user():
     form = UserForm()
-    form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = Subteam.get_subteams()
+    form.role.choices = get_form_ids(Role)
+    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
 
     if form.validate_on_submit():
         if User.get_canonical(form.name.data) is not None:
@@ -98,8 +99,8 @@ def edit_user():
         return redirect(url_for("team.users"))
 
     form = UserForm(obj=user)
-    form.role.choices = [(r.id, r.name) for r in Role.query.all()]
-    form.subteam.choices = Subteam.get_subteams()
+    form.role.choices = get_form_ids(Role)
+    form.subteam.choices = get_form_ids(Subteam)
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
@@ -129,7 +130,7 @@ def edit_user():
 @admin_required
 def delete_user():
     form = DeleteUserForm()
-    user = User.query.get(request.args["user_id"])
+    user = db.session.get(User, request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("team.users"))

@@ -6,6 +6,7 @@ import os
 import flask_excel as excel
 import yaml
 from flask import Flask, render_template
+from sqlalchemy.future import select
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from get_docker_secret import get_docker_secret
@@ -81,7 +82,8 @@ app.register_blueprint(user)
 
 @app.route("/")
 def index():
-    events = Event.query.filter_by(is_active=True).all()
+    stmt = select(Event).filter_by(is_active=True)
+    events = db.session.scalars(stmt)
     return render_template("index.html.jinja2", events=events)
 
 
@@ -132,14 +134,14 @@ if app.config["DEBUG"]:
             code="5678",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-05-01T23:59:59"),
-            type_=EventType.query.filter_by(name="Training").one()
+            type_=db.session.scalar(select(EventType).filter_by(name="Training"))
         )
         notTraining = Event(
             name="Not Training",
             code="5679",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
-            type_=EventType.query.filter_by(name="Build").one()
+            type_=db.session.scalar(select(EventType).filter_by(name="Build"))
         )
         db.session.add_all([training])
         db.session.commit()
