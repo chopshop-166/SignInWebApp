@@ -4,11 +4,12 @@ from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import BooleanField, PasswordField, StringField, SubmitField, TelField, EmailField
-from wtforms.validators import DataRequired, EqualTo
+from wtforms import (BooleanField, EmailField, PasswordField, StringField,
+                     SubmitField, TelField)
 from wtforms.fields import SelectField
+from wtforms.validators import DataRequired, EqualTo
 
-from .model import Role, User, db, Subteam, ShirtSizes, Guardian
+from .model import Guardian, Role, ShirtSizes, Subteam, User, db
 
 login_manager = LoginManager()
 
@@ -26,6 +27,7 @@ auth = Blueprint("auth", __name__)
 
 
 class RegisterForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
     name = StringField("Name", validators=[DataRequired()])
     preferred_name = StringField("Preferred Name")
 
@@ -56,7 +58,7 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
+    username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     remember = BooleanField("Remember Me")
     submit = SubmitField("Login")
@@ -77,11 +79,9 @@ def register():
     form = RegisterForm()
     form.subteam.choices = Subteam.get_subteams()
     if form.validate_on_submit():
-        # code to validate and add user to database goes here
-        name = form.name.data
-
         # if this returns a user, then the user already exists in database
-        user = User.get_canonical(name)
+        username = form.username.data
+        user = User.from_username(name)
 
         # if a user is found, we want to redirect back to signup page
         # so the user can try again
@@ -89,6 +89,8 @@ def register():
             flash("User already exists")
             return redirect(url_for('auth.register'))
 
+        # Get the appropriate data for making a user
+        name = form.name.data
         password = form.password.data
         preferred_name = form.preferred_name.data
         phone_number = form.phone_number.data
@@ -100,7 +102,8 @@ def register():
 
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
-        new_user = User.make(name=name,
+        new_user = User.make(username=username,
+                             name=name,
                              password=password,
                              preferred_name=preferred_name,
                              phone_number=phone_number,
@@ -134,12 +137,12 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        name = form.name.data
+        username = form.username.data
         password = form.password.data
         remember = form.remember.data
 
         # if this returns a user, then the email already exists in database
-        user = User.get_canonical(name)
+        user = User.from_username(username)
 
         if not user or not check_password_hash(user.password, password):
             flash('Please check your login details and try again.')

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from .util import correct_time_from_storage, correct_time_for_storage
-
 import base64
 import dataclasses
 import datetime
@@ -15,10 +13,13 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.future import select
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
 
-from .util import normalize_phone_number_from_storage, normalize_phone_number_for_storage
+from .util import (correct_time_for_storage, correct_time_from_storage,
+                   normalize_phone_number_for_storage,
+                   normalize_phone_number_from_storage)
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -78,6 +79,7 @@ parent_child_association_table = db.Table(
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, unique=True, nullable=False)
     name = db.Column(db.String, nullable=False)
     preferred_name = db.Column(db.String)
     password = db.Column(db.String)
@@ -172,12 +174,13 @@ class User(UserMixin, db.Model):
         return db.session.query(cls).join(Role).filter(Role.visible == True)
 
     @staticmethod
-    def make(name: str, password: str, role: Role, approved=False, **kwargs) -> User:
+    def make(username: str, name: str, password: str, role: Role, approved=False, **kwargs) -> User:
         ' Make a user, with password and hash '
         if "phone_number" in kwargs:
             kwargs["phone_number"] = normalize_phone_number_for_storage(
                 kwargs["phone_number"])
-        return User(name=name,
+        return User(username=username,
+                    name=name,
                     password=generate_password_hash(password),
                     code=mk_hash(name),
                     role_id=role.id,
@@ -202,6 +205,11 @@ class User(UserMixin, db.Model):
         ' Look up user by name '
         code = mk_hash(name)
         return User.query.filter_by(code=code).one_or_none()
+
+    @staticmethod
+    def from_username(username) -> User | None:
+        ' Look up user by username '
+        return db.session.scalar(select(User).filter_by(username=username))
 
     def add_guardian(self, guardian: Guardian):
         if guardian not in self.guardians:
