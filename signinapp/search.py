@@ -36,13 +36,10 @@ def badges():
             stmt = stmt.filter_by(subteam_id=form.subteam.data)
         results = db.session.scalars(stmt)
         if form.required.data:
-            results = [u for u in results
-                       if u.has_badge(int(form.badge.data))]
+            results = [u for u in results if u.has_badge(int(form.badge.data))]
         else:
-            results = [u for u in results
-                       if not u.has_badge(int(form.badge.data))]
-        return render_template("search/badges.html.jinja2",
-                               form=form, results=results)
+            results = [u for u in results if not u.has_badge(int(form.badge.data))]
+        return render_template("search/badges.html.jinja2", form=form, results=results)
     return render_template("search/badges.html.jinja2", form=form, results=None)
 
 
@@ -57,9 +54,11 @@ def hours():
         results = User.get_visible_users()
         event_type = db.session.get(EventType, form.category.data)
         roles = [Role.from_name(r).id for r in form.role.data]
-        results = [(u.name, u.total_stamps_for(event_type))
-                   for u in results if u.role_id in roles]
-        return render_template("search/hours.html.jinja2",
-                               form=form, results=results)
+        results = [
+            (u.name, u.total_stamps_for(event_type))
+            for u in results
+            if u.role_id in roles
+        ]
+        return render_template("search/hours.html.jinja2", form=form, results=results)
 
     return render_template("search/hours.html.jinja2", form=form, results=None)

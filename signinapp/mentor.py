@@ -28,8 +28,9 @@ def active():
 @mentor_required
 def active_post():
     active_event = db.session.get(Active, request.form["active_id"])
-    stamp = Stamps(user=active_event.user,
-                   event=active_event.event, start=active_event.start)
+    stamp = Stamps(
+        user=active_event.user, event=active_event.event, start=active_event.start
+    )
     db.session.delete(active_event)
     db.session.add(stamp)
     db.session.commit()
@@ -48,9 +49,7 @@ def active_delete():
 @mentor.route("/active/delete_expired")
 @mentor_required
 def active_delete_expired():
-    db.session.delete(
-        select(Active).where(Active.event.is_active == False)
-    )
+    db.session.delete(select(Active).where(Active.event.is_active == False))
     db.session.commit()
     flash("Deleted all expired stamps")
     if current_user.role.admin:
@@ -76,7 +75,7 @@ def award_badge():
     if not badge:
         flash("Badge does not exist")
         return redirect(url_for("mentor.all_badges"))
-        
+
     form = BadgeAwardForm()
     form.users.choices = [p.name for p in people]
 
@@ -91,5 +90,8 @@ def award_badge():
 
     form.users.process_data([p.name for p in people if p.has_badge(badge_id)])
 
-    return render_template("form.html.jinja2", form=form,
-                           title=f"Award Badge {badge.name} - Chop Shop Sign In")
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Award Badge {badge.name} - Chop Shop Sign In",
+    )

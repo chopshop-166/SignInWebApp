@@ -19,14 +19,12 @@ def event():
     return render_template("scan.html.jinja2", event_code=event_code)
 
 
-@eventbp.route("/scan", methods=['POST'])
+@eventbp.route("/scan", methods=["POST"])
 def scan():
-    event = request.values['event']
-    name = request.values['name']
+    event = request.values["event"]
+    name = request.values["name"]
 
-    ev: Event = db.session.scalar(
-        select(Event).filter_by(code=event, enabled=True)
-    )
+    ev: Event = db.session.scalar(select(Event).filter_by(code=event, enabled=True))
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
@@ -34,11 +32,13 @@ def scan():
     stamp = ev.scan(name)
 
     if stamp:
-        return jsonify({
-            'message': f"{stamp.name} signed {stamp.event}",
-            'users': Active.get(event),
-            'action': 'update'
-        })
+        return jsonify(
+            {
+                "message": f"{stamp.name} signed {stamp.event}",
+                "users": Active.get(event),
+                "action": "update",
+            }
+        )
     else:
         return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
 
@@ -56,18 +56,18 @@ def autoevent():
 def active():
     event = request.args.get("event", None)
 
-    ev: Event = db.session.scalar(
-        select(Event).filter_by(code=event, enabled=True)
-    )
+    ev: Event = db.session.scalar(select(Event).filter_by(code=event, enabled=True))
 
     if ev and not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    return jsonify({
-        "users": db.session.get(Active, event),
-        "action": "update",
-        "message": "Updated user data"
-    })
+    return jsonify(
+        {
+            "users": db.session.get(Active, event),
+            "action": "update",
+            "message": "Updated user data",
+        }
+    )
 
 
 @eventbp.route("/export")

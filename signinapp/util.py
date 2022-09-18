@@ -18,8 +18,9 @@ def permission_required(perm):
     def wrapper(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
-            if request.method in EXEMPT_METHODS or \
-                    current_app.config.get('LOGIN_DISABLED'):
+            if request.method in EXEMPT_METHODS or current_app.config.get(
+                "LOGIN_DISABLED"
+            ):
                 pass
             elif not current_user.is_authenticated:
                 return current_app.login_manager.unauthorized()
@@ -30,7 +31,9 @@ def permission_required(perm):
                 return current_app.ensure_sync(func)(*args, **kwargs)
             except AttributeError:
                 return func(*args, **kwargs)
+
         return decorated_view
+
     return wrapper
 
 
@@ -42,7 +45,7 @@ def correct_time_for_storage(time: datetime):
     # Check if datetime has a tz already:
     if time.tzinfo is None:
         # If not, set TZ to ET
-        time.replace(tzinfo=ZoneInfo(current_app.config['TIME_ZONE']))
+        time.replace(tzinfo=ZoneInfo(current_app.config["TIME_ZONE"]))
     return time.astimezone(timezone.utc)
 
 
@@ -51,12 +54,12 @@ def correct_time_from_storage(time: datetime):
     if time.tzinfo is None:
         # If not, set TZ to ET
         time = time.replace(tzinfo=timezone.utc)
-    return time.astimezone(ZoneInfo(current_app.config['TIME_ZONE']))
+    return time.astimezone(ZoneInfo(current_app.config["TIME_ZONE"]))
 
 
 def normalize_phone_number_for_storage(number: str):
-    """ Remove all extra whitespace and characters from a phone number"""
-    stripped = ''.join(c for c in number.strip() if c in string.digits)
+    """Remove all extra whitespace and characters from a phone number"""
+    stripped = "".join(c for c in number.strip() if c in string.digits)
     if len(stripped) != 10:
         return None
     return stripped
@@ -76,4 +79,9 @@ def generate_grade_choices():
     if today.month > 6:
         this_grad_year += 1
 
-    return {this_grad_year+3: f"Freshman ({this_grad_year+3})", this_grad_year+2: f"Sophomore ({this_grad_year+2})", this_grad_year+1: f"Junior ({this_grad_year+1})", this_grad_year: f"Senior ({this_grad_year})"}
+    return {
+        this_grad_year + 3: f"Freshman ({this_grad_year+3})",
+        this_grad_year + 2: f"Sophomore ({this_grad_year+2})",
+        this_grad_year + 1: f"Junior ({this_grad_year+1})",
+        this_grad_year: f"Senior ({this_grad_year})",
+    }
