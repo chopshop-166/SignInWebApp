@@ -23,6 +23,7 @@ from .user import user
 
 app = Flask(__name__)
 
+
 class Config(object):
     TITLE = "Chop Shop Sign In"
     BLURB = """
@@ -31,9 +32,11 @@ Our mission is to build teamwork and a great robot, along with fostering a love 
     DB_NAME = "signin.db"
     TIME_ZONE = "America/New_York"
 
+
 class DebugConfig(Config):
     TITLE = "Chop Shop Sign In (debug)"
-    DB_NAME = ':memory:'
+    DB_NAME = ":memory:"
+
 
 # First load the default config...
 if app.config["DEBUG"]:
@@ -49,15 +52,17 @@ app.config.from_prefixed_env()
 # ...finally load the secret key
 app.secret_key = get_docker_secret("FLASK_SECRET_KEY", default="1234")
 
-app.config.setdefault('SQLALCHEMY_DATABASE_URI', 'sqlite:///' + app.config['DB_NAME'])
-app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', True)
+app.config.setdefault("SQLALCHEMY_DATABASE_URI", "sqlite:///" + app.config["DB_NAME"])
+app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", True)
 
-scss = Bundle('custom.scss',
-              filters='libsass,cssmin',
-              depends="scss/*.scss",
-              output='custom.generated.css')
+scss = Bundle(
+    "custom.scss",
+    filters="libsass,cssmin",
+    depends="scss/*.scss",
+    output="custom.generated.css",
+)
 assets = Environment(app)
-assets.register('custom_css', scss)
+assets.register("custom_css", scss)
 
 excel.init_excel(app)
 
@@ -94,13 +99,10 @@ def init_default_db():
     DISPLAY = Role(name="display", can_display=True, autoload=True)
     LEAD = Role(name="lead", can_see_subteam=True)
     STUDENT = Role(name="student", default_role=True)
-    GUARDIAN_LIMITED = Role(name="guardian_limited",
-                            guardian=True, visible=False)
+    GUARDIAN_LIMITED = Role(name="guardian_limited", guardian=True, visible=False)
 
-    TRAINING = EventType(
-        name="Training", description="Training Session", autoload=True)
-    BUILD = EventType(
-        name="Build", description="Build Season", autoload=True)
+    TRAINING = EventType(name="Training", description="Training Session", autoload=True)
+    BUILD = EventType(name="Build", description="Build Season", autoload=True)
     FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
     COMPETITION = EventType(name="Competition", description="Competition")
 
@@ -110,17 +112,29 @@ def init_default_db():
     MARKETING = Subteam(name="Marketing")
     OUTREACH = Subteam(name="Outreach")
 
-    db.session.add_all([
-        ADMIN, MENTOR, DISPLAY, LEAD, STUDENT,
-        GUARDIAN_LIMITED,
-        TRAINING, BUILD, FUNDRAISER, COMPETITION,
-        SOFTWARE, MECH, CAD, MARKETING, OUTREACH
-    ])
+    db.session.add_all(
+        [
+            ADMIN,
+            MENTOR,
+            DISPLAY,
+            LEAD,
+            STUDENT,
+            GUARDIAN_LIMITED,
+            TRAINING,
+            BUILD,
+            FUNDRAISER,
+            COMPETITION,
+            SOFTWARE,
+            MECH,
+            CAD,
+            MARKETING,
+            OUTREACH,
+        ]
+    )
     db.session.commit()
 
     User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
-    User.make("display", "display", password="1234",
-              role=DISPLAY, approved=True)
+    User.make("display", "display", password="1234", role=DISPLAY, approved=True)
     db.session.commit()
 
 
@@ -133,14 +147,14 @@ if app.config["DEBUG"]:
             code="5678",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-05-01T23:59:59"),
-            type_=db.session.scalar(select(EventType).filter_by(name="Training"))
+            type_=db.session.scalar(select(EventType).filter_by(name="Training")),
         )
         notTraining = Event(
             name="Not Training",
             code="5679",
             start=datetime.datetime.fromisoformat("2022-01-01T00:00:00"),
             end=datetime.datetime.fromisoformat("2022-03-01T23:59:59"),
-            type_=db.session.scalar(select(EventType).filter_by(name="Build"))
+            type_=db.session.scalar(select(EventType).filter_by(name="Build")),
         )
         db.session.add_all([training])
         db.session.commit()
@@ -149,24 +163,42 @@ if app.config["DEBUG"]:
         STUDENT = Role.from_name("student")
         SOFTWARE = Subteam.from_name("Software")
 
-        mentor = User.make("msoucy",
-                           "Matt Soucy",
-                           preferred_name="Matt",
-                           phone_number="603 555-5555",
-                           email="first@test.com",
-                           address="123 First Street",
-                           tshirt_size="Large",
-                           password="1234",
-                           role=MENTOR,
-                           approved=True)
-        student =  Student.make("jburke", "Jeff Burke", preferred_name="Jeff",
-                            password="1234", graduation_year=2022, subteam=SOFTWARE, approved=True)
-        student.student_user_data.add_guardian(guardian=Guardian.get_from(
-            name="Parent Burke", phone_number="(603)555-5555", email="test@email.com", contact_order=1))
+        mentor = User.make(
+            "msoucy",
+            "Matt Soucy",
+            preferred_name="Matt",
+            phone_number="603 555-5555",
+            email="first@test.com",
+            address="123 First Street",
+            tshirt_size="Large",
+            password="1234",
+            role=MENTOR,
+            approved=True,
+        )
+        student = Student.make(
+            "jburke",
+            "Jeff Burke",
+            preferred_name="Jeff",
+            password="1234",
+            graduation_year=2022,
+            subteam=SOFTWARE,
+            approved=True,
+        )
+        student.student_user_data.add_guardian(
+            guardian=Guardian.get_from(
+                name="Parent Burke",
+                phone_number="(603)555-5555",
+                email="test@email.com",
+                contact_order=1,
+            )
+        )
 
-        safe = Badge(name="Safety Certified",
-                     icon="cone-striped", color="orange",
-                     description="Passed Safety Training")
+        safe = Badge(
+            name="Safety Certified",
+            icon="cone-striped",
+            color="orange",
+            description="Passed Safety Training",
+        )
         db.session.add(safe)
         db.session.commit()
 

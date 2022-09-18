@@ -17,7 +17,9 @@ def profile():
         user = db.session.get(User, uid)
     if current_user.can_view(user):
         event_types = db.session.scalars(select(EventType))
-        return render_template("profile.html.jinja2", user=user, event_types=event_types)
+        return render_template(
+            "profile.html.jinja2", user=user, event_types=event_types
+        )
     return current_app.login_manager.unauthorized()
 
 
@@ -29,4 +31,4 @@ def badge():
         badge: Badge = db.session.get(Badge, bid)
         awards = sorted([a for a in badge.awards], key=lambda u: u.owner.name)
         return render_template("badge.html.jinja2", badge=badge, awards=awards)
-    return redirect(url_for('mentor.all_badges', badge_id=badge.id))
+    return redirect(url_for("mentor.all_badges", badge_id=badge.id))

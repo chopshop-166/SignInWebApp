@@ -17,32 +17,36 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
 
-from .util import (correct_time_for_storage, correct_time_from_storage,
-                   generate_grade_choices, normalize_phone_number_for_storage,
-                   normalize_phone_number_from_storage)
+from .util import (
+    correct_time_for_storage,
+    correct_time_from_storage,
+    generate_grade_choices,
+    normalize_phone_number_for_storage,
+    normalize_phone_number_from_storage,
+)
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
 
 NAME_RE = re.compile(
-    r"^(?P<mentor>(?i)mentor[ -]*)?(?P<last>[a-zA-Z ']+),\s*(?P<first>[a-zA-Z ']+)$")
+    r"^(?P<mentor>(?i)mentor[ -]*)?(?P<last>[a-zA-Z ']+),\s*(?P<first>[a-zA-Z ']+)$"
+)
 
-HASH_RE = re.compile(
-    r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
+HASH_RE = re.compile(r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
 
 
 def mk_hash(name: str):
-    'Make a user hash'
+    "Make a user hash"
     return base64.b64encode(name.lower().encode("utf-8")).decode("utf-8")
 
 
 def event_code():
-    'Generate an event code'
+    "Generate an event code"
     return secrets.token_urlsafe(16)
 
 
 def canonical_name(name: str):
-    'Attempt to get a user string'
+    "Attempt to get a user string"
     if m := HASH_RE.match(name):
         return name
     if m := NAME_RE.match(name):
@@ -51,13 +55,12 @@ def canonical_name(name: str):
 
 def get_form_ids(model, add_null_id=False):
     return ([(0, "None")] if add_null_id else []) + [
-        (x.id, x.name)
-        for x in db.session.scalars(select(model))
+        (x.id, x.name) for x in db.session.scalars(select(model))
     ]
 
 
 @dataclasses.dataclass
-class StampEvent():
+class StampEvent:
     name: str
     event: str
 
@@ -76,7 +79,7 @@ class ShirtSizes(enum.Enum):
 
 
 class Badge(db.Model):
-    ' Represents an "achievement", accomplishment, or certification '
+    'Represents an "achievement", accomplishment, or certification'
     __tablename__ = "badges"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -88,12 +91,12 @@ class Badge(db.Model):
 
     @classmethod
     def from_name(cls, name) -> Badge:
-        ' Get a badge by name '
+        "Get a badge by name"
         return db.session.scalar(select(cls).filter_by(name=name))
 
 
 class BadgeAward(db.Model):
-    ' Represents a pairing of user to badge, with received date '
+    "Represents a pairing of user to badge, with received date"
     __tablename__ = "badge_awards"
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
     badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"), primary_key=True)
@@ -137,25 +140,27 @@ class User(UserMixin, db.Model):
     role = db.relationship("Role")
     subteam = db.relationship("Subteam", back_populates="members")
 
-    awards = db.relationship("BadgeAward", back_populates="owner", cascade="all, delete-orphan")
+    awards = db.relationship(
+        "BadgeAward", back_populates="owner", cascade="all, delete-orphan"
+    )
     badges = association_proxy("awards", "badge")
 
     # Guardian specific data
     guardian_user_data = db.relationship(
-        "Guardian", back_populates="user", uselist=False)
+        "Guardian", back_populates="user", uselist=False
+    )
 
     # Student specific data
-    student_user_data = db.relationship(
-        "Student", back_populates="user", uselist=False)
+    student_user_data = db.relationship("Student", back_populates="user", uselist=False)
 
     @hybrid_property
     def is_active(self) -> bool:
-        ' Required by Flask-Login '
+        "Required by Flask-Login"
         return self.active & self.approved
 
     @hybrid_property
     def total_time(self) -> timedelta:
-        ' Total time for all stamps '
+        "Total time for all stamps"
         return sum((s.elapsed for s in self.stamps), start=timedelta())
 
     @property
@@ -164,13 +169,13 @@ class User(UserMixin, db.Model):
 
     @hybrid_method
     def has_badge(self, badge_id: int) -> bool:
-        ' Test if a badge is assigned to a user '
+        "Test if a badge is assigned to a user"
         badge = db.session.get(Badge, badge_id)
         return badge in self.badges
 
     @hybrid_method
     def award_badge(self, badge_id: int):
-        ' Assign a badge to a user '
+        "Assign a badge to a user"
         if not self.has_badge(badge_id):
             badge = db.session.get(Badge, badge_id)
             self.badges.append(badge)
@@ -178,7 +183,7 @@ class User(UserMixin, db.Model):
 
     @hybrid_method
     def remove_badge(self, badge_id: int):
-        ' Remove a badge from a user '
+        "Remove a badge from a user"
         if self.has_badge(badge_id):
             badge = db.session.get(Badge, badge_id)
             self.badges.remove(badge)
@@ -186,24 +191,22 @@ class User(UserMixin, db.Model):
 
     @hybrid_method
     def stamps_for(self, type_: EventType):
-        ' Get all stamps for an event type '
-        return [s for s in self.stamps
-                if (s.event.type_ == type_) & s.event.enabled]
+        "Get all stamps for an event type"
+        return [s for s in self.stamps if (s.event.type_ == type_) & s.event.enabled]
 
     @hybrid_method
     def total_stamps_for(self, type_: EventType) -> timedelta:
-        ' Total time for an event type '
-        return sum((s.elapsed for s in self.stamps_for(type_)),
-                   start=timedelta())
+        "Total time for an event type"
+        return sum((s.elapsed for s in self.stamps_for(type_)), start=timedelta())
 
     @hybrid_method
     def can_view(self, user: User):
-        ' Whether the user in question can view this user '
+        "Whether the user in question can view this user"
         return self.role.mentor or self.role.admin or self == user
 
     @hybrid_method
     def human_readable(self) -> str:
-        ' Human readable string for display on a web page '
+        "Human readable string for display on a web page"
         return f"{'*' if self.role.mentor else ''}{self.display_name}"
 
     @hybrid_property
@@ -212,23 +215,33 @@ class User(UserMixin, db.Model):
 
     @classmethod
     def get_visible_users(cls) -> list[User]:
-        return db.session.scalars(
-            select(cls).join(Role).where(Role.visible == True)
-        )
+        return db.session.scalars(select(cls).join(Role).where(Role.visible == True))
 
     @staticmethod
-    def make(username: str, name: str, password: str, role: Role, approved=False, subteam=None, **kwargs) -> User:
-        ' Make a user, with password and hash '
+    def make(
+        username: str,
+        name: str,
+        password: str,
+        role: Role,
+        approved=False,
+        subteam=None,
+        **kwargs,
+    ) -> User:
+        "Make a user, with password and hash"
         if "phone_number" in kwargs:
             kwargs["phone_number"] = normalize_phone_number_for_storage(
-                kwargs["phone_number"])
-        user = User(username=username,
-                    name=name,
-                    password=generate_password_hash(password),
-                    code=mk_hash(name),
-                    role_id=role.id,
-                    subteam_id=subteam.id if subteam else 0,
-                    approved=approved, **kwargs)
+                kwargs["phone_number"]
+            )
+        user = User(
+            username=username,
+            name=name,
+            password=generate_password_hash(password),
+            code=mk_hash(name),
+            role_id=role.id,
+            subteam_id=subteam.id if subteam else 0,
+            approved=approved,
+            **kwargs,
+        )
         db.session.add(user)
         db.session.flush()
         return user
@@ -238,27 +251,27 @@ class User(UserMixin, db.Model):
         role = Role.from_name("guardian_limited")
         # Generate a username that *should* be unique.
         username = f"{name}_{normalize_phone_number_for_storage(phone_number)}"
-        guardian = User(name=name,
-                        username=username,
-                        code=mk_hash(name),
-                        role_id=role.id,
-                        phone_number=normalize_phone_number_for_storage(
-                            phone_number),
-                        email=email
-                        )
+        guardian = User(
+            name=name,
+            username=username,
+            code=mk_hash(name),
+            role_id=role.id,
+            phone_number=normalize_phone_number_for_storage(phone_number),
+            email=email,
+        )
         db.session.add(guardian)
         db.session.flush()
         return guardian
 
     @staticmethod
     def get_canonical(name) -> User | None:
-        ' Look up user by name '
+        "Look up user by name"
         code = mk_hash(name)
         return db.session.scalar(select(User).filter_by(code=code))
 
     @staticmethod
     def from_username(username) -> User | None:
-        ' Look up user by username '
+        "Look up user by username"
         return db.session.scalar(select(User).filter_by(username=username))
 
 
@@ -268,6 +281,7 @@ class Guardian(db.Model):
     Many to Many links with User (Children).
 
     """
+
     __tablename__ = "guardians"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
@@ -278,19 +292,20 @@ class Guardian(db.Model):
 
     # Many to Many: Links Guardian to Children
     students = db.relationship(
-        "Student", secondary=parent_child_association_table, back_populates="guardians")
+        "Student", secondary=parent_child_association_table, back_populates="guardians"
+    )
 
     @classmethod
-    def get_from(cls, name: str, phone_number: str, email: str, contact_order: int) -> Guardian:
+    def get_from(
+        cls, name: str, phone_number: str, email: str, contact_order: int
+    ) -> Guardian:
         guardian = User.get_canonical(name)
         if guardian:
             # If we found the guardian user, then return the extra guardian data (This object/table)
             return guardian.guardian_user_data
         # Create the guardian user, and add the guardian use robject
-        guardian = User.make_guardian(
-            name=name, phone_number=phone_number, email=email)
-        guardian_user_data = Guardian(user_id=guardian.id,
-                                      contact_order=contact_order)
+        guardian = User.make_guardian(name=name, phone_number=phone_number, email=email)
+        guardian_user_data = Guardian(user_id=guardian.id, contact_order=contact_order)
         guardian.guardian_user_data = guardian_user_data
         db.session.add(guardian_user_data)
         return guardian_user_data
@@ -309,7 +324,8 @@ class Student(db.Model):
 
     # Many to Many: Links Student to Guardian
     guardians = db.relationship(
-        "Guardian", secondary=parent_child_association_table, back_populates="students")
+        "Guardian", secondary=parent_child_association_table, back_populates="students"
+    )
 
     def add_guardian(self, guardian: Guardian):
         if guardian not in self.guardians:
@@ -321,12 +337,16 @@ class Student(db.Model):
         if self.grade in grades:
             return grades[self.graduation_year]
         else:
-            return f"Alumni (Graduated: ({self.grade})"    
+            return f"Alumni (Graduated: ({self.grade})"
 
     @classmethod
-    def make(cls, username: str, name: str, password: str, graduation_year: int, **kwargs) -> User:
+    def make(
+        cls, username: str, name: str, password: str, graduation_year: int, **kwargs
+    ) -> User:
         role = Role.from_name("student")
-        student = User.make(name=name, username=username, password=password, role=role, **kwargs)
+        student = User.make(
+            name=name, username=username, password=password, role=role, **kwargs
+        )
         student_user_data = Student(user_id=student.id, graduation_year=graduation_year)
 
         student.student_user_data = student_user_data
@@ -360,30 +380,28 @@ class Event(db.Model):
 
     @hybrid_property
     def start_local(self) -> str:
-        ' Start time in local time zone '
+        "Start time in local time zone"
         return correct_time_from_storage(self.start).strftime("%c")
 
     @hybrid_property
     def end_local(self) -> str:
-        ' End time in local time zone '
+        "End time in local time zone"
         return correct_time_from_storage(self.end).strftime("%c")
 
     @hybrid_property
     def is_active(self) -> bool:
-        ' Test for if the event is currently active '
+        "Test for if the event is currently active"
         now = datetime.now(tz=timezone.utc)
         start = correct_time_from_storage(self.start)
         end = correct_time_from_storage(self.end)
-        return (self.enabled &
-                (start < now) &
-                (now < end))
+        return self.enabled & (start < now) & (now < end)
 
     @is_active.expression
     def is_active(cls):
-        ' Usable in queries '
-        return and_(cls.enabled,
-                    (cls.start < func.now()),
-                    (func.now() < cls.end)).label('is_active')
+        "Usable in queries"
+        return and_(
+            cls.enabled, (cls.start < func.now()), (func.now() < cls.end)
+        ).label("is_active")
 
     def scan(self, name) -> StampEvent:
         if not self.is_active:
@@ -438,16 +456,16 @@ class Active(db.Model):
 
     @hybrid_property
     def start_local(self) -> str:
-        ' Start time in local time zone '
+        "Start time in local time zone"
         return correct_time_from_storage(self.start).strftime("%c")
 
     @hybrid_method
     def as_dict(self):
-        ' Return a dictionary for sending to the web page '
+        "Return a dictionary for sending to the web page"
         return {
             "user": self.user.human_readable(),
             "start": self.start,
-            "event": self.event.name
+            "event": self.event.name,
         }
 
     @staticmethod
@@ -471,34 +489,35 @@ class Stamps(db.Model):
 
     @hybrid_property
     def elapsed(self) -> timedelta:
-        ' Elapsed time for a stamp '
+        "Elapsed time for a stamp"
         return self.end - self.start
 
     @hybrid_method
     def as_dict(self):
-        ' Return a dictionary for sending to the web page '
+        "Return a dictionary for sending to the web page"
         return {
             "user": self.user.human_readable(),
             "elapsed": str(self.elapsed),
             "start": correct_time_from_storage(self.start),
             "end": correct_time_from_storage(self.end),
-            "event": self.event.name
+            "event": self.event.name,
         }
 
     @hybrid_method
     def as_list(self):
-        ' Return a list for sending to the web page '
-        return [self.user.human_readable(),
-                correct_time_from_storage(self.start),
-                correct_time_from_storage(self.end),
-                self.elapsed,
-                self.event.name,
-                self.event.type_.name
-                ]
+        "Return a list for sending to the web page"
+        return [
+            self.user.human_readable(),
+            correct_time_from_storage(self.start),
+            correct_time_from_storage(self.end),
+            self.elapsed,
+            self.event.name,
+            self.event.type_.name,
+        ]
 
     @staticmethod
     def get(name=None, event_code=None):
-        ' Get stamps matching a requirement '
+        "Get stamps matching a requirement"
         stmt = select(Stamps).where(Stamps.event.enabled == True)
         if event_code:
             stmt = stmt.where(Stamps.event.code == event_code)
@@ -508,12 +527,14 @@ class Stamps(db.Model):
         return [s.as_dict() for s in db.session.scalars(stmt)]
 
     @staticmethod
-    def export(name: str = None,
-               start: datetime = None,
-               end: datetime = None,
-               type_: str = None,
-               subteam: Subteam = None,
-               headers=True) -> list[list[str]]:
+    def export(
+        name: str = None,
+        start: datetime = None,
+        end: datetime = None,
+        type_: str = None,
+        subteam: Subteam = None,
+        headers=True,
+    ) -> list[list[str]]:
         stmt = select(Stamps).join(Stamps.event.enabled == True)
         if name:
             code = mk_hash(name)
@@ -528,8 +549,9 @@ class Stamps(db.Model):
             stmt.where(Stamps.user.subteam == subteam)
         result = [stamp.as_list() for stamp in db.session.scalars(stmt)]
         if headers:
-            result = [["Name", "Start", "End", "Elapsed",
-                       "Event", "Event Type"]] + result
+            result = [
+                ["Name", "Start", "End", "Elapsed", "Event", "Event Type"]
+            ] + result
         return result
 
 
@@ -549,19 +571,19 @@ class Role(db.Model):
 
     @classmethod
     def from_name(cls, name) -> Role:
-        ' Get a role by name '
+        "Get a role by name"
         return db.session.scalar(select(cls).where(cls.name == name))
 
     @classmethod
     def get_default(cls) -> Role:
-        'Get the default role'
+        "Get the default role"
         return db.session.scalar(select(cls).where(cls.default_role == True))
 
     @classmethod
     def set_default(cls, def_role):
-        'Set the default role'
+        "Set the default role"
         for role in db.session.scalar(select(cls)):
-            role.default_role = (role == def_role)
+            role.default_role = role == def_role
         db.session.commit()
 
     @classmethod
@@ -578,5 +600,5 @@ class Subteam(db.Model):
 
     @classmethod
     def from_name(cls, name) -> Subteam:
-        ' Get a subteam by name '
+        "Get a subteam by name"
         return db.session.scalar(select(cls).filter_by(name=name))

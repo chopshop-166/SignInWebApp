@@ -3,8 +3,15 @@ from flask.templating import render_template
 from flask_wtf import FlaskForm
 from sqlalchemy.future import select
 from werkzeug.security import generate_password_hash
-from wtforms import (BooleanField, PasswordField, SelectField, StringField,
-                     SubmitField, TelField, EmailField)
+from wtforms import (
+    BooleanField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+    TelField,
+    EmailField,
+)
 from wtforms.validators import DataRequired, EqualTo
 
 from ..model import Role, Subteam, User, db, ShirtSizes, get_form_ids
@@ -23,8 +30,7 @@ class UserForm(FlaskForm):
     phone_number = TelField("Phone Number")
     email = EmailField("Email Address")
     address = StringField("Street Address")
-    tshirt_size = SelectField(
-        "T-Shirt Size", choices=ShirtSizes.get_size_names())
+    tshirt_size = SelectField("T-Shirt Size", choices=ShirtSizes.get_size_names())
 
     approved = BooleanField()
     active = BooleanField()
@@ -33,9 +39,10 @@ class UserForm(FlaskForm):
 
 class DeleteUserForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
-    verify = StringField("Confirm Name",
-                         validators=[DataRequired(),
-                                     EqualTo("name", message="Enter the user's name")])
+    verify = StringField(
+        "Confirm Name",
+        validators=[DataRequired(), EqualTo("name", message="Enter the user's name")],
+    )
     submit = SubmitField()
 
 
@@ -86,8 +93,9 @@ def new_user():
 
     form.role.process_data(Role.get_default().id)
 
-    return render_template("form.html.jinja2", form=form,
-                           title=f"New User - Chop Shop Sign In")
+    return render_template(
+        "form.html.jinja2", form=form, title=f"New User - Chop Shop Sign In"
+    )
 
 
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
@@ -122,8 +130,11 @@ def edit_user():
 
     form.role.process_data(user.role_id)
     form.subteam.process_data(user.subteam_id)
-    return render_template("form.html.jinja2", form=form,
-                           title=f"Edit User {user.name} - Chop Shop Sign In")
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Edit User {user.name} - Chop Shop Sign In",
+    )
 
 
 @admin.route("/admin/users/delete", methods=["GET", "POST"])
@@ -141,5 +152,8 @@ def delete_user():
         return redirect(url_for("team.users"))
 
     form.name.process_data(user.name)
-    return render_template("form.html.jinja2", form=form,
-                           title=f"Delete User {user.name} - Chop Shop Sign In")
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Delete User {user.name} - Chop Shop Sign In",
+    )
