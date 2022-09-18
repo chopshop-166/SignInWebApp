@@ -20,6 +20,7 @@
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
+            <th scope="col">Grade</th>
             <th scope="col">Edit</th>
           </tr>
         </thead>
@@ -36,6 +37,7 @@
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
+              <td>{{ user.student_user_data.display_grade if user.student_user_data else "N/A" }}</td>
               <td>
                 <div class="btn-group" role="group" aria-label="User Actions">
                   <a class="btn btn-secondary"

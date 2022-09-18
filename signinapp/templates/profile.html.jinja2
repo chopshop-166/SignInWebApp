@@ -16,7 +16,10 @@
             <div class="border border-5" id="qrPlaceholder"></div>
           </div>
           <h1 class="d-flex justify-content-center pt-3">{{ user.name }}</h1>
-          <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.subteam.name }}</h2>
+          <h2 class="fw-light text-dark d-flex justify-content-center">{{ user.subteam.name }}</h2>
+          {% if user.student_user_data %}
+          <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
+          {% endif %}
         </div>
       </div>
       <div class="col-xl-8 px-4">

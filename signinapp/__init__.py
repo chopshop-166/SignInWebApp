@@ -118,10 +118,9 @@ def init_default_db():
     ])
     db.session.commit()
 
-    admin_user = User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
-    display = User.make("display", "display", password="1234",
-                        role=DISPLAY, approved=True)
-    db.session.add_all([admin_user, display])
+    User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
+    User.make("display", "display", password="1234",
+              role=DISPLAY, approved=True)
     db.session.commit()
 
 
@@ -165,7 +164,7 @@ if app.config["DEBUG"]:
         safe = Badge(name="Safety Certified",
                      icon="cone-striped", color="orange",
                      description="Passed Safety Training")
-        db.session.add_all([mentor, student, safe])
+        db.session.add(safe)
         db.session.commit()
 
         mentor.award_badge(safe.id)
