@@ -23,14 +23,14 @@
         </div>
       </div>
       <div class="col-xl-8 px-4">
-        {% if user.guardians %}
+        {% if user.student_user_data.guardians %}
         <div class="row">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
               <h2>Parent/Guardian Info:</h2>
             </div>
             <ul>
-              {%- for guardian in user.guardians -%}
+              {%- for guardian in user.student_user_data.guardians -%}
                 <li>{{ guardian.user.name }} | {{ guardian.user.formatted_phone_number }} | {{ guardian.user.email }}</li>
               {%- endfor -%}
             </ul>

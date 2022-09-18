@@ -18,9 +18,8 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
 
 from .util import (correct_time_for_storage, correct_time_from_storage,
-                   normalize_phone_number_for_storage,
-                   normalize_phone_number_from_storage,
-                   generate_grade_choices)
+                   generate_grade_choices, normalize_phone_number_for_storage,
+                   normalize_phone_number_from_storage)
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -112,7 +111,7 @@ parent_child_association_table = db.Table(
     "parent_child_association",
     db.metadata,
     db.Column("guardians", db.ForeignKey("guardians.id"), primary_key=True),
-    db.Column("user_id", db.ForeignKey("users.id"), primary_key=True),
+    db.Column("user_id", db.ForeignKey("students.id"), primary_key=True),
 )
 
 
@@ -144,8 +143,6 @@ class User(UserMixin, db.Model):
     # Guardian specific data
     guardian_user_data = db.relationship(
         "Guardian", back_populates="user", uselist=False)
-    guardians = db.relationship(
-        "Guardian", secondary=parent_child_association_table, back_populates="students")
 
     # Student specific data
     student_user_data = db.relationship(
@@ -264,10 +261,6 @@ class User(UserMixin, db.Model):
         ' Look up user by username '
         return db.session.scalar(select(User).filter_by(username=username))
 
-    def add_guardian(self, guardian: Guardian):
-        if guardian not in self.guardians:
-            self.guardians.append(guardian)
-
 
 class Guardian(db.Model):
     """
@@ -285,7 +278,7 @@ class Guardian(db.Model):
 
     # Many to Many: Links Guardian to Children
     students = db.relationship(
-        "User", secondary=parent_child_association_table, back_populates="guardians")
+        "Student", secondary=parent_child_association_table, back_populates="guardians")
 
     @classmethod
     def get_from(cls, name: str, phone_number: str, email: str, contact_order: int) -> Guardian:
@@ -314,15 +307,26 @@ class Student(db.Model):
     # One to One: Links User to extra student information
     user = db.relationship("User", back_populates="student_user_data")
 
+    # Many to Many: Links Student to Guardian
+    guardians = db.relationship(
+        "Guardian", secondary=parent_child_association_table, back_populates="students")
+
+    def add_guardian(self, guardian: Guardian):
+        if guardian not in self.guardians:
+            self.guardians.append(guardian)
+
     @property
     def display_grade(self):
         grades = generate_grade_choices()
-        return grades[self.graduation_year]
+        if self.grade in grades:
+            return grades[self.graduation_year]
+        else:
+            return f"Alumni (Graduated: ({self.grade})"    
 
     @classmethod
-    def make(cls, name: str, password: str, graduation_year: int, **kwargs) -> User:
+    def make(cls, username: str, name: str, password: str, graduation_year: int, **kwargs) -> User:
         role = Role.from_name("student")
-        student = User.make(name=name, password=password, role=role, **kwargs)
+        student = User.make(name=name, username=username, password=password, role=role, **kwargs)
         student_user_data = Student(user_id=student.id, graduation_year=graduation_year)
 
         student.student_user_data = student_user_data

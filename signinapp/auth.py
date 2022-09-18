@@ -9,7 +9,8 @@ from wtforms import (BooleanField, EmailField, PasswordField, StringField,
 from wtforms.fields import SelectField
 from wtforms.validators import DataRequired, EqualTo
 
-from .model import Guardian, ShirtSizes, Subteam, User, db, get_form_ids, Student
+from .model import (Guardian, ShirtSizes, Student, Subteam, User, db,
+                    get_form_ids)
 from .util import generate_grade_choices
 
 login_manager = LoginManager()
@@ -120,14 +121,14 @@ def register():
         first_guardian_name = form.first_guardian_name.data
         first_guardian_phone_number = form.first_guardian_phone_number.data
         first_guardian_email = form.first_guardian_email.data
-        student.add_guardian(guardian=Guardian.get_from(
+        student.student_user_data.add_guardian(guardian=Guardian.get_from(
             name=first_guardian_name, phone_number=first_guardian_phone_number, email=first_guardian_email, contact_order=1))
 
         if form.second_guardian_name.data:
             second_guardian_name = form.second_guardian_name.data
             second_guardian_phone_number = form.second_guardian_phone_number.data
             second_guardian_email = form.second_guardian_email.data
-            student.add_guardian(Guardian.get_from(
+            student.student_user_data.add_guardian(Guardian.get_from(
                 name=second_guardian_name, phone_number=second_guardian_phone_number, email=second_guardian_email, contact_order=2))
 
         db.session.commit()

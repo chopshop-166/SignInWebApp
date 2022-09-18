@@ -16,7 +16,7 @@ from .auth import auth, login_manager
 from .event import eventbp
 from .events import events
 from .mentor import mentor
-from .model import Badge, Event, EventType, Role, Subteam, User, db
+from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
 from .search import search
 from .team import team
 from .user import user
@@ -159,8 +159,11 @@ if app.config["DEBUG"]:
                            password="1234",
                            role=MENTOR,
                            approved=True)
-        student = User.make("jburke", "Jeff Burke", preferred_name="Jeff",
-                            password="1234", role=STUDENT, subteam=SOFTWARE, approved=True)
+        student =  Student.make("jburke", "Jeff Burke", preferred_name="Jeff",
+                            password="1234", graduation_year=2022, subteam=SOFTWARE, approved=True)
+        student.student_user_data.add_guardian(guardian=Guardian.get_from(
+            name="Parent Burke", phone_number="(603)555-5555", email="test@email.com", contact_order=1))
+
         safe = Badge(name="Safety Certified",
                      icon="cone-striped", color="orange",
                      description="Passed Safety Training")
