@@ -16,7 +16,7 @@ from .auth import auth, login_manager
 from .event import eventbp
 from .events import events
 from .mentor import mentor
-from .model import Badge, Event, EventType, Role, Subteam, User, db
+from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
 from .search import search
 from .team import team
 from .user import user
@@ -118,10 +118,9 @@ def init_default_db():
     ])
     db.session.commit()
 
-    admin_user = User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
-    display = User.make("display", "display", password="1234",
-                        role=DISPLAY, approved=True)
-    db.session.add_all([admin_user, display])
+    User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
+    User.make("display", "display", password="1234",
+              role=DISPLAY, approved=True)
     db.session.commit()
 
 
@@ -160,12 +159,15 @@ if app.config["DEBUG"]:
                            password="1234",
                            role=MENTOR,
                            approved=True)
-        student = User.make("jburke", "Jeff Burke", preferred_name="Jeff",
-                            password="1234", role=STUDENT, subteam=SOFTWARE, approved=True)
+        student =  Student.make("jburke", "Jeff Burke", preferred_name="Jeff",
+                            password="1234", graduation_year=2022, subteam=SOFTWARE, approved=True)
+        student.student_user_data.add_guardian(guardian=Guardian.get_from(
+            name="Parent Burke", phone_number="(603)555-5555", email="test@email.com", contact_order=1))
+
         safe = Badge(name="Safety Certified",
                      icon="cone-striped", color="orange",
                      description="Passed Safety Training")
-        db.session.add_all([mentor, student, safe])
+        db.session.add(safe)
         db.session.commit()
 
         mentor.award_badge(safe.id)

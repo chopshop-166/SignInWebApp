@@ -16,18 +16,21 @@
             <div class="border border-5" id="qrPlaceholder"></div>
           </div>
           <h1 class="d-flex justify-content-center pt-3">{{ user.name }}</h1>
-          <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.subteam.name }}</h2>
+          <h2 class="fw-light text-dark d-flex justify-content-center">{{ user.subteam.name }}</h2>
+          {% if user.student_user_data %}
+          <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
+          {% endif %}
         </div>
       </div>
       <div class="col-xl-8 px-4">
-        {% if user.guardians %}
+        {% if user.student_user_data and user.student_user_data.guardians %}
         <div class="row">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
               <h2>Parent/Guardian Info:</h2>
             </div>
             <ul>
-              {%- for guardian in user.guardians -%}
+              {%- for guardian in user.student_user_data.guardians -%}
                 <li>{{ guardian.user.name }} | {{ guardian.user.formatted_phone_number }} | {{ guardian.user.email }}</li>
               {%- endfor -%}
             </ul>

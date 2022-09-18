@@ -18,7 +18,7 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash
 
 from .util import (correct_time_for_storage, correct_time_from_storage,
-                   normalize_phone_number_for_storage,
+                   generate_grade_choices, normalize_phone_number_for_storage,
                    normalize_phone_number_from_storage)
 
 # this variable, db, will be used for all SQLAlchemy commands
@@ -111,7 +111,7 @@ parent_child_association_table = db.Table(
     "parent_child_association",
     db.metadata,
     db.Column("guardians", db.ForeignKey("guardians.id"), primary_key=True),
-    db.Column("user_id", db.ForeignKey("users.id"), primary_key=True),
+    db.Column("user_id", db.ForeignKey("students.id"), primary_key=True),
 )
 
 
@@ -140,10 +140,13 @@ class User(UserMixin, db.Model):
     awards = db.relationship("BadgeAward", back_populates="owner", cascade="all, delete-orphan")
     badges = association_proxy("awards", "badge")
 
+    # Guardian specific data
     guardian_user_data = db.relationship(
         "Guardian", back_populates="user", uselist=False)
-    guardians = db.relationship(
-        "Guardian", secondary=parent_child_association_table, back_populates="students")
+
+    # Student specific data
+    student_user_data = db.relationship(
+        "Student", back_populates="user", uselist=False)
 
     @hybrid_property
     def is_active(self) -> bool:
@@ -219,18 +222,24 @@ class User(UserMixin, db.Model):
         if "phone_number" in kwargs:
             kwargs["phone_number"] = normalize_phone_number_for_storage(
                 kwargs["phone_number"])
-        return User(username=username,
+        user = User(username=username,
                     name=name,
                     password=generate_password_hash(password),
                     code=mk_hash(name),
                     role_id=role.id,
                     subteam_id=subteam.id if subteam else 0,
                     approved=approved, **kwargs)
+        db.session.add(user)
+        db.session.flush()
+        return user
 
     @staticmethod
     def make_guardian(name: str, phone_number: str, email: str, contact_order: int = 1):
         role = Role.from_name("guardian_limited")
+        # Generate a username that *should* be unique.
+        username = f"{name}_{normalize_phone_number_for_storage(phone_number)}"
         guardian = User(name=name,
+                        username=username,
                         code=mk_hash(name),
                         role_id=role.id,
                         phone_number=normalize_phone_number_for_storage(
@@ -252,10 +261,6 @@ class User(UserMixin, db.Model):
         ' Look up user by username '
         return db.session.scalar(select(User).filter_by(username=username))
 
-    def add_guardian(self, guardian: Guardian):
-        if guardian not in self.guardians:
-            self.guardians.append(guardian)
-
 
 class Guardian(db.Model):
     """
@@ -273,7 +278,7 @@ class Guardian(db.Model):
 
     # Many to Many: Links Guardian to Children
     students = db.relationship(
-        "User", secondary=parent_child_association_table, back_populates="guardians")
+        "Student", secondary=parent_child_association_table, back_populates="guardians")
 
     @classmethod
     def get_from(cls, name: str, phone_number: str, email: str, contact_order: int) -> Guardian:
@@ -289,6 +294,44 @@ class Guardian(db.Model):
         guardian.guardian_user_data = guardian_user_data
         db.session.add(guardian_user_data)
         return guardian_user_data
+
+
+class Student(db.Model):
+    __tablename__ = "students"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    # Extra student information
+    graduation_year = db.Column(db.Integer)
+
+    # One to One: Links User to extra student information
+    user = db.relationship("User", back_populates="student_user_data")
+
+    # Many to Many: Links Student to Guardian
+    guardians = db.relationship(
+        "Guardian", secondary=parent_child_association_table, back_populates="students")
+
+    def add_guardian(self, guardian: Guardian):
+        if guardian not in self.guardians:
+            self.guardians.append(guardian)
+
+    @property
+    def display_grade(self):
+        grades = generate_grade_choices()
+        if self.grade in grades:
+            return grades[self.graduation_year]
+        else:
+            return f"Alumni (Graduated: ({self.grade})"    
+
+    @classmethod
+    def make(cls, username: str, name: str, password: str, graduation_year: int, **kwargs) -> User:
+        role = Role.from_name("student")
+        student = User.make(name=name, username=username, password=password, role=role, **kwargs)
+        student_user_data = Student(user_id=student.id, graduation_year=graduation_year)
+
+        student.student_user_data = student_user_data
+        db.session.add(student_user_data)
+        return student
 
 
 class Event(db.Model):

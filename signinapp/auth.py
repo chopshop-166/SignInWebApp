@@ -9,7 +9,9 @@ from wtforms import (BooleanField, EmailField, PasswordField, StringField,
 from wtforms.fields import SelectField
 from wtforms.validators import DataRequired, EqualTo
 
-from .model import Guardian, Role, ShirtSizes, Subteam, User, db, get_form_ids
+from .model import (Guardian, ShirtSizes, Student, Subteam, User, db,
+                    get_form_ids)
+from .util import generate_grade_choices
 
 login_manager = LoginManager()
 
@@ -36,7 +38,8 @@ class RegisterForm(FlaskForm):
     address = StringField("Street Address", validators=[DataRequired()])
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()])
-
+    graduation_year = SelectField("Grade", choices=list(generate_grade_choices().items()),
+                        validators=[DataRequired()])
     subteam = SelectField("Subteam", validators=[DataRequired()])
 
     first_guardian_name = StringField(
@@ -81,7 +84,7 @@ def register():
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
         username = form.username.data
-        user = User.from_username(name)
+        user = User.from_username(username)
 
         # if a user is found, we want to redirect back to signup page
         # so the user can try again
@@ -97,35 +100,35 @@ def register():
         email = form.email.data
         address = form.address.data
         tshirt_size = ShirtSizes[form.tshirt_size.data]
+        graduation_year = form.graduation_year.data
 
         subteam = db.session.get(Subteam, form.subteam.data)
 
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
-        new_user = User.make(username=username,
-                             name=name,
-                             password=password,
-                             preferred_name=preferred_name,
-                             phone_number=phone_number,
-                             email=email,
-                             address=address,
-                             tshirt_size=tshirt_size,
-                             role=Role.get_default(),
-                             subteam=subteam,
-                             )
-        db.session.add(new_user)
+        student = Student.make(name=name,
+                               username=username,
+                               password=password,
+                               graduation_year=graduation_year,
+                               preferred_name=preferred_name,
+                               phone_number=phone_number,
+                               email=email,
+                               address=address,
+                               tshirt_size=tshirt_size,
+                               subteam=subteam,
+                               )
 
         first_guardian_name = form.first_guardian_name.data
         first_guardian_phone_number = form.first_guardian_phone_number.data
         first_guardian_email = form.first_guardian_email.data
-        new_user.add_guardian(guardian=Guardian.get_from(
+        student.student_user_data.add_guardian(guardian=Guardian.get_from(
             name=first_guardian_name, phone_number=first_guardian_phone_number, email=first_guardian_email, contact_order=1))
 
         if form.second_guardian_name.data:
             second_guardian_name = form.second_guardian_name.data
             second_guardian_phone_number = form.second_guardian_phone_number.data
             second_guardian_email = form.second_guardian_email.data
-            new_user.add_guardian(Guardian.get_from(
+            student.student_user_data.add_guardian(Guardian.get_from(
                 name=second_guardian_name, phone_number=second_guardian_phone_number, email=second_guardian_email, contact_order=2))
 
         db.session.commit()

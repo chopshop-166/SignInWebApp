@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from functools import wraps
 import string
 from zoneinfo import ZoneInfo
@@ -67,3 +67,13 @@ def normalize_phone_number_from_storage(number: str):
     if number:
         return f"({number[0:3]}) {number[3:6]}-{number[6:10]}"
     return "N/A"
+
+
+def generate_grade_choices():
+    today = date.today()
+    this_grad_year = today.year
+    # If it's past June then graduation is a year from now
+    if today.month > 6:
+        this_grad_year += 1
+
+    return {this_grad_year+3: f"Freshman ({this_grad_year+3})", this_grad_year+2: f"Sophomore ({this_grad_year+2})", this_grad_year+1: f"Junior ({this_grad_year+1})", this_grad_year: f"Senior ({this_grad_year})"}
