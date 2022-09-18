@@ -1,6 +1,6 @@
-# ChopshopSignin
+# SignInWebApp
 
-A tool to track your team's hours during the season, using barcodes or QR codes that can be quickly scanned as team members come and go.
+A tool to track your team's hours during the season, using QR codes that can be quickly scanned as team members come and go.
 
 It runs on a server using Docker or Python+Flask.
 
