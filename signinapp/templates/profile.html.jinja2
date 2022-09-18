@@ -23,7 +23,7 @@
         </div>
       </div>
       <div class="col-xl-8 px-4">
-        {% if user.student_user_data.guardians %}
+        {% if user.student_user_data and user.student_user_data.guardians %}
         <div class="row">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
