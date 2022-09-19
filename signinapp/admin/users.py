@@ -108,7 +108,7 @@ def edit_user():
 
     form = UserForm(obj=user)
     form.role.choices = get_form_ids(Role)
-    form.subteam.choices = get_form_ids(Subteam)
+    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
