@@ -20,7 +20,7 @@ from wtforms.validators import DataRequired
 
 from .mentor import mentor_required
 from .model import Event, EventType, db, event_code, get_form_ids
-from .util import correct_time_for_storage
+from .util import correct_time_for_storage, correct_time_from_storage
 
 events = Blueprint("events", __name__)
 
@@ -172,6 +172,10 @@ def edit_event():
 
     form = EventForm(obj=event)
     form.type_id.choices = get_form_ids(EventType)
+    # Only re-format the times when initialy sending the form.
+    if not form.is_submitted():
+        form.start.data = correct_time_from_storage(form.start.data)
+        form.end.data = correct_time_from_storage(form.end.data)
     if form.validate_on_submit():
         form.start.data = correct_time_for_storage(form.start.data)
         form.end.data = correct_time_for_storage(form.end.data)
