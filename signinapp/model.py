@@ -334,10 +334,10 @@ class Student(db.Model):
     @property
     def display_grade(self):
         grades = generate_grade_choices()
-        if self.grade in grades:
+        if self.graduation_year in grades:
             return grades[self.graduation_year]
         else:
-            return f"Alumni (Graduated: ({self.grade})"
+            return f"Alumni (Graduated: ({self.graduation_year})"
 
     @classmethod
     def make(
