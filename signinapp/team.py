@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from flask.templating import render_template
 from flask_login import login_required
+from sqlalchemy import or_
 from sqlalchemy.future import select
 
 from .model import Role, Subteam, User, db
@@ -23,3 +24,28 @@ def subteam():
     st_id = request.args.get("st_id")
     subteam = db.session.get(Subteam, st_id)
     return render_template("subteam.html.jinja2", subteam=subteam)
+
+
+@team.route("/users/students")
+@mentor_required
+def list_students():
+    users = db.session.scalars(select(User).where(User.role.has(name="student")))
+    return render_template(f"user_list.html.jinja2", role="Student", users=users)
+
+
+@team.route("/users/guardians")
+@mentor_required
+def list_guardians():
+    users = db.session.scalars(
+        select(User).where(
+            or_(User.role.has(name="guardian_limited"), User.role.has(name="guardian"))
+        )
+    )
+    return render_template(f"user_list.html.jinja2", role="Guardian", users=users)
+
+
+@team.route("/users/mentors")
+@mentor_required
+def list_mentors():
+    users = db.session.scalars(select(User).where(User.role.has(name="mentor")))
+    return render_template(f"user_list.html.jinja2", role="Mentor", users=users)

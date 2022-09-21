@@ -1,12 +1,10 @@
 {% extends "base.html.jinja2" %}
-{% block title %}User Admin - Chop Shop Sign In{% endblock %}
+{% from 'bootstrap5/form.html' import render_messages %}
+{% block title %}{{role}} users - Chop Shop Sign In{% endblock %}
 {% block content %}
   <div id="userListContainer" class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
-      <h1>Users List</h1>
-      <a href="{{ url_for('admin.new_user')}}">
-        <button class="btn btn-primary">New User</button>
-      </a>
+      <h1>{{role}} List</h1>
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
@@ -20,6 +18,9 @@
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
+            {% if role == "student" %}
+            <th scope="col">Grade</th>
+            {% endif %}
             <th scope="col">Edit</th>
           </tr>
         </thead>
@@ -28,7 +29,7 @@
             <tr>
               <th>
                 <a class="link-light"
-                   href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.display_name }}</a>
+                  href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.display_name }}</a>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
@@ -36,6 +37,10 @@
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
+              {% if role == "student" %}
+              <td>{{ user.student_user_data.display_grade if user.student_user_data else "N/A" }}</td>
+              {% endif %}
+              {%- if current_user.is_authenticated and current_user.role.admin -%}
               <td>
                 <div class="btn-group" role="group" aria-label="User Actions">
                   <a class="btn btn-secondary"
@@ -55,6 +60,7 @@
                 </form>
                 {%- endif -%}
               </td>
+              {%- endif -%}
             </tr>
           {%- endfor -%}
         </tbody>
