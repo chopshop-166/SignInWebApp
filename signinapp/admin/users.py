@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
@@ -5,24 +6,34 @@ from sqlalchemy.future import select
 from werkzeug.security import generate_password_hash
 from wtforms import (
     BooleanField,
+    EmailField,
+    Form,
+    FormField,
+    IntegerField,
     PasswordField,
     SelectField,
     StringField,
     SubmitField,
     TelField,
-    EmailField,
 )
 from wtforms.validators import DataRequired, EqualTo
 
-from ..model import Role, Subteam, User, db, ShirtSizes, get_form_ids
+from ..model import Role, ShirtSizes, Subteam, User, db, get_form_ids
 from ..util import admin_required
 from .util import admin
+
+class StudentDataForm(Form):
+    graduation_year = IntegerField(
+        "Graduation Year",
+        validators=[DataRequired()],
+        default=lambda: datetime.now().year + 3,
+    )
 
 
 class UserForm(FlaskForm):
     username = StringField(validators=[DataRequired()])
     name = StringField(validators=[DataRequired()])
-    preferred_name = StringField("Preferred Name")
+    preferred_name = StringField("Preferred Name", description="Leave blank for none")
     password = PasswordField()
     role = SelectField()
     subteam = SelectField()
@@ -31,6 +42,9 @@ class UserForm(FlaskForm):
     email = EmailField("Email Address")
     address = StringField("Street Address")
     tshirt_size = SelectField("T-Shirt Size", choices=ShirtSizes.get_size_names())
+
+    student_data = FormField(StudentDataForm)
+    # Guardian data
 
     approved = BooleanField()
     active = BooleanField()
@@ -109,6 +123,9 @@ def edit_user():
     form = UserForm(obj=user)
     form.role.choices = get_form_ids(Role)
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
+
+    if user.role.name != "student":
+        del form.student_data
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
