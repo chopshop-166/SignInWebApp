@@ -20,7 +20,9 @@
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
+            {%- if current_user.is_authenticated and current_user.role.admin -%}
             <th scope="col">Edit</th>
+            {%- endif -%}
           </tr>
         </thead>
         <tbody>
@@ -36,6 +38,7 @@
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
+              {%- if current_user.is_authenticated and current_user.role.admin -%}
               <td>
                 <div class="btn-group" role="group" aria-label="User Actions">
                   <a class="btn btn-secondary"
@@ -45,7 +48,7 @@
                     href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                     role="button">Delete</a>
                 </div>
-                {%- if current_user.is_authenticated and current_user.role.admin and not user.approved -%}
+                {%- if not user.approved -%}
                 <form class="inlineform"
                       action="{{ url_for('admin.user_approve', user_id=user.id)}}"
                       id="approve{{ user.id }}"
@@ -55,6 +58,7 @@
                 </form>
                 {%- endif -%}
               </td>
+              {%- endif -%}
             </tr>
           {%- endfor -%}
         </tbody>

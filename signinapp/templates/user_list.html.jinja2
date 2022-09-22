@@ -18,8 +18,11 @@
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
-            {% if role == "student" %}
+            {% if role == "Student" %}
             <th scope="col">Grade</th>
+            <th scope="col">Parents/Guardians</th>
+            {% elif role == "Guardian" %}
+            <th scope="col">Students</th>
             {% endif %}
             <th scope="col">Edit</th>
           </tr>
@@ -37,8 +40,23 @@
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
-              {% if role == "student" %}
+              {% if role == "Student" %}
               <td>{{ user.student_user_data.display_grade if user.student_user_data else "N/A" }}</td>
+              <td>
+                <ul>
+                {% for guardian in user.student_user_data.guardians %}
+                  <li><a class="link-light" href="{{url_for('user.profile', user_id=guardian.user.id)}}">{{guardian.user.name}}</a></li>
+                {% endfor %}
+                </ul>
+              </td>
+              {% elif role == "Guardian" %}
+              <td>
+                <ul>
+                {% for student in user.guardian_user_data.students %}
+                  <li><a class="link-light" href="{{url_for('user.profile', user_id=student.user.id)}}">{{student.user.name}}</a></li>
+                {% endfor %}
+                </ul>
+              </td>
               {% endif %}
               {%- if current_user.is_authenticated and current_user.role.admin -%}
               <td>
@@ -50,7 +68,7 @@
                     href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                     role="button">Delete</a>
                 </div>
-                {%- if current_user.is_authenticated and current_user.role.admin and not user.approved -%}
+                {%- if not user.approved -%}
                 <form class="inlineform"
                       action="{{ url_for('admin.user_approve', user_id=user.id)}}"
                       id="approve{{ user.id }}"
