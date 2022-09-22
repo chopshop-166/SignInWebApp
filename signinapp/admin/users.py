@@ -1,54 +1,14 @@
-from datetime import datetime
 from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from sqlalchemy.future import select
 from werkzeug.security import generate_password_hash
-from wtforms import (
-    BooleanField,
-    EmailField,
-    Form,
-    FormField,
-    IntegerField,
-    PasswordField,
-    SelectField,
-    StringField,
-    SubmitField,
-    TelField,
-)
+from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
+from ..forms import UserForm
 from ..model import Role, ShirtSizes, Subteam, User, db, get_form_ids
 from ..util import admin_required
 from .util import admin
-
-class StudentDataForm(Form):
-    graduation_year = IntegerField(
-        "Graduation Year",
-        validators=[DataRequired()],
-        default=lambda: datetime.now().year + 3,
-    )
-
-
-class UserForm(FlaskForm):
-    username = StringField(validators=[DataRequired()])
-    name = StringField(validators=[DataRequired()])
-    preferred_name = StringField("Preferred Name", description="Leave blank for none")
-    password = PasswordField()
-    role = SelectField()
-    subteam = SelectField()
-
-    phone_number = TelField("Phone Number")
-    email = EmailField("Email Address")
-    address = StringField("Street Address")
-    tshirt_size = SelectField("T-Shirt Size", choices=ShirtSizes.get_size_names())
-
-    student_data = FormField(StudentDataForm)
-    # Guardian data
-
-    approved = BooleanField()
-    active = BooleanField()
-    submit = SubmitField()
 
 
 class DeleteUserForm(FlaskForm):
@@ -77,8 +37,9 @@ def user_approve():
 @admin_required
 def new_user():
     form = UserForm()
-    form.role.choices = get_form_ids(Role)
+    form.admin_data.role.choices = get_form_ids(Role)
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
+    form.password.flags.is_required = True
 
     if form.validate_on_submit():
         if User.get_canonical(form.name.data) is not None:
@@ -121,7 +82,7 @@ def edit_user():
         return redirect(url_for("team.users"))
 
     form = UserForm(obj=user)
-    form.role.choices = get_form_ids(Role)
+    form.admin_data.role.choices = get_form_ids(Role)
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
 
     if user.role.name != "student":
@@ -145,7 +106,9 @@ def edit_user():
         db.session.commit()
         return redirect(url_for("team.users"))
 
-    form.role.process_data(user.role_id)
+    form.admin_data.role.process_data(user.role_id)
+    form.admin_data.approved.process_data(user.approved)
+    form.admin_data.active.process_data(user.active)
     form.subteam.process_data(user.subteam_id)
     return render_template(
         "form.html.jinja2",
