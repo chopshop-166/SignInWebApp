@@ -7,7 +7,6 @@ from wtforms import (
     Field,
     Form,
     FormField,
-    IntegerField,
     PasswordField,
     SelectField,
     StringField,
@@ -16,7 +15,7 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired
 
-from .model import ShirtSizes
+from .model import ShirtSizes, generate_grade_choices
 
 
 class DataMaybeRequired(DataRequired):
@@ -29,10 +28,10 @@ class DataMaybeRequired(DataRequired):
 
 
 class StudentDataForm(Form):
-    graduation_year = IntegerField(
+    graduation_year = SelectField(
         "Graduation Year",
         validators=[DataRequired()],
-        default=lambda: datetime.now().year + 3,
+        choices=lambda: generate_grade_choices().items(),
     )
 
     first_guardian_name = StringField("1st Parent Name", validators=[DataRequired()])
