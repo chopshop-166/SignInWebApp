@@ -21,7 +21,7 @@
           <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
           {% endif %}
           {%- if current_user.is_authenticated and current_user.role.admin -%}
-          <div class="btn-group d-flex justify-content-center" role="group" aria-label="User Actions">
+          <div class="btn-group d-flex justify-content-center pb-3" role="group" aria-label="User Actions">
             <a class="btn btn-primary"
                       href="{{ url_for('admin.edit_user', user_id=user.id)}}"
                       role="button">Edit User Data</a>
