@@ -1,10 +1,9 @@
 from flask import Blueprint, current_app, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import current_user, login_required
-
 from sqlalchemy.future import select
 
-from .model import Badge, BadgeAward, EventType, User, db
+from .model import Badge, EventType, User, db
 
 user = Blueprint("user", __name__)
 

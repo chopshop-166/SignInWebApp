@@ -9,19 +9,11 @@ from flask_login import (
 )
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import (
-    BooleanField,
-    EmailField,
-    PasswordField,
-    StringField,
-    SubmitField,
-    TelField,
-)
-from wtforms.fields import SelectField
+from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
+from .forms import UserForm
 from .model import Guardian, ShirtSizes, Student, Subteam, User, db, get_form_ids
-from .util import generate_grade_choices
 
 login_manager = LoginManager()
 
@@ -36,38 +28,6 @@ def load_user(user_id):
 
 
 auth = Blueprint("auth", __name__)
-
-
-class RegisterForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    name = StringField("Name", validators=[DataRequired()])
-    preferred_name = StringField("Preferred Name")
-
-    phone_number = TelField("Phone Number", validators=[DataRequired()])
-    email = EmailField("Email Address", validators=[DataRequired()])
-    address = StringField("Street Address", validators=[DataRequired()])
-    tshirt_size = SelectField(
-        "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
-    )
-    graduation_year = SelectField(
-        "Grade",
-        choices=list(generate_grade_choices().items()),
-        validators=[DataRequired()],
-    )
-    subteam = SelectField("Subteam", validators=[DataRequired()])
-
-    first_guardian_name = StringField("1st Parent Name", validators=[DataRequired()])
-    first_guardian_phone_number = TelField(
-        "1st Parent Phone Number", validators=[DataRequired()]
-    )
-    first_guardian_email = EmailField("1st Parent email", validators=[DataRequired()])
-
-    second_guardian_name = StringField("2nd Parent Name")
-    second_guardian_phone_number = TelField("2nd Parent Phone Number")
-    second_guardian_email = EmailField("2nd Parent email")
-
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Register")
 
 
 class LoginForm(FlaskForm):
@@ -92,8 +52,11 @@ class ChangePasswordForm(FlaskForm):
 
 @auth.route("/register", methods=["GET", "POST"])
 def register():
-    form = RegisterForm()
+    form = UserForm()
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
+    form.password.flags.is_required = True
+    del form.admin_data
+
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
         username = form.username.data
@@ -113,7 +76,7 @@ def register():
         email = form.email.data
         address = form.address.data
         tshirt_size = ShirtSizes[form.tshirt_size.data]
-        graduation_year = form.graduation_year.data
+        graduation_year = form.student_data.graduation_year.data
 
         subteam = db.session.get(Subteam, form.subteam.data)
 
@@ -132,9 +95,9 @@ def register():
             subteam=subteam,
         )
 
-        first_guardian_name = form.first_guardian_name.data
-        first_guardian_phone_number = form.first_guardian_phone_number.data
-        first_guardian_email = form.first_guardian_email.data
+        first_guardian_name = form.student_data.first_guardian_name.data
+        first_guardian_phone_number = form.student_data.first_guardian_phone_number.data
+        first_guardian_email = form.student_data.first_guardian_email.data
         student.student_user_data.add_guardian(
             guardian=Guardian.get_from(
                 name=first_guardian_name,
@@ -144,10 +107,12 @@ def register():
             )
         )
 
-        if form.second_guardian_name.data:
-            second_guardian_name = form.second_guardian_name.data
-            second_guardian_phone_number = form.second_guardian_phone_number.data
-            second_guardian_email = form.second_guardian_email.data
+        if form.student_data.second_guardian_name.data:
+            second_guardian_name = form.student_data.second_guardian_name.data
+            second_guardian_phone_number = (
+                form.student_data.second_guardian_phone_number.data
+            )
+            second_guardian_email = form.student_data.second_guardian_email.data
             student.student_user_data.add_guardian(
                 Guardian.get_from(
                     name=second_guardian_name,

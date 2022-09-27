@@ -337,7 +337,7 @@ class Student(db.Model):
         if self.graduation_year in grades:
             return grades[self.graduation_year]
         else:
-            return f"Alumni (Graduated: ({self.graduation_year})"
+            return f"Alumni (Graduated: {self.graduation_year})"
 
     @classmethod
     def make(
