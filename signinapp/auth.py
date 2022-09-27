@@ -76,7 +76,7 @@ def register():
         email = form.email.data
         address = form.address.data
         tshirt_size = ShirtSizes[form.tshirt_size.data]
-        graduation_year = form.graduation_year.data
+        graduation_year = form.student_data.graduation_year.data
 
         subteam = db.session.get(Subteam, form.subteam.data)
 
@@ -95,9 +95,9 @@ def register():
             subteam=subteam,
         )
 
-        first_guardian_name = form.first_guardian_name.data
-        first_guardian_phone_number = form.first_guardian_phone_number.data
-        first_guardian_email = form.first_guardian_email.data
+        first_guardian_name = form.student_data.first_guardian_name.data
+        first_guardian_phone_number = form.student_data.first_guardian_phone_number.data
+        first_guardian_email = form.student_data.first_guardian_email.data
         student.student_user_data.add_guardian(
             guardian=Guardian.get_from(
                 name=first_guardian_name,
@@ -107,10 +107,12 @@ def register():
             )
         )
 
-        if form.second_guardian_name.data:
-            second_guardian_name = form.second_guardian_name.data
-            second_guardian_phone_number = form.second_guardian_phone_number.data
-            second_guardian_email = form.second_guardian_email.data
+        if form.student_data.second_guardian_name.data:
+            second_guardian_name = form.student_data.second_guardian_name.data
+            second_guardian_phone_number = (
+                form.student_data.second_guardian_phone_number.data
+            )
+            second_guardian_email = form.student_data.second_guardian_email.data
             student.student_user_data.add_guardian(
                 Guardian.get_from(
                     name=second_guardian_name,
