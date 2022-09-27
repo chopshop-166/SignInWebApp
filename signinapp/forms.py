@@ -59,7 +59,7 @@ class UserForm(FlaskForm):
     password = PasswordField("Password", validators=[DataMaybeRequired()])
 
     name = StringField("Name", validators=[DataRequired()])
-    preferred_name = StringField("Preferred Name")
+    preferred_name = StringField("Preferred Name", description="Leave blank for none")
 
     phone_number = TelField("Phone Number", validators=[DataRequired()])
     email = EmailField("Email Address", validators=[DataRequired()])
