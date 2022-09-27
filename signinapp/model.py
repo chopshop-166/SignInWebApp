@@ -472,7 +472,7 @@ class Active(db.Model):
     def get(event_code=None) -> list[dict]:
         stmt = select(Active)
         if event_code:
-            stmt = stmt.filter(Active.event.code == event_code)
+            stmt = stmt.filter(Active.event.has(code=event_code))
         return [active.as_dict() for active in db.session.scalars(stmt)]
 
 
