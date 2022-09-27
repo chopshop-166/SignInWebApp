@@ -5,20 +5,22 @@ import os
 
 import flask_excel as excel
 import yaml
-from flask import Flask, render_template
-from sqlalchemy.future import select
+from flask import Flask, render_template, redirect, url_for, request
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
+from flask_login import current_user
 from get_docker_secret import get_docker_secret
+from sqlalchemy.future import select
 
 from .admin import admin
 from .auth import auth, login_manager
 from .event import eventbp
 from .events import events
 from .mentor import mentor
-from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
+from .model import (Badge, Event, EventType, Guardian, Role, Student, Subteam,
+                    User, db)
 from .search import search
 from .team import team
 from .user import user
@@ -74,15 +76,24 @@ flask_admin = Admin(
     endpoint="dbadmin",
 )
 
+class AuthModelView(ModelView):
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.role.admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        # redirect to login page if user doesn't have access
+        return redirect(url_for('auth.login', next=request.url))
+
 flask_admin.add_views(
-    ModelView(Badge, db.session, endpoint="badge"),
-    ModelView(Event, db.session, endpoint="adminevent"),
-    ModelView(EventType, db.session, endpoint="eventtype"),
-    ModelView(Guardian, db.session, endpoint="guardian"),
-    ModelView(Role, db.session, endpoint="role"),
-    ModelView(Student, db.session, endpoint="student"),
-    ModelView(Subteam, db.session, endpoint="subteam"),
-    ModelView(User, db.session, endpoint="adminuser"),
+    AuthModelView(Badge, db.session, endpoint="badge"),
+    AuthModelView(Event, db.session, endpoint="adminevent"),
+    AuthModelView(EventType, db.session, endpoint="eventtype"),
+    AuthModelView(Guardian, db.session, endpoint="guardian"),
+    AuthModelView(Role, db.session, endpoint="role"),
+    AuthModelView(Student, db.session, endpoint="student"),
+    AuthModelView(Subteam, db.session, endpoint="subteam"),
+    AuthModelView(User, db.session, endpoint="adminuser"),
 )
 
 excel.init_excel(app)
