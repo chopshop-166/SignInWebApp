@@ -7,6 +7,8 @@ import flask_excel as excel
 import yaml
 from flask import Flask, render_template
 from sqlalchemy.future import select
+from flask_admin import Admin, AdminIndexView
+from flask_admin.contrib.sqla import ModelView
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from get_docker_secret import get_docker_secret
@@ -64,6 +66,24 @@ scss = Bundle(
 )
 assets = Environment(app)
 assets.register("custom_css", scss)
+
+app.config['FLASK_ADMIN_SWATCH'] = 'cyborg'
+flask_admin = Admin(
+    app,
+    index_view=AdminIndexView(name="Home", url="/dbadmin", endpoint="dbadmin"),
+    endpoint="dbadmin",
+)
+
+flask_admin.add_views(
+    ModelView(Badge, db.session, endpoint="badge"),
+    ModelView(Event, db.session, endpoint="adminevent"),
+    ModelView(EventType, db.session, endpoint="eventtype"),
+    ModelView(Guardian, db.session, endpoint="guardian"),
+    ModelView(Role, db.session, endpoint="role"),
+    ModelView(Student, db.session, endpoint="student"),
+    ModelView(Subteam, db.session, endpoint="subteam"),
+    ModelView(User, db.session, endpoint="adminuser"),
+)
 
 excel.init_excel(app)
 
