@@ -63,7 +63,7 @@ def active():
 
     return jsonify(
         {
-            "users": db.session.get(Active, event),
+            "users": Active.get(event),
             "action": "update",
             "message": "Updated user data",
         }
