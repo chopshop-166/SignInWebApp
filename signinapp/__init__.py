@@ -5,17 +5,15 @@ import os
 
 import flask_excel as excel
 import yaml
-from flask import Flask, redirect, render_template, request, url_for
-from flask_admin import Admin, AdminIndexView
-from flask_admin.contrib.sqla import ModelView
+from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
-from flask_login import current_user
 from get_docker_secret import get_docker_secret
 from sqlalchemy.future import select
 
 from .admin import admin
 from .auth import auth, login_manager
+from .dbadmin import init_dbadmin
 from .event import eventbp
 from .events import events
 from .mentor import mentor
@@ -68,34 +66,7 @@ scss = Bundle(
 assets = Environment(app)
 assets.register("custom_css", scss)
 
-app.config["FLASK_ADMIN_SWATCH"] = "cyborg"
-flask_admin = Admin(
-    app,
-    index_view=AdminIndexView(name="Home", url="/dbadmin", endpoint="dbadmin"),
-    endpoint="dbadmin",
-)
-
-
-class AuthModelView(ModelView):
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.role.admin
-
-    def inaccessible_callback(self, name, **kwargs):
-        # redirect to login page if user doesn't have access
-        return redirect(url_for("auth.login", next=request.url))
-
-
-flask_admin.add_views(
-    AuthModelView(Badge, db.session, endpoint="badge"),
-    AuthModelView(Event, db.session, endpoint="adminevent"),
-    AuthModelView(EventType, db.session, endpoint="eventtype"),
-    AuthModelView(Guardian, db.session, endpoint="guardian"),
-    AuthModelView(Role, db.session, endpoint="role"),
-    AuthModelView(Student, db.session, endpoint="student"),
-    AuthModelView(Subteam, db.session, endpoint="subteam"),
-    AuthModelView(User, db.session, endpoint="adminuser"),
-)
-
+init_dbadmin(app)
 excel.init_excel(app)
 
 bootstrap = Bootstrap5(app)
