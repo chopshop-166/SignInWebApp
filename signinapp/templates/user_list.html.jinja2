@@ -5,6 +5,15 @@
   <div id="userListContainer" class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>{{role}} List</h1>
+      {% if role == "Student" %}
+      <a href="{{ url_for('auth.register')}}">
+        <button class="btn btn-primary">New Student</button>
+      </a>
+      {% elif role == "Mentor" %}
+      <a href="{{ url_for('auth.register_mentor')}}">
+        <button class="btn btn-primary">New Mentor</button>
+      </a>
+      {% endif %}
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
@@ -24,7 +33,9 @@
             {% elif role == "Guardian" %}
             <th scope="col">Students</th>
             {% endif %}
+            {%- if current_user.is_authenticated and current_user.role.admin -%}
             <th scope="col">Edit</th>
+            {%- endif -%}
           </tr>
         </thead>
         <tbody>
@@ -41,7 +52,7 @@
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
               {% if role == "Student" %}
-              <td>{{ user.student_user_data.display_grade if user.student_user_data else "N/A" }}</td>
+              <td>{{ user.student_user_data.display_grade }}</td>
               <td>
                 <ul>
                 {% for guardian in user.student_user_data.guardians %}

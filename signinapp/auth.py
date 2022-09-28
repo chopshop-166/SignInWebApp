@@ -13,7 +13,7 @@ from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
 from .forms import UserForm
-from .model import Guardian, ShirtSizes, Student, Subteam, User, db, get_form_ids
+from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db, get_form_ids
 
 login_manager = LoginManager()
 
@@ -68,59 +68,78 @@ def register():
             flash("User already exists")
             return redirect(url_for("auth.register"))
 
-        # Get the appropriate data for making a user
-        name = form.name.data
-        password = form.password.data
-        preferred_name = form.preferred_name.data
-        phone_number = form.phone_number.data
-        email = form.email.data
-        address = form.address.data
-        tshirt_size = ShirtSizes[form.tshirt_size.data]
-        graduation_year = form.student_data.graduation_year.data
-
-        subteam = db.session.get(Subteam, form.subteam.data)
-
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
         student = Student.make(
-            name=name,
             username=username,
-            password=password,
-            graduation_year=graduation_year,
-            preferred_name=preferred_name,
-            phone_number=phone_number,
-            email=email,
-            address=address,
-            tshirt_size=tshirt_size,
-            subteam=subteam,
+            name=form.name.data,
+            password=form.password.data,
+            graduation_year=form.student_data.graduation_year.data,
+            preferred_name=form.preferred_name.data,
+            phone_number=form.phone_number.data,
+            email=form.email.data,
+            address=form.address.data,
+            tshirt_size=ShirtSizes[form.tshirt_size.data],
+            subteam=db.session.get(Subteam, form.subteam.data),
         )
 
-        first_guardian_name = form.student_data.first_guardian_name.data
-        first_guardian_phone_number = form.student_data.first_guardian_phone_number.data
-        first_guardian_email = form.student_data.first_guardian_email.data
         student.student_user_data.add_guardian(
             guardian=Guardian.get_from(
-                name=first_guardian_name,
-                phone_number=first_guardian_phone_number,
-                email=first_guardian_email,
+                name=form.student_data.first_guardian_name.data,
+                phone_number=form.student_data.first_guardian_phone_number.data,
+                email=form.student_data.first_guardian_email.data,
                 contact_order=1,
             )
         )
 
         if form.student_data.second_guardian_name.data:
-            second_guardian_name = form.student_data.second_guardian_name.data
-            second_guardian_phone_number = (
-                form.student_data.second_guardian_phone_number.data
-            )
-            second_guardian_email = form.student_data.second_guardian_email.data
             student.student_user_data.add_guardian(
                 Guardian.get_from(
-                    name=second_guardian_name,
-                    phone_number=second_guardian_phone_number,
-                    email=second_guardian_email,
+                    name=form.student_data.second_guardian_name.data,
+                    phone_number=form.student_data.second_guardian_phone_number.data,
+                    email=form.student_data.second_guardian_email.data,
                     contact_order=2,
                 )
             )
+
+        db.session.commit()
+        return redirect("/login")
+    return render_template("auth/register.html.jinja2", form=form)
+
+
+@auth.route("/register/mentor", methods=["GET", "POST"])
+def register_mentor():
+    form = UserForm()
+    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
+    form.password.flags.is_required = True
+    del form.student_data
+    del form.admin_data
+
+    if form.validate_on_submit():
+        # if this returns a user, then the user already exists in database
+        username = form.username.data
+        user = User.from_username(username)
+
+        # if a user is found, we want to redirect back to signup page
+        # so the user can try again
+        if user:
+            flash("User already exists")
+            return redirect(url_for("auth.register"))
+
+        # Create a new user with the form data.
+        # Hash the password so the plaintext version isn't saved.
+        user = User.make(
+            username=username,
+            name=form.name.data,
+            password=form.password.data,
+            role=Role.from_name("mentor"),
+            preferred_name=form.preferred_name.data,
+            phone_number=form.phone_number.data,
+            email=form.email.data,
+            address=form.address.data,
+            tshirt_size=ShirtSizes[form.tshirt_size.data],
+            subteam=db.session.get(Subteam, form.subteam.data),
+        )
 
         db.session.commit()
         return redirect("/login")
