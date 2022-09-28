@@ -41,9 +41,7 @@ def new_role():
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
-    return render_template(
-        "form.html.jinja2", form=form, title=f"New Subteam - Chop Shop Sign In"
-    )
+    return render_template("form.html.jinja2", form=form, title=f"New Subteam")
 
 
 @admin.route("/admin/roles/edit", methods=["GET", "POST"])
@@ -62,6 +60,4 @@ def edit_role():
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
-    return render_template(
-        "form.html.jinja2", form=form, title=f"Edit Role {r.name} - Chop Shop Sign In"
-    )
+    return render_template("form.html.jinja2", form=form, title=f"Edit Role {r.name}")

@@ -137,9 +137,7 @@ def bulk_events():
         db.session.commit()
 
         return redirect(url_for("events.list_events"))
-    return render_template(
-        "form.html.jinja2", form=form, title="Bulk Event Add - Chop Shop Sign In"
-    )
+    return render_template("form.html.jinja2", form=form, title="Bulk Event Add")
 
 
 @events.route("/events/new", methods=["GET", "POST"])
@@ -157,9 +155,7 @@ def new_event():
         return redirect(url_for("events.list_events"))
 
     form.code.process_data(event_code())
-    return render_template(
-        "form.html.jinja2", form=form, title="New Event - Chop Shop Sign In"
-    )
+    return render_template("form.html.jinja2", form=form, title="New Event")
 
 
 @events.route("/events/edit", methods=["GET", "POST"])
@@ -187,5 +183,5 @@ def edit_event():
     return render_template(
         "form.html.jinja2",
         form=form,
-        title=f"Edit Event {event.name} - Chop Shop Sign In",
+        title=f"Edit Event {event.name}",
     )
