@@ -91,9 +91,9 @@ def edit_user():
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
-        user.role_id = form.role.data
+        user.role_id = form.admin_data.role.data
         user.subteam_id = form.subteam.data or None
-        user.approved = form.approved.data
+        user.approved = form.admin_data.approved.data
         user.preferred_name = form.preferred_name.data
         user.phone_number = form.phone_number.data
         user.email = form.email.data
