@@ -61,7 +61,6 @@ def new_user():
         if form.subteam.data:
             user.subteam = db.session.get(Subteam, form.subteam.data)
 
-        user.active = form.active.data
         db.session.add(user)
         db.session.commit()
         return redirect(url_for("team.users"))
@@ -97,7 +96,6 @@ def edit_user():
         user.role_id = form.role.data
         user.subteam_id = form.subteam.data or None
         user.approved = form.approved.data
-        user.active = form.active.data
         user.preferred_name = form.preferred_name.data
         user.phone_number = form.phone_number.data
         user.email = form.email.data
@@ -108,7 +106,6 @@ def edit_user():
 
     form.admin_data.role.process_data(user.role_id)
     form.admin_data.approved.process_data(user.approved)
-    form.admin_data.active.process_data(user.active)
     form.subteam.process_data(user.subteam_id)
     return render_template(
         "form.html.jinja2",

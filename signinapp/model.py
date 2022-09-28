@@ -134,7 +134,6 @@ class User(UserMixin, db.Model):
     code = db.Column(db.String, nullable=False, unique=True)
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     approved = db.Column(db.Boolean, default=False)
-    active = db.Column(db.Boolean, default=True)
 
     stamps = db.relationship("Stamps", back_populates="user")
     role = db.relationship("Role")
@@ -156,7 +155,7 @@ class User(UserMixin, db.Model):
     @hybrid_property
     def is_active(self) -> bool:
         "Required by Flask-Login"
-        return self.active & self.approved
+        return self.approved
 
     @hybrid_property
     def total_time(self) -> timedelta:
