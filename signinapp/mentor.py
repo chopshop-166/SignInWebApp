@@ -93,5 +93,5 @@ def award_badge():
     return render_template(
         "form.html.jinja2",
         form=form,
-        title=f"Award Badge {badge.name} - Chop Shop Sign In",
+        title=f"Award Badge {badge.name}",
     )
