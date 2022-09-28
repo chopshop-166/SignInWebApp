@@ -100,6 +100,7 @@ def init_default_db():
     LEAD = Role(name="lead", can_see_subteam=True)
     STUDENT = Role(name="student", default_role=True)
     GUARDIAN_LIMITED = Role(name="guardian_limited", guardian=True, visible=False)
+    GUARDIAN = Role(name="guardian", guardian=True)
 
     TRAINING = EventType(name="Training", description="Training Session", autoload=True)
     BUILD = EventType(name="Build", description="Build Season", autoload=True)
@@ -120,6 +121,7 @@ def init_default_db():
             LEAD,
             STUDENT,
             GUARDIAN_LIMITED,
+            GUARDIAN,
             TRAINING,
             BUILD,
             FUNDRAISER,

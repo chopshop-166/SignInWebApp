@@ -88,6 +88,15 @@
                     action="submit">Approve</button>
                 </form>
                 {%- endif -%}
+                {%- if role == "Guardian" and user.role.name == "guardian_limited" -%}
+                <form class="inlineform"
+                      action="{{ url_for('admin.user_promote', user_id=user.id)}}"
+                      id="promote{{ user.id }}"
+                      method="POST">
+                  <button class="btn btn-warning"
+                    action="submit">Make User</button>
+                </form>
+                {%- endif -%}
               </td>
               {%- endif -%}
             </tr>

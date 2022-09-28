@@ -33,6 +33,43 @@ def user_approve():
     return redirect(url_for("team.users"))
 
 
+@admin.route("/admin/guardian/promote", methods=["POST"])
+@admin_required
+def user_promote():
+    user: User = db.session.get(User, request.args["user_id"])
+    if not user:
+        flash("Invalid user ID")
+        return redirect(url_for("team.users"))
+
+    form = UserForm(obj=user)
+    form.password.flags.is_required = True
+    del form.admin_data
+    del form.student_data
+    del form.subteam
+
+    if form.validate_on_submit():
+        # Cannot use form.populate_data because of the password
+        user.username = form.username.data
+        user.name = form.name.data
+        if form.password.data:
+            user.password = generate_password_hash(form.password.data)
+        user.role = Role.from_name("guardian")
+        user.preferred_name = form.preferred_name.data
+        user.phone_number = form.phone_number.data
+        user.email = form.email.data
+        user.address = form.address.data
+        user.tshirt_size = ShirtSizes[form.tshirt_size.data]
+        user.approved = True
+        db.session.commit()
+        return redirect(url_for("team.users"))
+
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Edit User {user.name}",
+    )
+
+
 @admin.route("/admin/users/new", methods=["GET", "POST"])
 @admin_required
 def new_user():
