@@ -5,7 +5,7 @@ import os
 
 import flask_excel as excel
 import yaml
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, redirect, render_template, request, url_for
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_assets import Bundle, Environment
@@ -19,8 +19,7 @@ from .auth import auth, login_manager
 from .event import eventbp
 from .events import events
 from .mentor import mentor
-from .model import (Badge, Event, EventType, Guardian, Role, Student, Subteam,
-                    User, db)
+from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
 from .search import search
 from .team import team
 from .user import user
@@ -69,21 +68,22 @@ scss = Bundle(
 assets = Environment(app)
 assets.register("custom_css", scss)
 
-app.config['FLASK_ADMIN_SWATCH'] = 'cyborg'
+app.config["FLASK_ADMIN_SWATCH"] = "cyborg"
 flask_admin = Admin(
     app,
     index_view=AdminIndexView(name="Home", url="/dbadmin", endpoint="dbadmin"),
     endpoint="dbadmin",
 )
 
-class AuthModelView(ModelView):
 
+class AuthModelView(ModelView):
     def is_accessible(self):
         return current_user.is_authenticated and current_user.role.admin
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
-        return redirect(url_for('auth.login', next=request.url))
+        return redirect(url_for("auth.login", next=request.url))
+
 
 flask_admin.add_views(
     AuthModelView(Badge, db.session, endpoint="badge"),
