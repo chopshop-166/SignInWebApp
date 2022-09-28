@@ -535,7 +535,7 @@ class Stamps(db.Model):
         subteam: Subteam = None,
         headers=True,
     ) -> list[list[str]]:
-        stmt = select(Stamps).join(Stamps.event.enabled == True)
+        stmt = select(Stamps).filter(Stamps.event.has(enabled=True))
         if name:
             code = mk_hash(name)
             stmt = stmt.where(Stamps.user.code == code)
@@ -544,7 +544,7 @@ class Stamps(db.Model):
         if end:
             stmt = stmt.where(Stamps.end > correct_time_for_storage(end))
         if type_:
-            stmt = stmt.where(Stamps.event.type_ == type_)
+            stmt = stmt.where(Stamps.event.has(type_=type_))
         if subteam:
             stmt.where(Stamps.user.subteam == subteam)
         result = [stamp.as_list() for stamp in db.session.scalars(stmt)]
