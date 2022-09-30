@@ -156,7 +156,9 @@ def register_guardian():
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
-        user = Guardian.get_from(form.name.data, form.phone_number.data, form.email.data, 0).user
+        user = Guardian.get_from(
+            form.name.data, form.phone_number.data, form.email.data, 0
+        ).user
         user.username = form.username.data
         user.name = form.name.data
         if form.password.data:
