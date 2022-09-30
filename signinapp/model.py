@@ -144,12 +144,14 @@ class User(UserMixin, db.Model):
     badges = association_proxy("awards", "badge")
 
     # Guardian specific data
-    guardian_user_data = db.relationship(
+    guardian_user_data: Guardian = db.relationship(
         "Guardian", back_populates="user", uselist=False
     )
 
     # Student specific data
-    student_user_data = db.relationship("Student", back_populates="user", uselist=False)
+    student_user_data: Student = db.relationship(
+        "Student", back_populates="user", uselist=False
+    )
 
     @hybrid_property
     def is_active(self) -> bool:
@@ -281,10 +283,10 @@ class Guardian(db.Model):
     contact_order = db.Column(db.Integer)
 
     # One to One: Links User to row in Guardian table
-    user = db.relationship("User", back_populates="guardian_user_data")
+    user: User = db.relationship("User", back_populates="guardian_user_data")
 
     # Many to Many: Links Guardian to Children
-    students = db.relationship(
+    students: list[Student] = db.relationship(
         "Student", secondary=parent_child_association_table, back_populates="guardians"
     )
 
@@ -316,7 +318,7 @@ class Student(db.Model):
     user = db.relationship("User", back_populates="student_user_data")
 
     # Many to Many: Links Student to Guardian
-    guardians = db.relationship(
+    guardians: list[Guardian] = db.relationship(
         "Guardian", secondary=parent_child_association_table, back_populates="students"
     )
 
