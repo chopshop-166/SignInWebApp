@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, url_for
+from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import (
     LoginManager,
@@ -144,6 +144,37 @@ def register_mentor():
         db.session.commit()
         return redirect("/login")
     return render_template("auth/register.html.jinja2", form=form)
+
+
+@auth.route("/register/guardian", methods=["GET", "POST"])
+def register_guardian():
+    form = UserForm()
+    form.password.flags.is_required = True
+    del form.admin_data
+    del form.student_data
+    del form.subteam
+
+    if form.validate_on_submit():
+        # Cannot use form.populate_data because of the password
+        user = Guardian.get_from(form.name.data, form.phone_number.data, form.email.data, 0).user
+        user.username = form.username.data
+        user.name = form.name.data
+        if form.password.data:
+            user.password = generate_password_hash(form.password.data)
+        user.role = Role.from_name("guardian")
+        user.preferred_name = form.preferred_name.data
+        user.phone_number = form.phone_number.data
+        user.email = form.email.data
+        user.address = form.address.data
+        user.tshirt_size = ShirtSizes[form.tshirt_size.data]
+        db.session.commit()
+        return redirect(url_for("index"))
+
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Register Guardian",
+    )
 
 
 @auth.route("/login", methods=["GET", "POST"])
