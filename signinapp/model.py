@@ -377,6 +377,10 @@ class Event(db.Model):
     active = db.relationship("Active", back_populates="event")
     type_ = db.relationship("EventType", back_populates="events")
 
+    @staticmethod
+    def get_from_code(event_code) -> Event | None:
+        return db.session.scalar(select(Event).filter_by(code=event_code))
+
     @hybrid_property
     def start_local(self) -> str:
         "Start time in local time zone"

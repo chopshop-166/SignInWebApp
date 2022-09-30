@@ -9,6 +9,7 @@
 {% endblock %}
 {% block content %}
   <div class="container pt-3">
+    {{render_messages()}}
     {% if current_user.is_authenticated %}
       <div class="row">
         <div class="col-xl-4">
