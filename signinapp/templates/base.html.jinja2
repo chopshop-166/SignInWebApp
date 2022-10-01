@@ -123,9 +123,27 @@
                 </ul>
               </li>
             {%- else -%}
-              <li class="nav-item">
-                <a class="nav-link btn btn-primary" href="{{ url_for('auth.register')}}">Register</a>
-              </li>
+              <div class="btn-group">
+                <a class="nav-link dropdown-toggle dropdown-toggle-split btn btn-primary"
+                    href="#"
+                    id="registerDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                  Register
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="registerDropdown">
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('auth.register')}}">Student</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('auth.register_mentor')}}">Mentor</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('auth.register_guardian')}}">Parent/Guardian</a>
+                  </li>
+                </ul>
+              </div>
               <li class="nav-item">
                 <a class="nav-link btn btn-primary" href="{{ url_for('auth.login')}}">Sign In</a>
               </li>

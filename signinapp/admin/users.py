@@ -66,7 +66,7 @@ def user_promote():
     return render_template(
         "form.html.jinja2",
         form=form,
-        title=f"Edit User {user.name}",
+        title=f"Promote Guardian {user.name}",
     )
 
 
