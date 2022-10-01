@@ -25,6 +25,11 @@
             <a class="btn btn-primary"
                       href="{{ url_for('admin.edit_user', user_id=user.id)}}"
                       role="button">Edit User Data</a>
+            {% if user.student_user_data %}
+              <a class="btn btn-primary"
+                        href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                        role="button">Edit Student Data</a>
+            {% endif %}
           </div>
           {%- endif -%}
         </div>

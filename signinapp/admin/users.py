@@ -2,13 +2,18 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, FormField
 from wtforms.validators import DataRequired, EqualTo
 
-from ..forms import UserForm
-from ..model import Role, ShirtSizes, Subteam, User, db, get_form_ids
+from ..forms import StudentDataForm, UserForm
+from ..model import Guardian, Role, ShirtSizes, Subteam, User, db, get_form_ids
 from ..util import admin_required
 from .util import admin
+
+
+class EditStudentDataForm(FlaskForm):
+    student_data = FormField(StudentDataForm)
+    submit = SubmitField()
 
 
 class DeleteUserForm(FlaskForm):
@@ -146,6 +151,59 @@ def edit_user():
         "form.html.jinja2",
         form=form,
         title=f"Edit User {user.name}",
+    )
+
+
+@admin.route("/admin/users/edit/student", methods=["GET", "POST"])
+@admin_required
+def edit_student_data():
+    user: User = db.session.get(User, request.args["user_id"])
+    if not user:
+        flash("Invalid user ID")
+        return redirect(url_for("team.users"))
+
+    form = EditStudentDataForm(obj=user)
+
+    if form.validate_on_submit():
+        student_data = user.student_user_data
+        student_data.graduation_year = form.student_data.graduation_year.data
+        student_data.guardians.clear()
+        student_data.guardians.append(
+            Guardian.get_from(
+                form.student_data.first_guardian_name.data,
+                form.student_data.first_guardian_phone_number.data,
+                form.student_data.first_guardian_email.data,
+                1,
+            )
+        )
+        if form.student_data.second_guardian_name.data:
+            student_data.guardians.append(
+                Guardian.get_from(
+                    form.student_data.second_guardian_name.data,
+                    form.student_data.second_guardian_phone_number.data,
+                    form.student_data.second_guardian_email.data,
+                    2,
+                )
+            )
+        db.session.commit()
+        return redirect(url_for("team.users"))
+
+    nested = form.student_data
+    nested.graduation_year.process_data(user.student_user_data.graduation_year)
+    guardians = user.student_user_data.guardians
+    first_guardian = guardians[0].user
+    nested.first_guardian_name.process_data(first_guardian.name)
+    nested.first_guardian_phone_number.process_data(first_guardian.phone_number)
+    nested.first_guardian_email.process_data(first_guardian.email)
+    if len(guardians) > 1:
+        second_guardian = guardians[1].user
+        nested.second_guardian_name.process_data(second_guardian.name)
+        nested.second_guardian_phone_number.process_data(second_guardian.phone_number)
+        nested.second_guardian_email.process_data(second_guardian.email)
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Edit Student Data {user.name}",
     )
 
 

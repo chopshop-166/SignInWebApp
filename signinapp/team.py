@@ -36,11 +36,7 @@ def list_students():
 @team.route("/users/guardians")
 @mentor_required
 def list_guardians():
-    users = db.session.scalars(
-        select(User).where(
-            or_(User.role.has(name="guardian_limited"), User.role.has(name="guardian"))
-        )
-    )
+    users = db.session.scalars(select(User).where(User.role.has(guardian=True)))
     return render_template(f"user_list.html.jinja2", role="Guardian", users=users)
 
 
