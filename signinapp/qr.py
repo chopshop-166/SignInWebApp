@@ -10,3 +10,15 @@ qr = Blueprint("qr", __name__)
 def register_qr():
     url = request.host_url
     return render_template("qr.html.jinja2", register_url=f"{url}register")
+
+
+@qr.route("/register/mentor/qr")
+def register_mentor_qr():
+    url = request.host_url
+    return render_template("qr.html.jinja2", register_url=f"{url}register/mentor")
+
+
+@qr.route("/register/guardian/qr")
+def register_guardian_qr():
+    url = request.host_url
+    return render_template("qr.html.jinja2", register_url=f"{url}register/guardian")
