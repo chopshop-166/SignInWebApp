@@ -20,6 +20,7 @@ from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, Us
 from .search import search
 from .team import team
 from .user import user
+from .qr import qr
 
 app = Flask(__name__)
 
@@ -83,6 +84,7 @@ app.register_blueprint(mentor)
 app.register_blueprint(search)
 app.register_blueprint(team)
 app.register_blueprint(user)
+app.register_blueprint(qr)
 
 
 @app.route("/")
