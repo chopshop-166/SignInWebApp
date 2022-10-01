@@ -8,7 +8,8 @@
 {% block content %}
 <div class="parent d-flex align-items-center">
   <div class="p-5 bg-dark rounded-3 container">
-    <h1>Register</h1>
+    <h1>Register as a {{ user_type }}</h1>
+    <a class="link-light" href="{{url_for(qr_route)}}">QR Code For This Page</a>
     {{-render_messages()-}}
     {{ render_form(form) }}
   </div>

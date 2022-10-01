@@ -104,7 +104,12 @@ def register():
 
         db.session.commit()
         return redirect("/login")
-    return render_template("auth/register.html.jinja2", form=form)
+    return render_template(
+        "auth/register.html.jinja2",
+        form=form,
+        user_type="Student",
+        qr_route="qr.register_qr",
+    )
 
 
 @auth.route("/register/mentor", methods=["GET", "POST"])
@@ -143,7 +148,12 @@ def register_mentor():
 
         db.session.commit()
         return redirect("/login")
-    return render_template("auth/register.html.jinja2", form=form)
+    return render_template(
+        "auth/register.html.jinja2",
+        form=form,
+        user_type="Mentor",
+        qr_route="qr.register_mentor_qr",
+    )
 
 
 @auth.route("/register/guardian", methods=["GET", "POST"])
@@ -173,9 +183,10 @@ def register_guardian():
         return redirect(url_for("index"))
 
     return render_template(
-        "form.html.jinja2",
+        "auth/register.html.jinja2",
         form=form,
-        title=f"Register Guardian",
+        user_type="Guardian",
+        qr_route="qr.register_guardian_qr",
     )
 
 
