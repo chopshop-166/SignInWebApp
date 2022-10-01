@@ -113,3 +113,7 @@ $border-widths: (
     padding: 0;
     border: 0;
 }
+
+div #qrPlaceholder {
+    @extend .border, .border-5, .bg-light
+}
