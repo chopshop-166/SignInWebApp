@@ -50,6 +50,15 @@
                     href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                     role="button">Delete</a>
                 </div>
+                {%- if user.role.name == "student" -%}
+                <form class="inlineform"
+                      action="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                      id="editStudent{{ user.id }}"
+                      method="POST">
+                  <button class="btn btn-warning"
+                    action="submit">Edit Student Data</button>
+                </form>
+                {%- endif -%}
                 {%- if not user.approved -%}
                 <form class="inlineform"
                       action="{{ url_for('admin.user_approve', user_id=user.id)}}"

@@ -88,6 +88,23 @@
                     action="submit">Approve</button>
                 </form>
                 {%- endif -%}
+                {%- if user.role.name == "student" -%}
+                <form class="inlineform"
+                      action="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                      id="editStudent{{ user.id }}"
+                      method="POST">
+                  <button class="btn btn-warning"
+                    action="submit">Edit Student Data</button>
+                </form>
+                {%- elif role == "Guardian" and user.role.name == "guardian_limited" -%}
+                <form class="inlineform"
+                      action="{{ url_for('admin.user_promote', user_id=user.id)}}"
+                      id="promote{{ user.id }}"
+                      method="POST">
+                  <button class="btn btn-warning"
+                    action="submit">Make User</button>
+                </form>
+                {%- endif -%}
               </td>
               {%- endif -%}
             </tr>
