@@ -1,7 +1,16 @@
 from http import HTTPStatus
 
 import flask_excel as excel
-from flask import Blueprint, Response, current_app, jsonify, request
+from flask import (
+    Blueprint,
+    Response,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    request,
+    url_for,
+)
 from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
@@ -14,8 +23,9 @@ eventbp = Blueprint("event", __name__)
 @eventbp.route("/event")
 def event():
     event_code = request.args.get("event_code")
-    if not event_code:
-        return Response("Error: Invalid Event Code", HTTPStatus.BAD_REQUEST)
+    if not event_code or not Event.get_from_code(event_code):
+        flash("Invalid event code")
+        return redirect(url_for("index"))
     return render_template("scan.html.jinja2", event_code=event_code)
 
 
