@@ -1,0 +1,14 @@
+{% extends "base.html.jinja2" %}
+{% from 'bootstrap5/utils.html' import render_static, render_icon %}
+{% block title %}QR Code For Registration{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
+  <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{register_url}}");</script>
+{% endblock %}
+{% block content %}
+ <div class="d-flex justify-content-center pt-3">
+    <div class="border border-5" id="qrPlaceholder"></div>
+  </div>
+  <p class="d-flex justify-content-center">{{register_url}}</p>
+{% endblock %}
