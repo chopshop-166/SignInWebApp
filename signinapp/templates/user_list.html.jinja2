@@ -43,7 +43,7 @@
             <tr>
               <th>
                 <a class="link-light"
-                  href="{{ url_for('user.profile', user_id=user.id)}}">{{ user.display_name }}</a>
+                  href="{{ url_for('user.profile', username=user.username)}}">{{ user.display_name }}</a>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
@@ -56,7 +56,7 @@
               <td>
                 <ul>
                 {% for guardian in user.student_user_data.guardians %}
-                  <li><a class="link-light" href="{{url_for('user.profile', user_id=guardian.user.id)}}">{{guardian.user.name}}</a></li>
+                  <li><a class="link-light" href="{{url_for('user.profile', username=guardian.user.username)}}">{{guardian.user.name}}</a></li>
                 {% endfor %}
                 </ul>
               </td>
@@ -64,7 +64,7 @@
               <td>
                 <ul>
                 {% for student in user.guardian_user_data.students %}
-                  <li><a class="link-light" href="{{url_for('user.profile', user_id=student.user.id)}}">{{student.user.name}}</a></li>
+                  <li><a class="link-light" href="{{url_for('user.profile', username=student.user.username)}}">{{student.user.name}}</a></li>
                 {% endfor %}
                 </ul>
               </td>
