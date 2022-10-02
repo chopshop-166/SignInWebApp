@@ -30,7 +30,7 @@
             <tr>
               <th>
                 <a class="link-light"
-                   href="{{ url_for('user.profile', user_id=user.id)}}">
+                   href="{{ url_for('user.profile', username=user.username)}}">
                    {{user.name}}{% if user.preferred_name %} ({{ user.preferred_name }}){% endif %}
                 </a>
               </th>

@@ -22,7 +22,7 @@
         <tbody id="userbody">
         {%- for award in awards -%}
           <tr>
-            <td><a class="link-light" href="{{url_for('user.profile', user_id=award.user_id)}}">{{award.owner.name}}</a></td>
+            <td><a class="link-light" href="{{url_for('user.profile', username=award.user.username)}}">{{award.owner.name}}</a></td>
             <td>{{award.owner.subteam.name}}</td>
             <td>{{award.received}}</td>
           </tr>
