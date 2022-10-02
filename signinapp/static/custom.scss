@@ -4,6 +4,9 @@ $secondary: #1a46e4;
 $info: #60a0ff;
 $body-bg: #242526;
 $body-color: #e4e6eb;
+$form-check-input-bg: white;
+$form-check-input-checked-color: $secondary;
+$form-check-input-checked-bg-color: $body-color;
 
 $border-radius-lg: 1rem;
 
@@ -31,7 +34,7 @@ $border-widths: (
 }
 
 .bg-robot {
-    background-repeat: repeat;
+    background-repeat: no-repeat;
     background-attachment: scroll;
     background-size: cover;
 };
@@ -109,4 +112,8 @@ $border-widths: (
 #hoursSearchContainer #role {
     padding: 0;
     border: 0;
+}
+
+div #qrPlaceholder {
+    @extend .border, .border-5, .bg-light
 }
