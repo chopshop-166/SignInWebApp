@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, redirect, request, url_for
+from flask import Blueprint, current_app, redirect, request, url_for, flash
 from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
@@ -26,6 +26,9 @@ def profile():
 @login_required
 def profile_url(username):
     user = db.session.scalar(select(User).filter_by(username=username))
+    if not user:
+        flash("Invalid user")
+        return redirect(url_for("index"))
     if current_user.can_view(user):
         event_types = db.session.scalars(select(EventType))
         return render_template(
