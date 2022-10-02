@@ -38,7 +38,7 @@
                   <button class="btn btn-secondary" type="submit">Sign Out</button>
                 </form>
                 <form class="inlineform"
-                      action="{{ url_for('admin.active_deleteall') }}"
+                      action="{{ url_for('mentor.active_delete') }}"
                       id="drop{{ ac.id }}"
                       method="POST">
                   <input type="hidden" value="{{ ac.id }}" name="active_id">

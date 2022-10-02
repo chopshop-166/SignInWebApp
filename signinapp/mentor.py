@@ -2,7 +2,7 @@ from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from sqlalchemy import not_
+from sqlalchemy import delete
 from sqlalchemy.future import select
 from wtforms import SubmitField
 
@@ -49,11 +49,15 @@ def active_delete():
 @mentor.route("/active/delete_expired")
 @mentor_required
 def active_delete_expired():
-    db.session.delete(select(Active).where(Active.event.is_active == False))
+    db.session.execute(
+        delete(Active)
+        .where(Active.event.has(is_active=False))
+        .execution_options(synchronize_session="fetch"),
+    )
     db.session.commit()
     flash("Deleted all expired stamps")
     if current_user.role.admin:
-        return redirect(url_for("admin.active"))
+        return redirect(url_for("mentor.active"))
     return redirect(url_for("mentor.active"))
 
 
