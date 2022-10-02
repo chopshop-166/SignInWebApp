@@ -38,13 +38,13 @@ def user_approve():
     return redirect(url_for("team.users"))
 
 
-@admin.route("/admin/guardian/promote", methods=["POST"])
+@admin.route("/admin/guardian/promote", methods=["GET", "POST"])
 @admin_required
 def user_promote():
     user: User = db.session.get(User, request.args["user_id"])
     if not user:
         flash("Invalid user ID")
-        return redirect(url_for("team.users"))
+        return redirect(url_for("team.list_guardians"))
 
     form = UserForm(obj=user)
     form.password.flags.is_required = True
@@ -53,6 +53,12 @@ def user_promote():
     del form.subteam
 
     if form.validate_on_submit():
+        if User.from_username(form.username.data) not in (None, user):
+            flash(f"Username {form.username.data} already exists")
+            return redirect(
+                url_for("admin.user_promote", user_id=request.args["user_id"])
+            )
+
         # Cannot use form.populate_data because of the password
         user.username = form.username.data
         user.name = form.name.data
@@ -84,7 +90,7 @@ def new_user():
     form.password.flags.is_required = True
 
     if form.validate_on_submit():
-        if User.get_canonical(form.name.data) is not None:
+        if User.from_username(form.username.data) is not None:
             flash("User already exists")
             return redirect(url_for("admin.new_user"))
 
@@ -128,6 +134,10 @@ def edit_user():
         del form.student_data
 
     if form.validate_on_submit():
+        if User.from_username(form.username.data) not in (None, user):
+            flash(f"Username {form.username.data} already exists")
+            return redirect(url_for("admin.edit_user", user_id=request.args["user_id"]))
+
         # Cannot use form.populate_data because of the password
         user.username = form.username.data
         user.name = form.name.data
