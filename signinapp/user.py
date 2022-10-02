@@ -22,6 +22,18 @@ def profile():
     return current_app.login_manager.unauthorized()
 
 
+@user.route("/profile/<username>")
+@login_required
+def profile_url(username):
+    user = db.session.scalar(select(User).filter_by(username=username))
+    if current_user.can_view(user):
+        event_types = db.session.scalars(select(EventType))
+        return render_template(
+            "profile.html.jinja2", user=user, event_types=event_types
+        )
+    return current_app.login_manager.unauthorized()
+
+
 @user.route("/badge")
 @login_required
 def badge():
