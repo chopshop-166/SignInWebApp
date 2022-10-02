@@ -194,10 +194,18 @@ class User(UserMixin, db.Model):
         "Total time for an event type"
         return sum((s.elapsed for s in self.stamps_for(type_)), start=timedelta())
 
-    @hybrid_method
     def can_view(self, user: User):
         "Whether the user in question can view this user"
-        return self.role.mentor | self.role.admin | (self == user)
+        return (
+            self.role.mentor
+            or self.role.admin
+            or (self == user)
+            or (
+                self.guardian_user_data
+                and user.student_user_data
+                and user.student_user_data in self.guardian_user_data.students
+            )
+        )
 
     @property
     def human_readable(self) -> str:
