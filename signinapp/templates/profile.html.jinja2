@@ -15,10 +15,10 @@
           <div class="d-flex justify-content-center pt-3">
             <div id="qrPlaceholder"></div>
           </div>
-          <h1 class="d-flex justify-content-center pt-3">{{ user.name }}</h1>
-          <h2 class="fw-light text-dark d-flex justify-content-center">{{ user.subteam.name }}</h2>
+          <h1 class="fw-bold d-flex justify-content-center pt-3">{{ user.name }}</h1>
+          <h2 class="fw-light text-light d-flex justify-content-center">{{ user.subteam.name }}</h2>
           {% if user.student_user_data %}
-          <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
+          <h2 class="fw-light text-light d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
           {% endif %}
           {%- if current_user.is_authenticated and current_user.role.admin -%}
           <div class="btn-group d-flex justify-content-center pb-3" role="group" aria-label="User Actions">
@@ -36,7 +36,7 @@
       </div>
       <div class="col-xl-8 px-4">
         {% if user.student_user_data and user.student_user_data.guardians %}
-        <div class="row">
+        <div class="row pb-3">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
               <h2>Parent/Guardian Info:</h2>
@@ -48,10 +48,8 @@
             </ul>
           </div>
         </div>
-        <div class="row pt-3">
-        {% else %}
-        <div class="row">
         {% endif %}
+        <div class="row">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
               <h2>Time Recorded:</h2>
