@@ -35,7 +35,7 @@
         </div>
       </div>
       <div class="col-xl-8 px-4">
-        {% if user.student_user_data and user.student_user_data.guardians %}
+        {%- if user.student_user_data and user.student_user_data.guardians -%}
         <div class="row pb-3">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
@@ -48,7 +48,20 @@
             </ul>
           </div>
         </div>
-        {% endif %}
+        {%- elif user.guardian_user_data and user.guardian_user_data.students -%}
+        <div class="row pb-3">
+          <div class="bg-primary rounded-3 py-3">
+            <div class="d-flex flex-row align-items-center justify-content-between">
+              <h2>Student Info:</h2>
+            </div>
+            <ul>
+              {%- for student in user.guardian_user_data.students -%}
+                <li><a class="text-light" href="{{url_for('user.profile', username=student.user.username)}}">{{ student.user.name }}</a></li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+        {%- endif -%}
         <div class="row">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
