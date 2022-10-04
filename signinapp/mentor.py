@@ -56,8 +56,6 @@ def active_delete_expired():
     )
     db.session.commit()
     flash("Deleted all expired stamps")
-    if current_user.role.admin:
-        return redirect(url_for("mentor.active"))
     return redirect(url_for("mentor.active"))
 
 
