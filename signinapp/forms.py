@@ -18,9 +18,7 @@ from .model import ShirtSizes, generate_grade_choices
 
 
 def sanitize(string):
-    if string is None:
-        return ""
-    return escape(string)
+    return "" if (string is None) else escape(string)
 
 
 class DataMaybeRequired(DataRequired):
