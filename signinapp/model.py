@@ -429,7 +429,7 @@ class Event(db.Model):
             active = Active(user=user, event=self)
             db.session.add(active)
             db.session.commit()
-            return StampEvent(user.human_readable(), "in")
+            return StampEvent(user.human_readable, "in")
 
         stamp = Stamps(user=user, event=self, start=active.start)
         db.session.delete(active)
@@ -438,7 +438,7 @@ class Event(db.Model):
         # Elapsed needs to be taken after committing to the DB
         # otherwise it won't be populated
         sign = f"out after {stamp.elapsed}"
-        return StampEvent(user.human_readable(), sign)
+        return StampEvent(user.human_readable, sign)
 
 
 class EventType(db.Model):
@@ -469,7 +469,7 @@ class Active(db.Model):
     def as_dict(self):
         "Return a dictionary for sending to the web page"
         return {
-            "user": self.user.human_readable(),
+            "user": self.user.human_readable,
             "start": self.start,
             "event": self.event.name,
         }
@@ -501,7 +501,7 @@ class Stamps(db.Model):
     def as_dict(self):
         "Return a dictionary for sending to the web page"
         return {
-            "user": self.user.human_readable(),
+            "user": self.user.human_readable,
             "elapsed": str(self.elapsed),
             "start": correct_time_from_storage(self.start),
             "end": correct_time_from_storage(self.end),
@@ -511,7 +511,7 @@ class Stamps(db.Model):
     def as_list(self):
         "Return a list for sending to the web page"
         return [
-            self.user.human_readable(),
+            self.user.human_readable,
             correct_time_from_storage(self.start),
             correct_time_from_storage(self.end),
             self.elapsed,
