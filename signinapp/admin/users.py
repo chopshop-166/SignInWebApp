@@ -129,9 +129,7 @@ def edit_user():
     form = UserForm(obj=user)
     form.admin_data.role.choices = get_form_ids(Role)
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
-
-    if user.role.name != "student":
-        del form.student_data
+    del form.student_data
 
     if form.validate_on_submit():
         if User.from_username(form.username.data) not in (None, user):
