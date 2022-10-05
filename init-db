@@ -1,3 +1,0 @@
-#!/bin/bash
-
-env FLASK_APP=signinapp.webapp python -m flask init-db

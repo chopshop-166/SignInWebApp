@@ -28,6 +28,7 @@ from .util import (
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
 
+
 def gen_code():
     "Generate an event code"
     return secrets.token_urlsafe(16)
@@ -284,7 +285,11 @@ class Guardian(db.Model):
         name: str, phone_number: str, email: str, contact_order: int
     ) -> Guardian:
         guardian_user = db.session.scalar(
-            select(User).where(User.name == name, User.phone_number == phone_number, User.email == email)
+            select(User).where(
+                User.name == name,
+                User.phone_number == phone_number,
+                User.email == email,
+            )
         )
         if guardian_user:
             # If we found the guardian user, then return the extra guardian data (This object/table)

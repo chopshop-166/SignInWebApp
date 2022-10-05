@@ -26,9 +26,7 @@ def init_db_command():
 def gen_codes_command():
     """Generate user codes for all users."""
 
-    for user in db.session.scalars(
-        select(model.User)
-    ):
+    for user in db.session.scalars(select(model.User)):
         user.code = model.gen_code()
 
     db.session.commit()

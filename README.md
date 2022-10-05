@@ -28,7 +28,7 @@ docker-compose down
 # Build the image/replace the image if one already exists
 docker-compose build
 # Initialize the database with the default settings
-docker-compose run chopshop_signin ./init-db
+docker-compose run chopshop_signin ./signin-cli init-db
 # Start the docker container
 docker-compose up -d
 ```
@@ -62,7 +62,7 @@ It's a simple matter of running docker compose. The compose file has restart set
 
 ```sh
 # Initialize the database
-docker-compose run chopshop_signin ./init-db
+docker-compose run chopshop_signin ./signin-cli init-db
 # Start the containers
 docker compose up -d
 ```
