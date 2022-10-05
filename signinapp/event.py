@@ -15,7 +15,7 @@ from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
 
-from .model import Active, Event, EventType, Stamps, db
+from .model import Active, Event, EventType, Stamps, User, db
 
 eventbp = Blueprint("event", __name__)
 
@@ -87,10 +87,11 @@ def export():
         name = request.args.get("name", None)
     else:
         name = current_user.name
+    user = User.from_username(name)
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)
-    return excel.make_response_from_array(Stamps.export(name, start, end, type_), "csv")
+    return excel.make_response_from_array(Stamps.export(user, start, end, type_), "csv")
 
 
 @eventbp.route("/export/subteam")
@@ -100,4 +101,4 @@ def export_subteam():
         return current_app.login_manager.unauthorized()
 
     subteam = current_user.subteam
-    return excel.make_response_from_array(export(subteam=subteam), "csv")
+    return excel.make_response_from_array(Stamps.export(subteam=subteam), "csv")
