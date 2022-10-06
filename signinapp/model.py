@@ -218,6 +218,12 @@ class User(UserMixin, db.Model):
     def display_name(self) -> str:
         return self.preferred_name or self.name
 
+    @property
+    def full_name(self) -> str:
+        if self.preferred_name and self.preferred_name != self.name.split(" ")[0]:
+            return f"{self.name} ({self.preferred_name})"
+        return self.name
+
     @staticmethod
     def get_visible_users() -> list[User]:
         return db.session.scalars(select(User).join(Role).where(Role.visible == True))
