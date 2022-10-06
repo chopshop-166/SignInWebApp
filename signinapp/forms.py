@@ -1,3 +1,5 @@
+import regex
+
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
@@ -14,6 +16,12 @@ from wtforms.validators import DataRequired, Email, Regexp, Length
 
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
+NAME_RE = regex.compile(r"(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*")
+
+
+def strip(s):
+    return (s or "").strip()
+
 
 class StudentDataForm(Form):
     graduation_year = SelectField(
@@ -23,7 +31,9 @@ class StudentDataForm(Form):
     )
 
     first_guardian_name = StringField(
-        "1st Parent Name", validators=[DataRequired()], filters=[str.strip]
+        "1st Parent Name",
+        validators=[DataRequired(), Regexp(NAME_RE)],
+        filters=[strip],
     )
     first_guardian_phone_number = TelField(
         "1st Parent Phone Number", validators=[DataRequired()]
@@ -32,9 +42,9 @@ class StudentDataForm(Form):
         "1st Parent email", validators=[DataRequired(), Email()]
     )
 
-    second_guardian_name = StringField("2nd Parent Name", filters=[str.strip])
+    second_guardian_name = StringField("2nd Parent Name", filters=[strip])
     second_guardian_phone_number = TelField("2nd Parent Phone Number")
-    second_guardian_email = EmailField("2nd Parent email", validators=[Email()])
+    second_guardian_email = EmailField("2nd Parent email")
 
 
 class AdminUserForm(Form):
@@ -44,7 +54,7 @@ class AdminUserForm(Form):
 
 class UserForm(FlaskForm):
     username = StringField(
-        "Username", validators=[DataRequired(), Regexp(r"\w+")], filters=[str.strip]
+        "Username", validators=[DataRequired(), Regexp(r"\w+")], filters=[strip]
     )
     password = PasswordField("Password", validators=[Length(8)])
 
@@ -52,12 +62,12 @@ class UserForm(FlaskForm):
         "Name",
         validators=[
             DataRequired(),
-            Regexp(r"([A-Za-z]+(['\-][A-Za-z]+)*)( [A-Za-z]+(['\-][A-Za-z]+)*)*"),
+            Regexp(NAME_RE),
         ],
-        filters=[str.strip],
+        filters=[strip],
     )
     preferred_name = StringField(
-        "Preferred Name", description="Leave blank for none", filters=[str.strip]
+        "Preferred Name", description="Leave blank for none", filters=[strip]
     )
 
     phone_number = TelField("Phone Number", validators=[DataRequired()])
