@@ -53,7 +53,6 @@ class ChangePasswordForm(FlaskForm):
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     form = UserForm()
-    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
     form.password.validators = [DataRequired()]
     del form.admin_data
 
@@ -115,7 +114,6 @@ def register():
 @auth.route("/register/mentor", methods=["GET", "POST"])
 def register_mentor():
     form = UserForm()
-    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
     form.password.validators = [DataRequired()]
     del form.student_data
     del form.admin_data

@@ -11,7 +11,7 @@ search = Blueprint("search", __name__)
 
 
 class BadgeSearchForm(FlaskForm):
-    badge = SelectField()
+    badge = SelectField(choices=lambda: get_form_ids(Badge))
     subteam = SelectField()
     required = BooleanField(label="Has Badge", default=True)
     submit = SubmitField()
@@ -19,7 +19,7 @@ class BadgeSearchForm(FlaskForm):
 
 class HoursForm(FlaskForm):
     role = MultiCheckboxField()
-    category = SelectField()
+    category = SelectField(choices=lambda: get_form_ids(EventType))
     submit = SubmitField()
 
 
@@ -27,8 +27,6 @@ class HoursForm(FlaskForm):
 @mentor_required
 def badges():
     form = BadgeSearchForm()
-    form.badge.choices = get_form_ids(Badge)
-    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
 
     if form.validate_on_submit():
         stmt = select(User)
@@ -48,7 +46,6 @@ def badges():
 def hours():
     form = HoursForm()
     form.role.choices = [r.name for r in Role.get_visible()]
-    form.category.choices = get_form_ids(EventType)
 
     if form.validate_on_submit():
         results = User.get_visible_users()
