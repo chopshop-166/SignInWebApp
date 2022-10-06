@@ -16,15 +16,6 @@ from wtforms.validators import DataRequired
 from .model import ShirtSizes, generate_grade_choices
 
 
-class DataMaybeRequired(DataRequired):
-    def __init__(self, message=None):
-        super().__init__(message)
-
-    def __call__(self, form, field: Field):
-        if field.flags.is_required:
-            return super().__call__(form, field)
-
-
 class StudentDataForm(Form):
     graduation_year = SelectField(
         "Graduation Year",
@@ -46,14 +37,11 @@ class StudentDataForm(Form):
 class AdminUserForm(Form):
     role = SelectField()
     approved = BooleanField()
-    active = BooleanField()
 
 
 class UserForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
-
-    # Nasty hack to only require the validator to be used in one case
-    password = PasswordField("Password", validators=[DataMaybeRequired()])
+    password = PasswordField("Password")
 
     name = StringField("Name", validators=[DataRequired()])
     preferred_name = StringField("Preferred Name", description="Leave blank for none")

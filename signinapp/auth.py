@@ -54,7 +54,7 @@ class ChangePasswordForm(FlaskForm):
 def register():
     form = UserForm()
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
-    form.password.flags.is_required = True
+    form.password.validators = [DataRequired()]
     del form.admin_data
 
     if form.validate_on_submit():
@@ -116,7 +116,7 @@ def register():
 def register_mentor():
     form = UserForm()
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
-    form.password.flags.is_required = True
+    form.password.validators = [DataRequired()]
     del form.student_data
     del form.admin_data
 
@@ -159,7 +159,7 @@ def register_mentor():
 @auth.route("/register/guardian", methods=["GET", "POST"])
 def register_guardian():
     form = UserForm()
-    form.password.flags.is_required = True
+    form.password.validators = [DataRequired()]
     del form.admin_data
     del form.student_data
     del form.subteam
