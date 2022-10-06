@@ -47,7 +47,7 @@ def user_promote():
         return redirect(url_for("team.list_guardians"))
 
     form = UserForm(obj=user)
-    form.password.flags.is_required = True
+    form.password.validators = [DataRequired()]
     del form.admin_data
     del form.student_data
     del form.subteam
@@ -87,7 +87,7 @@ def new_user():
     form = UserForm()
     form.admin_data.role.choices = get_form_ids(Role)
     form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
-    form.password.flags.is_required = True
+    form.password.validators = [DataRequired()]
 
     if form.validate_on_submit():
         if User.from_username(form.username.data) is not None:
@@ -113,7 +113,7 @@ def new_user():
         db.session.commit()
         return redirect(url_for("team.users"))
 
-    form.role.process_data(Role.get_default().id)
+    form.admin_data.role.process_data(Role.get_default().id)
 
     return render_template("form.html.jinja2", form=form, title=f"New User")
 
