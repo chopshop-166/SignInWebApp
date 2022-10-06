@@ -52,7 +52,7 @@ class UserForm(FlaskForm):
         "Name",
         validators=[
             DataRequired(),
-            Regexp(r"([A-Za-z]+(['\-][A-Za-z])*)( [A-Za-z]+(['\-][A-Za-z])*)*"),
+            Regexp(r"([A-Za-z]+(['\-][A-Za-z]+)*)( [A-Za-z]+(['\-][A-Za-z]+)*)*"),
         ],
         filters=[str.strip],
     )
