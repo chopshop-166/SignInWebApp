@@ -113,7 +113,7 @@ def new_user():
         db.session.commit()
         return redirect(url_for("team.users"))
 
-    form.role.process_data(Role.get_default().id)
+    form.admin_data.role.process_data(Role.get_default().id)
 
     return render_template("form.html.jinja2", form=form, title=f"New User")
 
