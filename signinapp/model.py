@@ -218,7 +218,7 @@ class User(UserMixin, db.Model):
 
     @property
     def full_name(self) -> str:
-        if self.preferred_name:
+        if self.preferred_name and self.preferred_name != self.name.split(" ")[0]:
             return f"{self.name} ({self.preferred_name})"
         return self.name
 
