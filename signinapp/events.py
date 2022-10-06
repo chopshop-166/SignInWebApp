@@ -72,7 +72,7 @@ class BulkEventForm(FlaskForm):
     days = SelectMultipleField(choices=WEEKDAYS, validators=[DataRequired()])
     start_time = TimeField(validators=[DataRequired()])
     end_time = TimeField(validators=[DataRequired()])
-    type_id = SelectField(label="Type")
+    type_id = SelectField(label="Type", choices=lambda: get_form_ids(EventType))
     submit = SubmitField()
 
     def validate(self):
@@ -113,7 +113,6 @@ def event_stats():
 @mentor_required
 def bulk_events():
     form = BulkEventForm()
-    form.type_id.choices = get_form_ids(EventType)
 
     if form.validate_on_submit():
         start_time = datetime.combine(form.start_day.data, form.start_time.data)
@@ -144,7 +143,6 @@ def bulk_events():
 @mentor_required
 def new_event():
     form = EventForm()
-    form.type_id.choices = get_form_ids(EventType)
     if form.validate_on_submit():
         ev = Event()
         form.start.data = correct_time_for_storage(form.start.data)
@@ -167,7 +165,6 @@ def edit_event():
         return redirect(url_for("events.list_events"))
 
     form = EventForm(obj=event)
-    form.type_id.choices = get_form_ids(EventType)
     # Only re-format the times when initialy sending the form.
     if not form.is_submitted():
         form.start.data = correct_time_from_storage(form.start.data)

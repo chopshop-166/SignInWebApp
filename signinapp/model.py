@@ -52,10 +52,12 @@ def canonical_name(name: str):
         return mk_hash(f"{m['first']} {m['last']}")
 
 
-def get_form_ids(model, add_null_id=False):
-    return ([(0, "None")] if add_null_id else []) + [
-        (x.id, x.name) for x in db.session.scalars(select(model))
-    ]
+def get_form_ids(model, add_null_id=False, filters=()):
+    prefix = [(0, "None")] if add_null_id else []
+    stmt = select(model)
+    if filters:
+        stmt = stmt.where(*filters)
+    return prefix + [(x.id, x.name) for x in db.session.scalars(stmt)]
 
 
 @dataclasses.dataclass

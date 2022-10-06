@@ -2,11 +2,11 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import StringField, SubmitField, FormField
+from wtforms import FormField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
 from ..forms import StudentDataForm, UserForm
-from ..model import Guardian, Role, ShirtSizes, Subteam, User, db, get_form_ids
+from ..model import Guardian, Role, ShirtSizes, Subteam, User, db
 from ..util import admin_required
 from .util import admin
 
@@ -85,8 +85,6 @@ def user_promote():
 @admin_required
 def new_user():
     form = UserForm()
-    form.admin_data.role.choices = get_form_ids(Role)
-    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
     form.password.validators = [DataRequired()]
 
     if form.validate_on_submit():
@@ -98,7 +96,7 @@ def new_user():
             username=form.username.data,
             name=form.name.data,
             password=form.password.data,
-            approved=form.approved.data,
+            approved=form.admin_data.approved.data,
             role=db.session.get(Role, form.role.data),
             preferred_name=form.preferred_name.data,
             phone_number=form.phone_number.data,
@@ -127,8 +125,6 @@ def edit_user():
         return redirect(url_for("team.users"))
 
     form = UserForm(obj=user)
-    form.admin_data.role.choices = get_form_ids(Role)
-    form.subteam.choices = get_form_ids(Subteam, add_null_id=True)
     del form.student_data
 
     if form.validate_on_submit():

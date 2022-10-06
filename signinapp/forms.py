@@ -13,7 +13,7 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired
 
-from .model import ShirtSizes, generate_grade_choices
+from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
 
 class StudentDataForm(Form):
@@ -35,7 +35,7 @@ class StudentDataForm(Form):
 
 
 class AdminUserForm(Form):
-    role = SelectField()
+    role = SelectField(choices=lambda: get_form_ids(Role))
     approved = BooleanField()
 
 
@@ -52,9 +52,13 @@ class UserForm(FlaskForm):
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
     )
-    subteam = SelectField("Subteam", validators=[DataRequired()])
+    subteam = SelectField(
+        "Subteam",
+        validators=[DataRequired()],
+        choices=lambda: get_form_ids(Subteam, add_null_id=True),
+    )
 
-    student_data = FormField(StudentDataForm)
-    admin_data = FormField(AdminUserForm)
+    student_data: StudentDataForm = FormField(StudentDataForm)
+    admin_data: AdminUserForm = FormField(AdminUserForm)
 
     submit = SubmitField("Register")
