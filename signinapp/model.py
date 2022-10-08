@@ -342,6 +342,22 @@ class Student(db.Model):
         if guardian not in self.guardians:
             self.guardians.append(guardian)
 
+    def update_guardians(self, gs: list[dict[str, str]]):
+        self.guardians.clear()
+        # Don't use enumerate in case they skip entries for some reason
+        i = 0
+        for guard in gs:
+            if guard["name"] and guard["phone_number"] and guard["email"]:
+                i += 1
+                self.add_guardian(
+                    guardian=Guardian.get_from(
+                        name=guard["name"],
+                        phone_number=guard["phone_number"],
+                        email=guard["email"],
+                        contact_order=i,
+                    )
+                )
+
     @property
     def display_grade(self):
         grades = generate_grade_choices()

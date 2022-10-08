@@ -81,28 +81,14 @@ def register():
             tshirt_size=ShirtSizes[form.tshirt_size.data],
             subteam=db.session.get(Subteam, form.subteam.data),
         )
-
-        student.student_user_data.add_guardian(
-            guardian=Guardian.get_from(
-                name=form.student_data.first_guardian_name.data,
-                phone_number=form.student_data.first_guardian_phone_number.data,
-                email=form.student_data.first_guardian_email.data,
-                contact_order=1,
-            )
-        )
-
-        if form.student_data.second_guardian_name.data:
-            student.student_user_data.add_guardian(
-                Guardian.get_from(
-                    name=form.student_data.second_guardian_name.data,
-                    phone_number=form.student_data.second_guardian_phone_number.data,
-                    email=form.student_data.second_guardian_email.data,
-                    contact_order=2,
-                )
-            )
+        student.student_user_data.update_guardians(form.student_data.guardian)
 
         db.session.commit()
         return redirect("/login")
+
+    form.student_data.guardian.append_entry()
+    form.student_data.guardian.append_entry()
+
     return render_template(
         "auth/register.html.jinja2",
         form=form,
