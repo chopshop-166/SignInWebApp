@@ -3,5 +3,9 @@
         ".venv/**": true,
         "**/__pycache__/**": true
     },
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true
+    }
 }
