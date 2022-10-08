@@ -38,9 +38,13 @@ class GuardianDataForm(Form):
 
 
 class GuardianInfoForm(Form):
-    name = StringField("Name")
+    name = StringField(
+        "Name",
+        validators=[Regexp(NAME_RE)],
+        filters=[strip],
+    )
     phone_number = TelField("Phone Number")
-    email = EmailField("email")
+    email = EmailField("email", validators=[DataRequired(), Email()])
 
 
 class StudentDataForm(Form):
