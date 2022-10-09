@@ -198,9 +198,9 @@ def edit_student_data():
 @admin_required
 def edit_guardian_data():
     user: User = db.session.get(User, request.args["user_id"])
-    if not user:
-        flash("Invalid user ID")
-        return redirect(url_for("team.users"))
+    if not user or not user.role.guardian:
+        flash("Invalid guardian user ID")
+        return redirect(url_for("team.list_guardians"))
 
     form = EditGuardianDataForm(obj=user)
 
