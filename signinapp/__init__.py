@@ -6,21 +6,22 @@ import os
 import flask_excel as excel
 import yaml
 from flask import Flask, render_template
-from sqlalchemy.future import select
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from get_docker_secret import get_docker_secret
+from sqlalchemy.future import select
 
 from .admin import admin
 from .auth import auth, login_manager
+from .dbadmin import init_dbadmin
 from .event import eventbp
 from .events import events
 from .mentor import mentor
 from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
+from .qr import qr
 from .search import search
 from .team import team
 from .user import user
-from .qr import qr
 
 app = Flask(__name__)
 
@@ -65,6 +66,7 @@ scss = Bundle(
 assets = Environment(app)
 assets.register("custom_css", scss)
 
+init_dbadmin(app)
 excel.init_excel(app)
 
 bootstrap = Bootstrap5(app)
