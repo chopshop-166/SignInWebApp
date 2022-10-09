@@ -103,7 +103,7 @@ def new_user():
             name=form.name.data,
             password=form.password.data,
             approved=form.admin_data.approved.data,
-            role=db.session.get(Role, form.role.data),
+            role=db.session.get(Role, form.admin_data.role.data),
             preferred_name=form.preferred_name.data,
             phone_number=form.phone_number.data,
             email=form.email.data,
