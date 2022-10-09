@@ -48,7 +48,7 @@ class EventForm(FlaskForm):
     code = StringField(validators=[DataRequired()])
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
-    type_id = SelectField(label="Type")
+    type_id = SelectField(label="Type", choices=lambda: get_form_ids(EventType))
     enabled = BooleanField(default=True)
     submit = SubmitField()
 
