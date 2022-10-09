@@ -14,7 +14,7 @@ from wtforms import (
     SubmitField,
     TelField,
 )
-from wtforms.validators import DataRequired, Email, Regexp, Length
+from wtforms.validators import DataRequired, Email, Length, Optional, Regexp
 
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
@@ -40,11 +40,11 @@ class GuardianDataForm(Form):
 class GuardianInfoForm(Form):
     name = StringField(
         "Name",
-        validators=[Regexp(NAME_RE)],
+        validators=[Optional(), Regexp(NAME_RE)],
         filters=[strip],
     )
     phone_number = TelField("Phone Number")
-    email = EmailField("email", validators=[DataRequired(), Email()])
+    email = EmailField("email", validators=[Optional(), Email()])
 
 
 class StudentDataForm(Form):
