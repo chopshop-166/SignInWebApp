@@ -14,7 +14,7 @@ from wtforms import (
     SubmitField,
     TelField,
 )
-from wtforms.validators import DataRequired, Email, Length, Optional, Regexp
+from wtforms.validators import DataRequired, Email, Optional, Regexp
 
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
@@ -66,7 +66,7 @@ class UserForm(FlaskForm):
     username = StringField(
         "Username", validators=[DataRequired(), Regexp(r"\w+")], filters=[strip]
     )
-    password = PasswordField("Password", validators=[Length(8)])
+    password = PasswordField("Password")
 
     name = StringField(
         "Name",

@@ -10,7 +10,7 @@ from flask_login import (
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
-from wtforms.validators import DataRequired, EqualTo
+from wtforms.validators import DataRequired, EqualTo, Length
 
 from .forms import UserForm
 from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db, get_form_ids
@@ -53,7 +53,7 @@ class ChangePasswordForm(FlaskForm):
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     form = UserForm()
-    form.password.validators = [DataRequired()]
+    form.password.validators = [DataRequired(), Length(8)]
     del form.admin_data
 
     if form.validate_on_submit():
@@ -100,7 +100,7 @@ def register():
 @auth.route("/register/mentor", methods=["GET", "POST"])
 def register_mentor():
     form = UserForm()
-    form.password.validators = [DataRequired()]
+    form.password.validators = [DataRequired(), Length(8)]
     del form.student_data
     del form.admin_data
 
@@ -143,7 +143,7 @@ def register_mentor():
 @auth.route("/register/guardian", methods=["GET", "POST"])
 def register_guardian():
     form = UserForm()
-    form.password.validators = [DataRequired()]
+    form.password.validators = [DataRequired(), Length(8)]
     del form.admin_data
     del form.student_data
     del form.subteam
