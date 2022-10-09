@@ -18,10 +18,10 @@ from .event import eventbp
 from .events import events
 from .mentor import mentor
 from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
+from .qr import qr
 from .search import search
 from .team import team
 from .user import user
-from .qr import qr
 
 app = Flask(__name__)
 
