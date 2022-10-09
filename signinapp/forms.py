@@ -4,15 +4,17 @@ from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
     EmailField,
+    FieldList,
     Form,
     FormField,
+    IntegerField,
     PasswordField,
     SelectField,
     StringField,
     SubmitField,
     TelField,
 )
-from wtforms.validators import DataRequired, Email, Regexp, Length
+from wtforms.validators import DataRequired, Email, Length, Optional, Regexp
 
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
@@ -23,6 +25,28 @@ def strip(s):
     return (s or "").strip()
 
 
+class GuardianDataForm(Form):
+    contact_order = IntegerField("Contact Order", default=1)
+    student = FieldList(
+        SelectField(
+            "Student",
+            choices=lambda: get_form_ids(
+                User, add_null_id=True, filters=(User.role.has(name="student"),)
+            ),
+        )
+    )
+
+
+class GuardianInfoForm(Form):
+    name = StringField(
+        "Name",
+        validators=[Optional(), Regexp(NAME_RE)],
+        filters=[strip],
+    )
+    phone_number = TelField("Phone Number")
+    email = EmailField("email", validators=[Optional(), Email()])
+
+
 class StudentDataForm(Form):
     graduation_year = SelectField(
         "Graduation Year",
@@ -30,21 +54,7 @@ class StudentDataForm(Form):
         choices=lambda: generate_grade_choices().items(),
     )
 
-    first_guardian_name = StringField(
-        "1st Parent Name",
-        validators=[DataRequired(), Regexp(NAME_RE)],
-        filters=[strip],
-    )
-    first_guardian_phone_number = TelField(
-        "1st Parent Phone Number", validators=[DataRequired()]
-    )
-    first_guardian_email = EmailField(
-        "1st Parent email", validators=[DataRequired(), Email()]
-    )
-
-    second_guardian_name = StringField("2nd Parent Name", filters=[strip])
-    second_guardian_phone_number = TelField("2nd Parent Phone Number")
-    second_guardian_email = EmailField("2nd Parent email")
+    guardian = FieldList(FormField(GuardianInfoForm))
 
 
 class AdminUserForm(Form):

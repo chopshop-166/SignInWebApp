@@ -2,17 +2,22 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import FormField, StringField, SubmitField
+from wtforms import FormField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
-from ..forms import StudentDataForm, UserForm
-from ..model import Guardian, Role, ShirtSizes, Subteam, User, db
+from ..forms import GuardianDataForm, StudentDataForm, UserForm
+from ..model import Guardian, Role, ShirtSizes, Student, Subteam, User, db
 from ..util import admin_required
 from .util import admin
 
 
+class EditGuardianDataForm(FlaskForm):
+    guardian_data: GuardianDataForm = FormField(GuardianDataForm)
+    submit = SubmitField()
+
+
 class EditStudentDataForm(FlaskForm):
-    student_data = FormField(StudentDataForm)
+    student_data: StudentDataForm = FormField(StudentDataForm)
     submit = SubmitField()
 
 
@@ -88,6 +93,7 @@ def new_user():
     form.password.validators = [DataRequired()]
 
     if form.validate_on_submit():
+        # TODO: Replace with validator
         if User.from_username(form.username.data) is not None:
             flash("User already exists")
             return redirect(url_for("admin.new_user"))
@@ -97,7 +103,7 @@ def new_user():
             name=form.name.data,
             password=form.password.data,
             approved=form.admin_data.approved.data,
-            role=db.session.get(Role, form.role.data),
+            role=db.session.get(Role, form.admin_data.role.data),
             preferred_name=form.preferred_name.data,
             phone_number=form.phone_number.data,
             email=form.email.data,
@@ -164,50 +170,62 @@ def edit_student_data():
     user: User = db.session.get(User, request.args["user_id"])
     if not user:
         flash("Invalid user ID")
-        return redirect(url_for("team.users"))
+        return redirect(url_for("team.list_students"))
 
     form = EditStudentDataForm(obj=user)
 
     if form.validate_on_submit():
         student_data = user.student_user_data
         student_data.graduation_year = form.student_data.graduation_year.data
-        student_data.guardians.clear()
-        student_data.guardians.append(
-            Guardian.get_from(
-                form.student_data.first_guardian_name.data,
-                form.student_data.first_guardian_phone_number.data,
-                form.student_data.first_guardian_email.data,
-                1,
-            )
-        )
-        if form.student_data.second_guardian_name.data:
-            student_data.guardians.append(
-                Guardian.get_from(
-                    form.student_data.second_guardian_name.data,
-                    form.student_data.second_guardian_phone_number.data,
-                    form.student_data.second_guardian_email.data,
-                    2,
-                )
-            )
+        student_data.update_guardians(form.student_data.guardian)
         db.session.commit()
         return redirect(url_for("team.users"))
 
     nested = form.student_data
     nested.graduation_year.process_data(user.student_user_data.graduation_year)
-    guardians = user.student_user_data.guardians
-    first_guardian = guardians[0].user
-    nested.first_guardian_name.process_data(first_guardian.name)
-    nested.first_guardian_phone_number.process_data(first_guardian.phone_number)
-    nested.first_guardian_email.process_data(first_guardian.email)
-    if len(guardians) > 1:
-        second_guardian = guardians[1].user
-        nested.second_guardian_name.process_data(second_guardian.name)
-        nested.second_guardian_phone_number.process_data(second_guardian.phone_number)
-        nested.second_guardian_email.process_data(second_guardian.email)
+    for g in user.student_user_data.guardians:
+        nested.guardian.append_entry(g.user)
+    nested.guardian.append_entry()
+
     return render_template(
         "form.html.jinja2",
         form=form,
         title=f"Edit Student Data {user.name}",
+    )
+
+
+@admin.route("/admin/users/edit/guardian", methods=["GET", "POST"])
+@admin_required
+def edit_guardian_data():
+    user: User = db.session.get(User, request.args["user_id"])
+    if not user or not user.role.guardian:
+        flash("Invalid guardian user ID")
+        return redirect(url_for("team.list_guardians"))
+
+    form = EditGuardianDataForm(obj=user)
+
+    if form.validate_on_submit():
+
+        user.guardian_user_data.students = [
+            db.session.get(User, s).student_user_data
+            for s in form.guardian_data.data["student"]
+            if s and s != "0"
+        ]
+
+        db.session.commit()
+        return redirect(url_for("team.list_guardians"))
+
+    nested = form.guardian_data.form
+    nested.contact_order.process_data(user.guardian_user_data.contact_order)
+    for s in user.guardian_user_data.students:
+        nested.student.append_entry(s.user.id)
+    # One more entry in case we're adding students
+    nested.student.append_entry()
+
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Edit Guardian Data {user.name}",
     )
 
 

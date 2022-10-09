@@ -15,6 +15,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.future import select
 from werkzeug.security import generate_password_hash
+from wtforms import FieldList
 
 from .util import (
     correct_time_for_storage,
@@ -275,7 +276,7 @@ class User(UserMixin, db.Model):
         return guardian
 
     @staticmethod
-    def get_canonical(name) -> User | None:
+    def get_canonical(name: str) -> User | None:
         "Look up user by name"
         code = mk_hash(name)
         return db.session.scalar(select(User).filter_by(code=code))
@@ -341,6 +342,22 @@ class Student(db.Model):
     def add_guardian(self, guardian: Guardian):
         if guardian not in self.guardians:
             self.guardians.append(guardian)
+
+    def update_guardians(self, gs: FieldList):
+        self.guardians.clear()
+        # Don't use enumerate in case they skip entries for some reason
+        i = 0
+        for guard in (guard.data for guard in gs):
+            if guard["name"] and guard["phone_number"] and guard["email"]:
+                i += 1
+                self.add_guardian(
+                    guardian=Guardian.get_from(
+                        name=guard["name"],
+                        phone_number=guard["phone_number"],
+                        email=guard["email"],
+                        contact_order=i,
+                    )
+                )
 
     @property
     def display_grade(self):
