@@ -76,6 +76,20 @@
                   <a class="btn btn-secondary"
                     href="{{ url_for('admin.edit_user', user_id=user.id)}}"
                     role="button">Edit</a>
+                  {%- if user.role.name == "student" -%}
+                    <a class="btn btn-info"
+                      href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                      action="submit">Edit Student</a>
+                  {%- elif role == "Guardian" -%}
+                    <a class="btn btn-info"
+                      href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
+                      action="submit">Edit Guardian</a>
+                  {%- if user.role.name == "guardian_limited" -%}
+                    <a class="btn btn-warning"
+                      href="{{ url_for('admin.user_promote', user_id=user.id)}}"
+                      action="submit">Create User</a>
+                  {%- endif -%}
+                  {%- endif -%}
                   <a class="btn btn-danger"
                     href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                     role="button">Delete</a>
@@ -87,23 +101,6 @@
                       method="POST">
                   <button class="btn btn-warning"
                     action="submit">Approve</button>
-                </form>
-                {%- endif -%}
-                {%- if user.role.name == "student" -%}
-                <form class="inlineform"
-                      action="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
-                      id="editStudent{{ user.id }}"
-                      method="POST">
-                  <button class="btn btn-warning"
-                    action="submit">Edit Student Data</button>
-                </form>
-                {%- elif role == "Guardian" and user.role.name == "guardian_limited" -%}
-                <form class="inlineform"
-                      action="{{ url_for('admin.user_promote', user_id=user.id)}}"
-                      id="promote{{ user.id }}"
-                      method="POST">
-                  <button class="btn btn-warning"
-                    action="submit">Make User</button>
                 </form>
                 {%- endif -%}
               </td>

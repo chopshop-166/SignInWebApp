@@ -45,19 +45,19 @@
                   <a class="btn btn-secondary"
                     href="{{ url_for('admin.edit_user', user_id=user.id)}}"
                     role="button">Edit</a>
+                  {%- if user.role.name == "student" -%}
+                    <a class="btn btn-info"
+                      href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                      action="submit">Edit Student</a>
+                  {%- elif user.role.guardian -%}
+                    <a class="btn btn-info"
+                      href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
+                      action="submit">Edit Guardian</a>
+                  {%- endif -%}
                   <a class="btn btn-danger"
                     href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                     role="button">Delete</a>
                 </div>
-                {%- if user.role.name == "student" -%}
-                <form class="inlineform"
-                      action="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
-                      id="editStudent{{ user.id }}"
-                      method="POST">
-                  <button class="btn btn-warning"
-                    action="submit">Edit Student Data</button>
-                </form>
-                {%- endif -%}
                 {%- if not user.approved -%}
                 <form class="inlineform"
                       action="{{ url_for('admin.user_approve', user_id=user.id)}}"
