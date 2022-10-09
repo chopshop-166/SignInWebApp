@@ -96,6 +96,16 @@ def index():
     return render_template("index.html.jinja2", events=events)
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("error.html.jinja2", error_msg=e), 404
+
+
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template("error.html.jinja2", error_msg=e), 500
+
+
 def init_default_db():
 
     ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
