@@ -7,7 +7,7 @@ from wtforms.validators import DataRequired, EqualTo
 
 from ..forms import GuardianDataForm, StudentDataForm, UserForm
 from ..model import Guardian, Role, ShirtSizes, Student, Subteam, User, db
-from ..util import admin_required
+from ..util import admin_required, normalize_phone_number_for_storage
 from .util import admin
 
 
@@ -71,7 +71,7 @@ def user_promote():
             user.password = generate_password_hash(form.password.data)
         user.role = Role.from_name("guardian")
         user.preferred_name = form.preferred_name.data
-        user.phone_number = form.phone_number.data
+        user.phone_number = normalize_phone_number_for_storage(form.phone_number.data)
         user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
@@ -147,12 +147,14 @@ def edit_user():
         user.subteam_id = form.subteam.data or None
         user.approved = form.admin_data.approved.data
         user.preferred_name = form.preferred_name.data
-        user.phone_number = form.phone_number.data
+        user.phone_number = normalize_phone_number_for_storage(form.phone_number.data)
         user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
         db.session.commit()
         return redirect(url_for("team.users"))
+
+    form.phone_number.data = user.formatted_phone_number
 
     form.admin_data.role.process_data(user.role_id)
     form.admin_data.approved.process_data(user.approved)
@@ -184,6 +186,7 @@ def edit_student_data():
     nested = form.student_data
     nested.graduation_year.process_data(user.student_user_data.graduation_year)
     for g in user.student_user_data.guardians:
+        g.user.phone_number = g.user.formatted_phone_number
         nested.guardian.append_entry(g.user)
     nested.guardian.append_entry()
 
