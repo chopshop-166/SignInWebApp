@@ -24,6 +24,9 @@
           </tbody>
         </table>
         <div id="liveAlertPlaceholder"></div>
+        {%- if current_user.role.mentor -%}
+        <div class="d-inline-flex m-auto" id="mentorSelfSignIn"></div>
+        {%- endif -%}
       </div>
       <div class="content-primary float-start">
         <div class="d-inline-flex m-auto hidesmall"
