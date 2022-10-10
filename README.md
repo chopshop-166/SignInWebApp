@@ -8,29 +8,22 @@ It runs on a server using Docker or Python+Flask.
 
 Make sure Docker is installed and you're connected to the internet.
 
-Create a file called `.env` in this folder with the contents:
 
-```
-FLASK_SECRET_KEY=1234
-```
-
-Replace the key with a secret value.
-It will be ignored via the `.gitignore` file, so no need to worry about not checking it in.
-
-Remaining configuration is done via `appdata/cssignin.yaml`.
+Configuration is done via `appdata/cssignin.yaml`.
 Copy the `appdata/cssignin.defaults.yaml` file to that name, then customize any variables found in it.
+Very important is the `SECRET_KEY` field, which can be generated with `docker compose run chopshop_signin ./signin-cli generate-secret`.
 
 Then, run the following commands:
 
 ```sh
 # Stop the running instance if one exists
-docker-compose down
+docker compose down
 # Build the image/replace the image if one already exists
-docker-compose build
+docker compose build
 # Initialize the database with the default settings
-docker-compose run chopshop_signin ./signin-cli init-db
+docker compose run chopshop_signin ./signin-cli init-db
 # Start the docker container
-docker-compose up -d
+docker compose up -d
 ```
 
 By default the admin credentials are `admin` and `1234`.
@@ -44,13 +37,13 @@ Run the following commands:
 
 ```sh
 # Stop the running instance if one exists
-docker-compose down
+docker compose down
 # Update the repository
 git pull
 # Build the image/replace the image if one already exists
-docker-compose build
+docker compose build
 # Start the docker container
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Deployment with TLS
@@ -62,7 +55,7 @@ It's a simple matter of running docker compose. The compose file has restart set
 
 ```sh
 # Initialize the database
-docker-compose run chopshop_signin ./signin-cli init-db
+docker compose run chopshop_signin ./signin-cli init-db
 # Start the containers
 docker compose up -d
 ```

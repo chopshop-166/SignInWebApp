@@ -1,5 +1,6 @@
 TITLE: Chop Shop Sign In
 DB_NAME: /appdata/signin.db
 TIME_ZONE: America/New_York
+SECRET_KEY: 1234
 PRE_EVENT_ACTIVE_TIME: 30
 POST_EVENT_ACTIVE_TIME: 120

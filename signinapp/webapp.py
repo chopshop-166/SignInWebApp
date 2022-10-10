@@ -34,8 +34,19 @@ def gen_codes_command():
     click.echo("Generated new user codes for all users.")
 
 
+@click.command("generate-secret")
+@with_appcontext
+def generate_secret_command():
+    """Generate user codes for all users."""
+
+    import secrets
+
+    click.echo(secrets.token_hex())
+
+
 app.cli.add_command(init_db_command)
 app.cli.add_command(gen_codes_command)
+app.cli.add_command(generate_secret_command)
 
 if __name__ == "__main__":
     app.run()
