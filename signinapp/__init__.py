@@ -33,6 +33,8 @@ We are Merrimack High School FIRST Robotics Competition Team 166, Chop Shop, fro
 Our mission is to build teamwork and a great robot, along with fostering a love for Science, Technology, Engineering, and Mathematics.""".strip()
     DB_NAME = "signin.db"
     TIME_ZONE = "America/New_York"
+    PRE_EVENT_ACTIVE_TIME = 30
+    POST_EVENT_ACTIVE_TIME = 120
 
 
 class DebugConfig(Config):

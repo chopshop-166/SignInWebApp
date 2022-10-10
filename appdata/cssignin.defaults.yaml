@@ -1,3 +1,5 @@
 TITLE: Chop Shop Sign In
 DB_NAME: /appdata/signin.db
 TIME_ZONE: America/New_York
+PRE_EVENT_ACTIVE_TIME: 30
+POST_EVENT_ACTIVE_TIME: 120
