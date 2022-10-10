@@ -52,6 +52,20 @@
                 "init-db"
             ],
             "jinja": true
+        },
+        {
+            "name": "Generate Codes",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "signinapp/webapp.py",
+                "CSSIGNIN_CONFIG": "${workspaceFolder}/appdata/cssignin.yaml"
+            },
+            "args": [
+                "gen-codes"
+            ],
+            "jinja": true
         }
     ]
 }

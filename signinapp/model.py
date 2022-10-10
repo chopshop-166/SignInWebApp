@@ -12,7 +12,7 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.future import select
 from werkzeug.security import generate_password_hash
 from wtforms import FieldList
@@ -28,29 +28,10 @@ from .util import (
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
 
-NAME_RE = re.compile(
-    r"^(?P<mentor>(?i)mentor[ -]*)?(?P<last>[a-zA-Z ']+),\s*(?P<first>[a-zA-Z ']+)$"
-)
 
-HASH_RE = re.compile(r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
-
-
-def mk_hash(name: str):
-    "Make a user hash"
-    return base64.b64encode(name.lower().encode("utf-8")).decode("utf-8")
-
-
-def event_code():
+def gen_code():
     "Generate an event code"
     return secrets.token_urlsafe(16)
-
-
-def canonical_name(name: str):
-    "Attempt to get a user string"
-    if m := HASH_RE.match(name):
-        return name
-    if m := NAME_RE.match(name):
-        return mk_hash(f"{m['first']} {m['last']}")
 
 
 def get_form_ids(model, add_null_id=False, filters=()):
@@ -133,7 +114,7 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String)
     tshirt_size = db.Column(db.Enum(ShirtSizes))
 
-    code = db.Column(db.String, nullable=False, unique=True)
+    code = db.Column(db.String, nullable=False, unique=True, default=gen_code)
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     approved = db.Column(db.Boolean, default=False)
 
@@ -248,7 +229,6 @@ class User(UserMixin, db.Model):
             username=username,
             name=name,
             password=generate_password_hash(password),
-            code=mk_hash(name),
             role_id=role.id,
             subteam_id=subteam.id if subteam else 0,
             approved=approved,
@@ -266,7 +246,6 @@ class User(UserMixin, db.Model):
         guardian = User(
             name=name,
             username=username,
-            code=mk_hash(name),
             role_id=role.id,
             phone_number=normalize_phone_number_for_storage(phone_number),
             email=email,
@@ -274,12 +253,6 @@ class User(UserMixin, db.Model):
         db.session.add(guardian)
         db.session.flush()
         return guardian
-
-    @staticmethod
-    def get_canonical(name: str) -> User | None:
-        "Look up user by name"
-        code = mk_hash(name)
-        return db.session.scalar(select(User).filter_by(code=code))
 
     @staticmethod
     def from_username(username) -> User | None:
@@ -311,10 +284,16 @@ class Guardian(db.Model):
     def get_from(
         name: str, phone_number: str, email: str, contact_order: int
     ) -> Guardian:
-        guardian = User.get_canonical(name)
-        if guardian:
+        guardian_user = db.session.scalar(
+            select(User).where(
+                User.name == name,
+                User.phone_number == phone_number,
+                User.email == email,
+            )
+        )
+        if guardian_user:
             # If we found the guardian user, then return the extra guardian data (This object/table)
-            return guardian.guardian_user_data
+            return guardian_user.guardian_user_data
         # Create the guardian user, and add the guardian user object
         guardian = User.make_guardian(name=name, phone_number=phone_number, email=email)
         guardian_user_data = Guardian(user_id=guardian.id, contact_order=contact_order)
@@ -390,7 +369,7 @@ class Event(db.Model):
     # Description of the event
     description = db.Column(db.String, default="")
     # Unique code for tracking
-    code = db.Column(db.String, unique=True)
+    code = db.Column(db.String, unique=True, default=gen_code)
     # Location the event takes place at
     location = db.Column(db.String)
     # Start time
@@ -435,12 +414,8 @@ class Event(db.Model):
             cls.enabled, (cls.start < func.now()), (func.now() < cls.end)
         ).label("is_active")
 
-    def scan(self, name) -> StampEvent:
-        if not self.is_active:
-            return
-
-        code = canonical_name(name)
-        if not code:
+    def scan(self, code) -> StampEvent:
+        if not self.is_active or not code:
             return
 
         user = db.session.scalar(select(User).filter_by(code=code))
@@ -545,19 +520,18 @@ class Stamps(db.Model):
         ]
 
     @staticmethod
-    def get(name=None, event_code=None):
+    def get(user: User | None = None, event_code=None):
         "Get stamps matching a requirement"
         stmt = select(Stamps).where(Stamps.event.enabled == True)
         if event_code:
             stmt = stmt.where(Stamps.event.code == event_code)
-        if name:
-            user_code = canonical_name(name)
-            stmt = stmt.where(Stamps.user.code == user_code)
+        if user:
+            stmt = stmt.where(Stamps.user.code == user.code)
         return [s.as_dict() for s in db.session.scalars(stmt)]
 
     @staticmethod
     def export(
-        name: str = None,
+        user: User | None = None,
         start: datetime = None,
         end: datetime = None,
         type_: str = None,
@@ -565,9 +539,8 @@ class Stamps(db.Model):
         headers=True,
     ) -> list[list[str]]:
         stmt = select(Stamps).filter(Stamps.event.has(enabled=True))
-        if name:
-            code = mk_hash(name)
-            stmt = stmt.where(Stamps.user.code == code)
+        if user:
+            stmt = stmt.where(Stamps.user.code == user.code)
         if start:
             stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
         if end:

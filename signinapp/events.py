@@ -19,7 +19,7 @@ from wtforms import (
 from wtforms.validators import DataRequired
 
 from .mentor import mentor_required
-from .model import Event, EventType, db, event_code, get_form_ids
+from .model import Event, EventType, db, gen_code, get_form_ids
 from .util import correct_time_for_storage, correct_time_from_storage
 
 events = Blueprint("events", __name__)
@@ -129,7 +129,6 @@ def bulk_events():
                     datetime.combine(d, form.start_time.data)
                 ),
                 end=correct_time_for_storage(datetime.combine(d, form.end_time.data)),
-                code=event_code(),
                 type_=event_type,
             )
             db.session.add(ev)
@@ -152,7 +151,7 @@ def new_event():
         db.session.commit()
         return redirect(url_for("events.list_events"))
 
-    form.code.process_data(event_code())
+    form.code.process_data(gen_code())
     return render_template("form.html.jinja2", form=form, title="New Event")
 
 
