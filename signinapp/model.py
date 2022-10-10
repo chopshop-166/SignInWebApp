@@ -8,6 +8,7 @@ import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
+from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
@@ -405,13 +406,33 @@ class Event(db.Model):
         now = datetime.now(tz=timezone.utc)
         start = correct_time_from_storage(self.start)
         end = correct_time_from_storage(self.end)
-        return self.enabled & (start < now) & (now < end)
+
+        adjusted_start = start - timedelta(
+            minutes=current_app.config["PRE_EVENT_ACTIVE_TIME"]
+        )
+        adjusted_end = end + timedelta(
+            minutes=current_app.config["POST_EVENT_ACTIVE_TIME"]
+        )
+        return self.enabled & (adjusted_start < now) & (now < adjusted_end)
 
     @is_active.expression
     def is_active(cls):
         "Usable in queries"
         return and_(
-            cls.enabled, (cls.start < func.now()), (func.now() < cls.end)
+            cls.enabled,
+            (
+                func.datetime(
+                    cls.start,
+                    f"-{current_app.config['PRE_EVENT_ACTIVE_TIME']} minutes",
+                )
+                < func.now()
+            ),
+            (
+                func.now()
+                < func.datetime(
+                    cls.end, f"+{current_app.config['POST_EVENT_ACTIVE_TIME']} minutes"
+                )
+            ),
         ).label("is_active")
 
     def scan(self, code) -> StampEvent:
