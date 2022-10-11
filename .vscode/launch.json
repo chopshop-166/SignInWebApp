@@ -66,6 +66,20 @@
                 "gen-codes"
             ],
             "jinja": true
+        },
+        {
+            "name": "Generate Secret",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "signinapp/webapp.py",
+                "CSSIGNIN_CONFIG": "${workspaceFolder}/appdata/cssignin.yaml"
+            },
+            "args": [
+                "generate-secret"
+            ],
+            "jinja": true
         }
     ]
 }
