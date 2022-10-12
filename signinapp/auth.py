@@ -12,8 +12,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 
-from signinapp.util import normalize_phone_number_for_storage
-
 from .forms import UserForm
 from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db, get_form_ids
 
@@ -161,7 +159,7 @@ def register_guardian():
             user.password = generate_password_hash(form.password.data)
         user.role = Role.from_name("guardian")
         user.preferred_name = form.preferred_name.data
-        user.phone_number = normalize_phone_number_for_storage(form.phone_number.data)
+        user.phone_number = form.phone_number.data
         user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
