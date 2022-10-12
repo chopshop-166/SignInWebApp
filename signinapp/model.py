@@ -288,7 +288,7 @@ class Guardian(db.Model):
         guardian_user = db.session.scalar(
             select(User).where(
                 User.name == name,
-                User.phone_number == phone_number,
+                User.phone_number == normalize_phone_number_for_storage(phone_number),
                 User.email == email,
             )
         )
