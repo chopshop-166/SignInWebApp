@@ -63,8 +63,8 @@ const onScanSuccess = (decodedText, decodedResult) => {
     }
 
     let formData = new FormData();
-    formData.append('name', decodedText);
-    formData.append('event', event_code);
+    formData.append('user_code', decodedText);
+    formData.append('event_code', event_code);
 
     fetch(`/scan`, { method: "POST", body: formData })
         .then((response) => {

@@ -207,6 +207,13 @@ class User(UserMixin, db.Model):
             return f"{self.name} ({self.preferred_name})"
         return self.name
 
+    def is_signed_into(self, code: str) -> bool:
+        return bool(
+            db.session.scalar(
+                select(Active).where(Active.user == self, Active.event.has(code=code))
+            )
+        )
+
     @staticmethod
     def get_visible_users() -> list[User]:
         return db.session.scalars(select(User).join(Role).where(Role.visible == True))

@@ -24,6 +24,19 @@
           </tbody>
         </table>
         <div id="liveAlertPlaceholder"></div>
+        {%- if current_user.role.mentor -%}
+        <div class="d-inline-flex justify-content-center m-auto container" id="mentorSelfSignIn">
+          {%- if current_user.is_signed_into(event_code) -%}
+          <a class="btn btn-primary"
+                    href="{{ url_for('event.selfscan', event_code=event_code) }}"
+                    role="button">Sign Me Out</a>
+          {%- else -%}
+          <a class="btn btn-primary"
+                    href="{{ url_for('event.selfscan', event_code=event_code) }}"
+                    role="button">Sign Me In</a>
+          {%- endif -%}
+        </div>
+        {%- endif -%}
       </div>
       <div class="content-primary float-start">
         <div class="d-inline-flex m-auto hidesmall"

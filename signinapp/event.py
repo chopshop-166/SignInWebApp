@@ -29,17 +29,32 @@ def event():
     return render_template("scan.html.jinja2", event_code=event_code)
 
 
+@eventbp.route("/scan/self")
+def selfscan():
+    event_code = request.values["event_code"]
+
+    ev: Event = db.session.scalar(
+        select(Event).filter_by(code=event_code, enabled=True)
+    )
+
+    if not ev.is_active:
+        return jsonify({"action": "redirect"})
+
+    ev.scan(current_user.code)
+    return redirect(url_for("event.event", event_code=event_code))
+
+
 @eventbp.route("/scan", methods=["POST"])
 def scan():
     event = request.values["event"]
-    name = request.values["name"]
+    user_code = request.values["user_code"]
 
     ev: Event = db.session.scalar(select(Event).filter_by(code=event, enabled=True))
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    stamp = ev.scan(name)
+    stamp = ev.scan(user_code)
 
     if stamp:
         return jsonify(
