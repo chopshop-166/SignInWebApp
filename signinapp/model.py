@@ -240,15 +240,16 @@ class User(UserMixin, db.Model):
         return user
 
     @staticmethod
-    def make_guardian(name: str, phone_number: str, email: str, contact_order: int = 1):
+    def make_guardian(name: str, phone_number: str, email: str):
         role = Role.from_name("guardian_limited")
+        pn = normalize_phone_number_for_storage(phone_number)
         # Generate a username that *should* be unique.
-        username = f"{name}_{normalize_phone_number_for_storage(phone_number)}"
+        username = f"{name}_{pn}"
         guardian = User(
             name=name,
             username=username,
             role_id=role.id,
-            phone_number=normalize_phone_number_for_storage(phone_number),
+            phone_number=pn,
             email=email,
         )
         db.session.add(guardian)
@@ -288,7 +289,7 @@ class Guardian(db.Model):
         guardian_user = db.session.scalar(
             select(User).where(
                 User.name == name,
-                User.phone_number == normalize_phone_number_for_storage(phone_number),
+                User.phone_number == phone_number,
                 User.email == email,
             )
         )

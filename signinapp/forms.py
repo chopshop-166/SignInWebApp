@@ -16,6 +16,8 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Email, Optional, Regexp
 
+from signinapp.util import normalize_phone_number_for_storage
+
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
 NAME_RE = regex.compile(r"(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*")
@@ -43,7 +45,9 @@ class GuardianInfoForm(Form):
         validators=[Optional(), Regexp(NAME_RE)],
         filters=[strip],
     )
-    phone_number = TelField("Phone Number")
+    phone_number = TelField(
+        "Phone Number", filters=[normalize_phone_number_for_storage]
+    )
     email = EmailField("email", validators=[Optional(), Email()])
 
 
@@ -80,7 +84,11 @@ class UserForm(FlaskForm):
         "Preferred Name", description="Leave blank for none", filters=[strip]
     )
 
-    phone_number = TelField("Phone Number", validators=[DataRequired()])
+    phone_number = TelField(
+        "Phone Number",
+        validators=[DataRequired()],
+        filters=[normalize_phone_number_for_storage],
+    )
     email = EmailField(
         "Email Address",
         validators=[DataRequired(), Email()],

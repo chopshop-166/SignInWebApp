@@ -2,12 +2,12 @@ from flask import flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import FormField, SelectField, StringField, SubmitField
+from wtforms import FormField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
 from ..forms import GuardianDataForm, StudentDataForm, UserForm
-from ..model import Guardian, Role, ShirtSizes, Student, Subteam, User, db
-from ..util import admin_required, normalize_phone_number_for_storage
+from ..model import Role, ShirtSizes, Student, Subteam, User, db
+from ..util import admin_required
 from .util import admin
 
 
@@ -71,7 +71,7 @@ def user_promote():
             user.password = generate_password_hash(form.password.data)
         user.role = Role.from_name("guardian")
         user.preferred_name = form.preferred_name.data
-        user.phone_number = normalize_phone_number_for_storage(form.phone_number.data)
+        user.phone_number = form.phone_number.data
         user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
@@ -147,7 +147,7 @@ def edit_user():
         user.subteam_id = form.subteam.data or None
         user.approved = form.admin_data.approved.data
         user.preferred_name = form.preferred_name.data
-        user.phone_number = normalize_phone_number_for_storage(form.phone_number.data)
+        user.phone_number = form.phone_number.data
         user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
