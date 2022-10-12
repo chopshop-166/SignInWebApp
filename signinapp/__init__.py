@@ -220,5 +220,5 @@ if app.config["DEBUG"]:
         db.session.add(safe)
         db.session.commit()
 
-        mentor.award_badge(safe.id)
+        mentor.award_badge(safe)
         db.session.commit()

@@ -69,10 +69,8 @@ def all_badges():
 @mentor.route("/badges/award", methods=["GET", "POST"])
 @mentor_required
 def award_badge():
-    badge_id = int(request.args["badge_id"])
-
-    people = db.session.scalars(select(User).filter_by(active=True))
-    badge = db.session.get(Badge, badge_id)
+    people: list[User] = db.session.scalars(select(User).filter_by(approved=True)).all()
+    badge = db.session.get(Badge, request.args["badge_id"])
 
     if not badge:
         flash("Badge does not exist")
@@ -84,13 +82,13 @@ def award_badge():
     if form.validate_on_submit():
         for user in people:
             if user.name in form.users.data:
-                user.award_badge(badge_id)
+                user.award_badge(badge)
             else:
-                user.remove_badge(badge_id)
+                user.remove_badge(badge)
         db.session.commit()
         return redirect(url_for("mentor.all_badges"))
 
-    form.users.process_data([p.name for p in people if p.has_badge(badge_id)])
+    form.users.process_data([p.name for p in people if badge in p.badges])
 
     return render_template(
         "form.html.jinja2",

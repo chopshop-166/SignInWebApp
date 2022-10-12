@@ -33,10 +33,11 @@ def badges():
         if int(form.subteam.data) != 0:
             stmt = stmt.filter_by(subteam_id=form.subteam.data)
         results = db.session.scalars(stmt)
+        badge = db.session.get(Badge, form.badge.data)
         if form.required.data:
-            results = [u for u in results if u.has_badge(int(form.badge.data))]
+            results = [u for u in results if badge in u.badges]
         else:
-            results = [u for u in results if not u.has_badge(int(form.badge.data))]
+            results = [u for u in results if badge not in u.badges]
         return render_template("search/badges.html.jinja2", form=form, results=results)
     return render_template("search/badges.html.jinja2", form=form, results=None)
 
