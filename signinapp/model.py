@@ -152,22 +152,15 @@ class User(UserMixin, db.Model):
     def formatted_phone_number(self) -> str:
         return normalize_phone_number_from_storage(self.phone_number)
 
-    def has_badge(self, badge_id: int) -> bool:
-        "Test if a badge is assigned to a user"
-        badge = db.session.get(Badge, badge_id)
-        return badge in self.badges
-
-    def award_badge(self, badge_id: int):
+    def award_badge(self, badge: Badge):
         "Assign a badge to a user"
-        if not self.has_badge(badge_id):
-            badge = db.session.get(Badge, badge_id)
+        if badge not in self.badges:
             self.badges.append(badge)
             db.session.commit()
 
-    def remove_badge(self, badge_id: int):
+    def remove_badge(self, badge: Badge):
         "Remove a badge from a user"
-        if self.has_badge(badge_id):
-            badge = db.session.get(Badge, badge_id)
+        if badge in self.badges:
             self.badges.remove(badge)
             db.session.commit()
 

@@ -3,7 +3,7 @@ from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
 
-from .model import Badge, EventType, User, db
+from .model import Badge, BadgeAward, EventType, User, db
 
 user = Blueprint("user", __name__)
 
@@ -34,6 +34,8 @@ def badge():
     if bid := request.args.get("badge_id"):
         bid = int(bid)
         badge: Badge = db.session.get(Badge, bid)
-        awards = sorted([a for a in badge.awards], key=lambda u: u.owner.name)
+        awards: list[BadgeAward] = sorted(
+            [a for a in badge.awards], key=lambda u: u.owner.name
+        )
         return render_template("badge.html.jinja2", badge=badge, awards=awards)
     return redirect(url_for("mentor.all_badges", badge_id=badge.id))
