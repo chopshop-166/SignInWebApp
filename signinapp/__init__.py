@@ -102,7 +102,7 @@ def page_not_found(e):
 
 
 @app.errorhandler(500)
-def page_not_found(e):
+def internal_server_error(e):
     return render_template("error.html.jinja2", error_msg=e), 500
 
 
