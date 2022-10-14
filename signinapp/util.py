@@ -59,10 +59,7 @@ def correct_time_from_storage(time: datetime):
 
 def normalize_phone_number_for_storage(number: str):
     """Remove all extra whitespace and characters from a phone number"""
-    stripped = "".join(c for c in number.strip() if c in string.digits)
-    if len(stripped) != 10:
-        return None
-    return stripped
+    return "".join(c for c in (number or "").strip() if c in string.digits)
 
 
 def normalize_phone_number_from_storage(number: str):
