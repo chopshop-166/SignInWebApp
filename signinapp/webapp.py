@@ -37,16 +37,38 @@ def gen_codes_command():
 @click.command("generate-secret")
 @with_appcontext
 def generate_secret_command():
-    """Generate user codes for all users."""
+    """Generate a secret key."""
 
     import secrets
 
     click.echo(secrets.token_hex())
 
 
+@click.command("trim-stamps")
+@with_appcontext
+def trim_stamps_command():
+    all_stamps: list[model.Stamps] = db.session.scalars(select(model.Stamps))
+    for stamp in all_stamps:
+        start_time = stamp.event.adjusted_start
+        if stamp.start < start_time:
+            click.echo(
+                f"Adjusting start stamp for event {stamp.id} from {stamp.start} to {start_time}"
+            )
+            stamp.end = end_time
+        end_time = stamp.event.adjusted_end
+        if stamp.end > end_time:
+            click.echo(
+                f"Adjusting end stamp for event {stamp.id} from {stamp.end} to {end_time}"
+            )
+            stamp.end = end_time
+
+    db.session.commit()
+
+
 app.cli.add_command(init_db_command)
 app.cli.add_command(gen_codes_command)
 app.cli.add_command(generate_secret_command)
+app.cli.add_command(trim_stamps_command)
 
 if __name__ == "__main__":
     app.run()
