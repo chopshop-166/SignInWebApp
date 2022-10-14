@@ -104,7 +104,10 @@ def event_stats():
     event = db.session.get(Event, request.args["event_id"])
     users = defaultdict(timedelta)
     for stamp in event.stamps:
-        users[stamp.user.name] += stamp.elapsed
+        users[stamp.user] += stamp.elapsed
+    now = datetime.now(tz=timezone.utc)
+    for active in event.active:
+        users[active.user] += now - correct_time_from_storage(active.start)
     users = sorted(users.items())
     return render_template("event_stats.html.jinja2", event=event, users=users)
 

@@ -384,9 +384,9 @@ class Event(db.Model):
     # Whether the event is enabled
     enabled = db.Column(db.Boolean, default=True, nullable=False)
 
-    stamps = db.relationship("Stamps", back_populates="event")
-    active = db.relationship("Active", back_populates="event")
-    type_ = db.relationship("EventType", back_populates="events")
+    stamps: list[Stamps] = db.relationship("Stamps", back_populates="event")
+    active: list[Active] = db.relationship("Active", back_populates="event")
+    type_: EventType = db.relationship("EventType", back_populates="events")
 
     @staticmethod
     def get_from_code(event_code) -> Event | None:
