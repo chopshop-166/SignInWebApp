@@ -71,12 +71,12 @@ const onScanSuccess = (decodedText, decodedResult) => {
             if (response.ok) {
                 return response.json();
             } else {
-                throw Error("Not a valid QR code");
+                response.text().then(data => {
+                    toast(data)
+                });
             }
         })
-        .then(handleResponse).catch(data => {
-            toast(data)
-        })
+        .then(handleResponse)
 }
 
 const html5QrCode = new Html5Qrcode("reader");

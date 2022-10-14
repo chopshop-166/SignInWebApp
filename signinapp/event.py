@@ -46,17 +46,23 @@ def selfscan():
 
 @eventbp.route("/scan", methods=["POST"])
 def scan():
-    event = request.values["event"]
+    event = request.values["event_code"]
     user_code = request.values["user_code"]
 
     ev: Event = db.session.scalar(select(Event).filter_by(code=event, enabled=True))
+
+    if not ev:
+        return Response("Error: Invalid event code")
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
     stamp = ev.scan(user_code)
 
-    if stamp:
+    if isinstance(stamp, Response):
+        print(stamp)
+        return stamp
+    else:
         return jsonify(
             {
                 "message": f"{stamp.name} signed {stamp.event}",
@@ -64,8 +70,6 @@ def scan():
                 "action": "update",
             }
         )
-    else:
-        return Response("Error: Not a valid QR code", HTTPStatus.BAD_REQUEST)
 
 
 @eventbp.route("/autoevent")
