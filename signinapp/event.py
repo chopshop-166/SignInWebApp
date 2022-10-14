@@ -60,6 +60,7 @@ def scan():
     stamp = ev.scan(user_code)
 
     if isinstance(stamp, Response):
+        print(stamp)
         return stamp
     else:
         return jsonify(
