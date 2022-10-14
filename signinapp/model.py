@@ -4,11 +4,12 @@ import base64
 import dataclasses
 import datetime
 import enum
+from http import HTTPStatus
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from flask import current_app
+from flask import current_app, Response
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
@@ -436,31 +437,39 @@ class Event(db.Model):
             ),
         ).label("is_active")
 
-    def scan(self, code) -> StampEvent:
-        if not self.is_active or not code:
-            return
+    def scan(self, user_code) -> StampEvent:
+        if not self.is_active:
+            return Response("Error: Event is not active", HTTPStatus.BAD_REQUEST)
 
-        user = db.session.scalar(select(User).filter_by(code=code))
-        if not (user and user.approved):
-            return
+        if not user_code:
+            return Response(
+                f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
+            )
+
+        user = db.session.scalar(select(User).filter_by(code=user_code))
+        if not user:
+            return Response("Error: User does not exist", HTTPStatus.BAD_REQUEST)
+        if not user.approved:
+            return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
 
         active = db.session.scalar(
             select(Active).where(Active.user == user, Active.event == self)
         )
-        if not active:
-            active = Active(user=user, event=self)
-            db.session.add(active)
-            db.session.commit()
-            return StampEvent(user.human_readable, "in")
 
-        stamp = Stamps(user=user, event=self, start=active.start)
-        db.session.delete(active)
-        db.session.add(stamp)
+        if active:
+            stamp = Stamps(user=user, event=self, start=active.start)
+            db.session.delete(active)
+            db.session.add(stamp)
+            db.session.commit()
+            # Elapsed needs to be taken after committing to the DB
+            # otherwise it won't be populated
+            sign = f"out after {stamp.elapsed}"
+            return StampEvent(user.human_readable, sign)
+
+        active = Active(user=user, event=self)
+        db.session.add(active)
         db.session.commit()
-        # Elapsed needs to be taken after committing to the DB
-        # otherwise it won't be populated
-        sign = f"out after {stamp.elapsed}"
-        return StampEvent(user.human_readable, sign)
+        return StampEvent(user.human_readable, "in")
 
 
 class EventType(db.Model):
