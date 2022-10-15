@@ -54,7 +54,7 @@ def trim_stamps_command():
             click.echo(
                 f"Adjusting start stamp for event {stamp.id} from {stamp.start} to {start_time}"
             )
-            stamp.end = end_time
+            stamp.start = start_time
         end_time = stamp.event.adjusted_end
         if stamp.end > end_time:
             click.echo(
