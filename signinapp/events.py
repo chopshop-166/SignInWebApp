@@ -45,6 +45,7 @@ WEEKDAYS = [
 class EventForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
+    location = StringField()
     code = StringField(validators=[DataRequired()])
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
@@ -67,6 +68,7 @@ class EventForm(FlaskForm):
 class BulkEventForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
+    location = StringField()
     start_day = DateField(validators=[DataRequired()])
     end_day = DateField(validators=[DataRequired()])
     days = SelectMultipleField(choices=WEEKDAYS, validators=[DataRequired()])
@@ -134,6 +136,7 @@ def bulk_events():
             ev = Event(
                 name=form.name.data,
                 description=form.description.data,
+                location=form.location.data,
                 start=correct_time_for_storage(
                     datetime.combine(d, form.start_time.data)
                 ),
@@ -177,6 +180,7 @@ def edit_event():
     if not form.is_submitted():
         form.start.data = correct_time_from_storage(form.start.data)
         form.end.data = correct_time_from_storage(form.end.data)
+
     if form.validate_on_submit():
         form.start.data = correct_time_for_storage(form.start.data)
         form.end.data = correct_time_for_storage(form.end.data)
