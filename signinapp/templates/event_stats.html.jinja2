@@ -5,7 +5,7 @@
 <div class="container table-responsive">
   <div class="row">
     <div class="col">
-      <h1>{{event.name}}</h1>
+      <h1><a href="{{url_for('event.event', event_code=event.code)}}">{{event.name}}</a></h1>
       <h2>{{event.type_.name}}</h2>
       {%- if event.descripion -%}
       <p>Description: {{event.description}}</p>
