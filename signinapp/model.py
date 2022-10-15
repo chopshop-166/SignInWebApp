@@ -402,20 +402,21 @@ class Event(db.Model):
         "End time in local time zone"
         return correct_time_from_storage(self.end).strftime("%c")
 
+    @property
+    def adjusted_start(self) -> datetime:
+        start = correct_time_from_storage(self.start)
+        return start - timedelta(minutes=current_app.config["PRE_EVENT_ACTIVE_TIME"])
+
+    @property
+    def adjusted_end(self) -> datetime:
+        end = correct_time_from_storage(self.end)
+        return end + timedelta(minutes=current_app.config["POST_EVENT_ACTIVE_TIME"])
+
     @hybrid_property
     def is_active(self) -> bool:
         "Test for if the event is currently active"
         now = datetime.now(tz=timezone.utc)
-        start = correct_time_from_storage(self.start)
-        end = correct_time_from_storage(self.end)
-
-        adjusted_start = start - timedelta(
-            minutes=current_app.config["PRE_EVENT_ACTIVE_TIME"]
-        )
-        adjusted_end = end + timedelta(
-            minutes=current_app.config["POST_EVENT_ACTIVE_TIME"]
-        )
-        return self.enabled & (adjusted_start < now) & (now < adjusted_end)
+        return self.enabled & (self.adjusted_start < now) & (now < self.adjusted_end)
 
     @is_active.expression
     def is_active(cls):
