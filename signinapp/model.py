@@ -72,7 +72,7 @@ class Badge(db.Model):
     icon = db.Column(db.String)
     color = db.Column(db.String, default="black")
 
-    awards = db.relationship("BadgeAward", back_populates="badge")
+    awards: list[BadgeAward] = db.relationship("BadgeAward", back_populates="badge")
 
     @staticmethod
     def from_name(name) -> Badge:
@@ -87,8 +87,8 @@ class BadgeAward(db.Model):
     badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"), primary_key=True)
     received = db.Column(db.DateTime, server_default=func.now())
 
-    owner = db.relationship("User", back_populates="awards", uselist=False)
-    badge = db.relationship("Badge")
+    owner: User = db.relationship("User", back_populates="awards", uselist=False)
+    badge: Badge = db.relationship("Badge")
 
     def __init__(self, badge=None, owner=None):
         self.owner = owner
@@ -120,14 +120,14 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     approved = db.Column(db.Boolean, default=False)
 
-    stamps = db.relationship("Stamps", back_populates="user")
-    role = db.relationship("Role")
-    subteam = db.relationship("Subteam", back_populates="members")
+    stamps: list[Stamps] = db.relationship("Stamps", back_populates="user")
+    role: Role = db.relationship("Role")
+    subteam: Subteam = db.relationship("Subteam", back_populates="members")
 
-    awards = db.relationship(
+    awards: list[BadgeAward] = db.relationship(
         "BadgeAward", back_populates="owner", cascade="all, delete-orphan"
     )
-    badges = association_proxy("awards", "badge")
+    badges: list[Badge] = association_proxy("awards", "badge")
 
     # Guardian specific data
     guardian_user_data: Guardian = db.relationship(
@@ -314,7 +314,7 @@ class Student(db.Model):
     graduation_year = db.Column(db.Integer)
 
     # One to One: Links User to extra student information
-    user = db.relationship("User", back_populates="student_user_data")
+    user: User = db.relationship("User", back_populates="student_user_data")
 
     # Many to Many: Links Student to Guardian
     guardians: list[Guardian] = db.relationship(
@@ -479,7 +479,7 @@ class EventType(db.Model):
     description = db.Column(db.String)
     autoload = db.Column(db.Boolean, nullable=False, default=False)
 
-    events = db.relationship("Event", back_populates="type_")
+    events: list[Event] = db.relationship("Event", back_populates="type_")
 
 
 class Active(db.Model):
@@ -489,8 +489,8 @@ class Active(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
     start = db.Column(db.DateTime, server_default=func.now())
 
-    user = db.relationship("User")
-    event = db.relationship("Event")
+    user: User = db.relationship("User")
+    event: Event = db.relationship("Event")
 
     @property
     def start_local(self) -> str:
@@ -521,8 +521,8 @@ class Stamps(db.Model):
     start = db.Column(db.DateTime)
     end = db.Column(db.DateTime, server_default=func.now())
 
-    user = db.relationship("User", back_populates="stamps")
-    event = db.relationship("Event", back_populates="stamps")
+    user: User = db.relationship("User", back_populates="stamps")
+    event: Event = db.relationship("Event", back_populates="stamps")
 
     @hybrid_property
     def elapsed(self) -> timedelta:
@@ -629,7 +629,7 @@ class Subteam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
 
-    members = db.relationship("User", back_populates="subteam")
+    members: list[User] = db.relationship("User", back_populates="subteam")
 
     @staticmethod
     def from_name(name) -> Subteam:
