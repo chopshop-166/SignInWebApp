@@ -101,15 +101,21 @@ def list_events():
 @events.route("/events/stats")
 @mentor_required
 def event_stats():
-    event = db.session.get(Event, request.args["event_id"])
+    event: Event = db.session.get(Event, request.args["event_id"])
     users = defaultdict(timedelta)
+    subteams = defaultdict(timedelta)
     for stamp in event.stamps:
         users[stamp.user] += stamp.elapsed
+        subteams[stamp.user.subteam] += stamp.elapsed
     now = datetime.now(tz=timezone.utc)
     for active in event.active:
         users[active.user] += now - correct_time_from_storage(active.start)
-    users = sorted(users.items())
-    return render_template("event_stats.html.jinja2", event=event, users=users)
+        subteams[active.user.subteam] += now - correct_time_from_storage(active.start)
+    users = sorted(((u.name, t) for u, t in users.items()))
+    subteams = sorted(((s.name, t) for s, t in subteams.items() if s))
+    return render_template(
+        "event_stats.html.jinja2", event=event, users=users, subteams=subteams
+    )
 
 
 @events.route("/events/bulk", methods=["GET", "POST"])
