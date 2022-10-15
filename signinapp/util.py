@@ -41,7 +41,7 @@ admin_required = permission_required(lambda u: u.role.admin)
 mentor_required = permission_required(lambda u: u.role.mentor)
 
 
-def correct_time_for_storage(time: datetime):
+def correct_time_for_storage(time: datetime) -> datetime:
     # Check if datetime has a tz already:
     if time.tzinfo is None:
         # If not, set TZ to ET
@@ -49,7 +49,7 @@ def correct_time_for_storage(time: datetime):
     return time.astimezone(timezone.utc)
 
 
-def correct_time_from_storage(time: datetime):
+def correct_time_from_storage(time: datetime) -> datetime:
     # Check if datetime has a tz already:
     if time.tzinfo is None:
         # If not, set TZ to ET

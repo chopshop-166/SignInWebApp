@@ -159,7 +159,7 @@ if app.config["DEBUG"]:
     with app.app_context():
         init_default_db()
 
-        now = datetime.datetime.now()
+        now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0)
         offset = datetime.timedelta(hours=3)
         training = Event(
             name="Training",
