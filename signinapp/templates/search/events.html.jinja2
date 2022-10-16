@@ -1,0 +1,19 @@
+{% extends "search/base.html.jinja2" %}
+{% block searchtable %}
+  <thead>
+    <th scope="col">Name</th>
+    <th scope="col">Total Time</th>
+    <th scope="col">Start</th>
+    <th scope="col">End</th>
+  </thead>
+  <tbody>
+  {%- for event in results|d([], true) -%}
+    <tr>
+      <th><a class="link-light" href="{{url_for('events.event_stats', event_id=event.id)}}">{{ event.name }}</a></th>
+      <td>{{ event.total_time }}</td>
+      <td>{{ event.start_local }}</td>
+      <td>{{ event.end_local }}</td>
+    </tr>
+  {%- endfor -%}
+  </tbody>
+{% endblock %}

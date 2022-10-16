@@ -438,6 +438,10 @@ class Event(db.Model):
             ),
         ).label("is_active")
 
+    @property
+    def total_time(self) -> timedelta:
+        return sum((s.elapsed for s in self.stamps), start=timedelta())
+
     def scan(self, user_code) -> StampEvent:
         if not self.is_active:
             return Response("Error: Event is not active", HTTPStatus.BAD_REQUEST)

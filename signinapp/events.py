@@ -93,6 +93,11 @@ class BulkEventForm(FlaskForm):
         return rv
 
 
+class EventSearchForm(FlaskForm):
+    category = SelectField(choices=lambda: get_form_ids(EventType))
+    submit = SubmitField()
+
+
 @events.route("/events")
 @mentor_required
 def list_events():
@@ -196,3 +201,16 @@ def edit_event():
         form=form,
         title=f"Edit Event {event.name}",
     )
+
+
+@events.route("/events/search", methods=["GET", "POST"])
+@mentor_required
+def search():
+    form = EventSearchForm()
+
+    if form.validate_on_submit():
+        event_type = db.session.get(EventType, form.category.data)
+        results = db.session.scalars(select(Event).where(Event.type_ == event_type))
+        return render_template("search/events.html.jinja2", form=form, results=results)
+
+    return render_template("search/hours.html.jinja2", form=form, results=None)
