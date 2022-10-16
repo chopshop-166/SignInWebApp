@@ -96,7 +96,9 @@ class BulkEventForm(FlaskForm):
 @events.route("/events")
 @mentor_required
 def list_events():
-    events: Event = db.session.execute(select(Event).filter_by(enabled=True)).scalars()
+    events: list[Event] = db.session.execute(
+        select(Event).filter_by(enabled=True).order_by(Event.start)
+    ).scalars()
     return render_template("events.html.jinja2", events=events)
 
 
