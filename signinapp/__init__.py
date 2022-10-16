@@ -123,6 +123,7 @@ def internal_server_error_ex(e: Exception):
 
     buffer = io.StringIO()
 
+    traceback.print_exception(e)
     traceback.print_exception(e, file=buffer)
     return (
         render_template(
