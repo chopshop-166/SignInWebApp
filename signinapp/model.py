@@ -122,7 +122,7 @@ class User(UserMixin, db.Model):
     approved = db.Column(db.Boolean, default=False)
 
     stamps: list[Stamps] = db.relationship("Stamps", back_populates="user")
-    role: Role = db.relationship("Role")
+    role: Role = db.relationship("Role", back_populates="users")
     subteam: Subteam = db.relationship("Subteam", back_populates="members")
 
     awards: list[BadgeAward] = db.relationship(
@@ -607,6 +607,8 @@ class Role(db.Model):
     can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
     default_role = db.Column(db.Boolean, nullable=False, default=False)
     visible = db.Column(db.Boolean, nullable=False, default=True)
+
+    users: list[User] = db.relationship("User", back_populates="role")
 
     @staticmethod
     def from_name(name) -> Role:

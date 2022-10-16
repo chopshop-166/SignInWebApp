@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask import Blueprint, request
 from flask.templating import render_template
 from flask_login import login_required
@@ -16,6 +17,15 @@ def users():
     users = User.get_visible_users()
     roles = db.session.scalars(select(Role))
     return render_template("users.html.jinja2", users=users, roles=roles)
+
+
+@team.route("/shirts")
+@mentor_required
+def shirts():
+    shirts = defaultdict(lambda: defaultdict(lambda: 0))
+    for u in User.get_visible_users():
+        shirts[u.tshirt_size][u.role] += 1
+    return render_template("shirts.html.jinja2", shirts=shirts)
 
 
 @team.route("/subteam")
