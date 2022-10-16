@@ -107,13 +107,29 @@ def page_not_found(e):
 
 
 @app.errorhandler(500)
-@app.errorhandler(Exception)
-def internal_server_error(e):
+def internal_server_error(e: int):
     return (
         render_template(
             "error.html.jinja2", error_headline="Internal Error", error_msg=e
         ),
         500,
+    )
+
+
+@app.errorhandler(Exception)
+def internal_server_error_ex(e: Exception):
+    import io
+    import traceback
+
+    buffer = io.StringIO()
+
+    traceback.print_exception(e, file=buffer)
+    return (
+        render_template(
+            "error.html.jinja2",
+            error_headline="Internal Error",
+            error_msg=buffer.getvalue(),
+        ),
     )
 
 
