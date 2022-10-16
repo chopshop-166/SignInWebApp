@@ -29,7 +29,11 @@ def subteam():
 @team.route("/users/students")
 @mentor_required
 def list_students():
-    users = db.session.scalars(select(User).where(User.role.has(name="student")))
+    users = db.session.scalars(
+        select(User).where(
+            or_(User.role.has(name="student"), User.role.has(name="lead"))
+        )
+    )
     return render_template(f"user_list.html.jinja2", role="Student", users=users)
 
 
@@ -43,5 +47,9 @@ def list_guardians():
 @team.route("/users/mentors")
 @mentor_required
 def list_mentors():
-    users = db.session.scalars(select(User).where(User.role.has(name="mentor")))
+    users = db.session.scalars(
+        select(User).where(
+            or_(User.role.has(name="mentor"), User.role.has(name="admin"))
+        )
+    )
     return render_template(f"user_list.html.jinja2", role="Mentor", users=users)
