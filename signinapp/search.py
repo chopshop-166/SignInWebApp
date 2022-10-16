@@ -23,7 +23,7 @@ class HoursForm(FlaskForm):
     submit = SubmitField()
 
 
-@search.route("/search/badges", methods=["GET", "POST"])
+@search.route("/badges/search", methods=["GET", "POST"])
 @mentor_required
 def badges():
     form = BadgeSearchForm()
