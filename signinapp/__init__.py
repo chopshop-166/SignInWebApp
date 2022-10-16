@@ -98,13 +98,23 @@ def index():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template("error.html.jinja2", error_msg=e), 404
+    return (
+        render_template(
+            "error.html.jinja2", error_headline="Page Not Found", error_msg=e
+        ),
+        404,
+    )
 
 
 @app.errorhandler(500)
 @app.errorhandler(Exception)
 def internal_server_error(e):
-    return render_template("error.html.jinja2", error_msg=e), 500
+    return (
+        render_template(
+            "error.html.jinja2", error_headline="Internal Error", error_msg=e
+        ),
+        500,
+    )
 
 
 def init_default_db():
