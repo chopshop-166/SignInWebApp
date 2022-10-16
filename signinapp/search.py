@@ -52,11 +52,13 @@ def hours():
         results = User.get_visible_users()
         event_type = db.session.get(EventType, form.category.data)
         roles = [Role.from_name(r).id for r in form.role.data]
-        results = [
-            (u.name, u.total_stamps_for(event_type))
-            for u in results
-            if u.role_id in roles
-        ]
+        results = sorted(
+            [
+                (u.display_name, u.total_stamps_for(event_type))
+                for u in results
+                if u.role_id in roles and u.total_time and u.approved
+            ]
+        )
         return render_template("search/hours.html.jinja2", form=form, results=results)
 
     return render_template("search/hours.html.jinja2", form=form, results=None)
