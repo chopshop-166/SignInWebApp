@@ -13,6 +13,7 @@ from .util import admin
 class BadgeForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
+    emoji = StringField()
     icon = StringField()
     color = StringField("Icon Color", widget=ColorInput())
     submit = SubmitField()
@@ -49,6 +50,8 @@ def edit_badge():
         form.populate_obj(badge)
         db.session.commit()
         return redirect(url_for("mentor.all_badges"))
+
+    print(form.color.data)
 
     return render_template(
         "form.html.jinja2",
