@@ -12,7 +12,7 @@ search = Blueprint("search", __name__)
 
 class BadgeSearchForm(FlaskForm):
     badge = SelectField(choices=lambda: get_form_ids(Badge))
-    subteam = SelectField()
+    subteam = SelectField(choices=lambda: get_form_ids(Subteam, add_null_id=True))
     required = BooleanField(label="Has Badge", default=True)
     submit = SubmitField()
 
@@ -29,7 +29,7 @@ def badges():
     form = BadgeSearchForm()
 
     if form.validate_on_submit():
-        stmt = select(User)
+        stmt = select(User).filter_by(approved=True)
         if int(form.subteam.data) != 0:
             stmt = stmt.filter_by(subteam_id=form.subteam.data)
         results = db.session.scalars(stmt)
