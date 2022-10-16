@@ -20,11 +20,11 @@
           <tr>
             <th scope="col">Event</th>
             <th scope="col">Description</th>
-            <th scope="col">Code</th>
+            <th scope="col">Type</th>
             <th scope="col">Location</th>
             <th scope="col">Start</th>
             <th scope="col">End</th>
-            <th scope="col">Type</th>
+            <th scope="col">Edit</th>
           </tr>
         </thead>
         <tbody>
@@ -35,11 +35,10 @@
                    href="{{ url_for('events.event_stats', event_id=event.id) }}">{{ event.name }}</a>
               </th>
               <td>{{ event.description }}</td>
-              <td>{{ event.code }}</td>
+              <td>{{ event.type_.name }}</td>
               <td>{{ event.location }}</td>
               <td>{{ event.start_local }}</td>
               <td>{{ event.end_local }}</td>
-              <td>{{ event.type_.name }}</td>
               <td>
                 <a class="btn btn-secondary" role="button"
                    href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit</a>
