@@ -51,8 +51,6 @@ def edit_badge():
         db.session.commit()
         return redirect(url_for("mentor.all_badges"))
 
-    print(form.color.data)
-
     return render_template(
         "form.html.jinja2",
         form=form,
