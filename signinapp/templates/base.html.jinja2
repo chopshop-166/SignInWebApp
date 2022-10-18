@@ -81,9 +81,6 @@
                     <a class="dropdown-item" href="{{ url_for('mentor.all_badges')}}">Badges</a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="{{ url_for('events.list_events')}}">Events</a>
-                  </li>
-                  <li>
                     <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
                   </li>
                   <div class="dropdown-divider"></div>
@@ -98,6 +95,34 @@
                   </li>
                   <li>
                     <a class="dropdown-item" href="{{ url_for('team.list_mentors')}}">Mentors</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle btn btn-primary"
+                    href="#"
+                    id="navbarEventDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                  Events
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarEventDropdown">
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('events.list_events')}}">All</a>
+                  </li>
+                  <div class="dropdown-divider"></div>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Previous</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Active</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Today</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Upcoming</a>
                   </li>
                 </ul>
               </li>
