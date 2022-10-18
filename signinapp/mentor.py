@@ -69,7 +69,7 @@ def all_badges():
 @mentor.route("/badges/award", methods=["GET", "POST"])
 @mentor_required
 def award_badge():
-    people: list[User] = db.session.scalars(select(User).filter_by(approved=True)).all()
+    people: list[User] = User.get_visible_users()
     badge = db.session.get(Badge, request.args["badge_id"])
 
     if not badge:
