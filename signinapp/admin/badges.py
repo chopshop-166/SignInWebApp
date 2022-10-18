@@ -13,6 +13,7 @@ from .util import admin
 class BadgeForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
+    emoji = StringField()
     icon = StringField()
     color = StringField("Icon Color", widget=ColorInput())
     submit = SubmitField()

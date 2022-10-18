@@ -244,7 +244,7 @@ if app.config["DEBUG"]:
         safe = Badge(
             name="Safety Certified",
             icon="cone-striped",
-            color="orange",
+            color="#FFA500",  # Orange - needs to be in hex format for WTForms
             description="Passed Safety Training",
         )
         db.session.add(safe)
