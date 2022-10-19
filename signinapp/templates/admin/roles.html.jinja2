@@ -4,9 +4,9 @@
   <div class="pt-3 container">
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Assignable Roles</h1>
-      <a href="{{ url_for('admin.new_role')}}">
-        <button class="btn btn-primary">New Role</button>
-      </a>
+      <a class="btn btn-primary"
+        href="{{ url_for('admin.new_role')}}"
+        role="button">New Role</a>
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">

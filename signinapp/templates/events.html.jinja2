@@ -5,15 +5,15 @@
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Events</h1>
       <div>
-        <a href="{{ url_for('events.new_event')}}">
-          <button class="btn btn-primary">New Event</button>
-        </a>
-        <a href="{{ url_for('events.bulk_events')}}">
-          <button class="btn btn-primary">Bulk Add Events</button>
-        </a>
-        <a href="{{ url_for('events.search')}}">
-          <button class="btn btn-primary">Search Events</button>
-        </a>
+        <a class="btn btn-primary"
+          href="{{ url_for('events.new_event')}}"
+          role="button">New Event</a>
+        <a class="btn btn-primary"
+          href="{{ url_for('events.bulk_events')}}"
+          role="button">Bulk Add Events</a>
+        <a class="btn btn-primary"
+          href="{{ url_for('events.search')}}"
+          role="button">Search Events</a>
       </div>
     </div>
     {{- render_messages() -}}

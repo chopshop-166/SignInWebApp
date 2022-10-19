@@ -6,13 +6,13 @@
     <h1>Available Badges!</h1>
     <div>
       {%- if current_user.is_authenticated and current_user.role.admin -%}
-      <a href="{{url_for('admin.new_badge')}}">
-        <button class="btn btn-primary">New Badge</button>
-      </a>
+      <a class="btn btn-primary"
+        href="{{url_for('admin.new_badge')}}"
+        role="button">New Badge</a>
       {%- endif -%}
-      <a href="{{ url_for('search.badges')}}">
-        <button class="btn btn-primary">Search Badges</button>
-      </a>
+      <a class="btn btn-primary"
+        href="{{ url_for('search.badges')}}"
+        role="button">Search Badges</a>
     </div>
   </div>
   {{- render_messages() -}}

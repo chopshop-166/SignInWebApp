@@ -5,13 +5,13 @@
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Active Users</h1>
       <div>
-        <a href="{{ url_for('mentor.active_delete_expired')}}">
-          <button class="btn btn-danger">Delete Expired Stamps</button>
-        </a>
+        <a class="btn btn-danger"
+          href="{{ url_for('mentor.active_delete_expired')}}"
+          role="button">Delete Expired Stamps</a>
         {%- if current_user.is_authenticated and current_user.role.admin -%}
-        <a href="{{ url_for('admin.active_deleteall')}}">
-          <button class="btn btn-danger">Delete All Stamps</button>
-        </a>
+        <a class="btn btn-danger"
+          href="{{ url_for('admin.active_deleteall')}}"
+          role="button">Delete All Stamps</a>
         {%- endif -%}
       </div>
     </div>
