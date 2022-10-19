@@ -6,13 +6,13 @@
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>{{role}} List</h1>
       {% if role == "Student" %}
-      <a href="{{ url_for('auth.register')}}">
-        <button class="btn btn-primary">New Student</button>
-      </a>
+      <a class="btn btn-primary"
+        href="{{ url_for('auth.register')}}"
+        role="button">New Student</a>
       {% elif role == "Mentor" %}
-      <a href="{{ url_for('auth.register_mentor')}}">
-        <button class="btn btn-primary">New Mentor</button>
-      </a>
+      <a class="btn btn-primary"
+        href="{{ url_for('auth.register_mentor')}}"
+        role="button">New Mentor</a>
       {% endif %}
     </div>
     {{- render_messages() -}}
