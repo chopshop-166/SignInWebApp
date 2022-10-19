@@ -216,7 +216,7 @@ def password():
 
         current_user.password = generate_password_hash(form.new_password.data)
         db.session.commit()
-        return redirect(url_for("user.profile"))
+        return redirect(url_for("user.profile", username=current_user.username))
 
     return render_template("auth/password.html.jinja2", form=form)
 

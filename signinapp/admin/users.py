@@ -86,42 +86,6 @@ def user_promote():
     )
 
 
-@admin.route("/admin/users/new", methods=["GET", "POST"])
-@admin_required
-def new_user():
-    form = UserForm()
-    form.password.validators = [DataRequired()]
-
-    if form.validate_on_submit():
-        # TODO: Replace with validator
-        if User.from_username(form.username.data) is not None:
-            flash("User already exists")
-            return redirect(url_for("admin.new_user"))
-
-        user = User.make(
-            username=form.username.data,
-            name=form.name.data,
-            password=form.password.data,
-            approved=form.admin_data.approved.data,
-            role=db.session.get(Role, form.admin_data.role.data),
-            preferred_name=form.preferred_name.data,
-            phone_number=form.phone_number.data,
-            email=form.email.data,
-            address=form.address.data,
-            tshirt_size=ShirtSizes[form.tshirt_size.data],
-        )
-        if form.subteam.data:
-            user.subteam = db.session.get(Subteam, form.subteam.data)
-
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for("team.users"))
-
-    form.admin_data.role.process_data(Role.get_default().id)
-
-    return render_template("form.html.jinja2", form=form, title=f"New User")
-
-
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
 @admin_required
 def edit_user():
