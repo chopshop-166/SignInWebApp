@@ -4,9 +4,6 @@
   <div id="userListContainer" class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Users List</h1>
-      <a href="{{ url_for('admin.new_user')}}">
-        <button class="btn btn-primary">New User</button>
-      </a>
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
