@@ -24,7 +24,8 @@ def users():
 def shirts():
     shirts = defaultdict(lambda: defaultdict(lambda: 0))
     for u in User.get_visible_users():
-        shirts[u.tshirt_size][u.role] += 1
+        if u.tshirt_size:
+            shirts[u.tshirt_size][u.role] += 1
     return render_template("shirts.html.jinja2", shirts=shirts)
 
 
