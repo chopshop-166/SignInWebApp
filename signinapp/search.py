@@ -29,7 +29,7 @@ def badges():
     form = BadgeSearchForm()
 
     if form.validate_on_submit():
-        stmt = select(User).filter_by(approved=True)
+        stmt = User.get_visible_users()
         if int(form.subteam.data) != 0:
             stmt = stmt.filter_by(subteam_id=form.subteam.data)
         results = db.session.scalars(stmt)
