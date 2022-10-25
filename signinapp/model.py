@@ -463,10 +463,7 @@ class Event(db.Model):
         )
 
         if active:
-            stamp = Stamps(user=user, event=self, start=active.start)
-            db.session.delete(active)
-            db.session.add(stamp)
-            db.session.commit()
+            stamp = create_stamp_from_active(active, None)
             # Elapsed needs to be taken after committing to the DB
             # otherwise it won't be populated
             sign = f"out after {stamp.elapsed}"
@@ -476,6 +473,19 @@ class Event(db.Model):
         db.session.add(active)
         db.session.commit()
         return StampEvent(user.human_readable, "in")
+
+
+def create_stamp_from_active(active: Active, end: datetime):
+    stamp = Stamps(
+        user=active.user,
+        event=active.event,
+        start=active.start,
+        end=end,
+    )
+    db.session.delete(active)
+    db.session.add(stamp)
+    db.session.commit()
+    return stamp
 
 
 class EventType(db.Model):

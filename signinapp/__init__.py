@@ -16,11 +16,23 @@ from .dbadmin import init_dbadmin
 from .event import eventbp
 from .events import events
 from .mentor import mentor
-from .model import Badge, Event, EventType, Guardian, Role, Student, Subteam, User, db
+from .model import (
+    Active,
+    Badge,
+    Event,
+    EventType,
+    Guardian,
+    Role,
+    Student,
+    Subteam,
+    User,
+    db,
+)
 from .qr import qr
 from .search import search
 from .team import team
 from .user import user
+from .jobs import scheduler
 
 app = Flask(__name__)
 
@@ -35,6 +47,7 @@ Our mission is to build teamwork and a great robot, along with fostering a love 
     SECRET_KEY = "1234"
     PRE_EVENT_ACTIVE_TIME = 30
     POST_EVENT_ACTIVE_TIME = 120
+    AUTO_SIGNOUT_BEHAVIOR = "None"  # Valid Options (Credit, Discard, None)
 
 
 class DebugConfig(Config):
@@ -77,6 +90,9 @@ login_manager.init_app(app)
 db.init_app(app)
 with app.app_context():
     db.create_all()
+
+scheduler.init_app(app)
+scheduler.start()
 
 app.register_blueprint(admin)
 app.register_blueprint(auth)
@@ -202,6 +218,15 @@ if app.config["DEBUG"]:
             end=now + offset,
             type_=db.session.scalar(select(EventType).filter_by(name="Build")),
         )
+
+        expired_event = Event(
+            name="Ended Training",
+            code="8765",
+            start=now - offset,
+            end=now
+            - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
+            type_=db.session.scalar(select(EventType).filter_by(name="Build")),
+        )
         db.session.add_all([training])
         db.session.commit()
 
@@ -240,6 +265,11 @@ if app.config["DEBUG"]:
                 contact_order=1,
             )
         )
+
+        student_training_event = Active(
+            user_id=student.id, event_id=expired_event.id, start=now - offset
+        )
+        db.session.add(student_training_event)
 
         safe = Badge(
             name="Safety Certified",
