@@ -140,8 +140,8 @@ def list_todays_events():
         .filter_by(enabled=True)
         .order_by(Event.start)
         .where(
-            Event.start >= func.datetime("now", "start of day"),
-            Event.start <= func.datetime("now", "+1 day", "start of day"),
+            Event.start < func.datetime("now", "+1 day", "start of day"),
+            Event.end > func.datetime("now", "start of day"),
         )
     ).scalars()
     return render_template("events.html.jinja2", prefix="Today's ", events=events)
