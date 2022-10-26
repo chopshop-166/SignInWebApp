@@ -18,6 +18,7 @@ class RoleForm(FlaskForm):
     autoload = BooleanField("Automatically load event pages")
     can_see_subteam = BooleanField("Can view subteam stamps")
     default_role = BooleanField("Is the default role for new accounts")
+    receives_funds = BooleanField("Receives Funds")
     submit = SubmitField()
 
 

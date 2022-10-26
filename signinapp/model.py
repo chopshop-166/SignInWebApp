@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import dataclasses
 import enum
+from http import HTTPStatus
+import locale
+import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
@@ -23,6 +26,7 @@ from .util import (
     normalize_phone_number_for_storage,
     normalize_phone_number_from_storage,
 )
+
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -171,6 +175,10 @@ class User(UserMixin, db.Model):
         "Total time for an event type"
         return sum((s.elapsed for s in self.stamps_for(type_)), start=timedelta())
 
+    def stamps_for_event(self, event: Event) -> list[Stamps]:
+        "Get all stamps for an event"
+        return [s for s in self.stamps if s.event == event]
+
     def can_view(self, user: User):
         "Whether the user in question can view this user"
         return (
@@ -205,6 +213,12 @@ class User(UserMixin, db.Model):
                 select(Active).where(Active.user == self, Active.event.has(code=code))
             )
         )
+
+    @property
+    def total_funds(self) -> str:
+        all_funds = [ev.raw_funds_for(self) for ev in db.session.scalars(select(Event))]
+        money = sum(all_funds, start=0.0)
+        return locale.currency(money)
 
     @staticmethod
     def get_visible_users() -> list[User]:
@@ -374,15 +388,22 @@ class Event(db.Model):
     # Location the event takes place at
     location = db.Column(db.String)
     # Start time
-    start = db.Column(db.DateTime)
+    start = db.Column(db.DateTime, nullable=False)
     # End time
-    end = db.Column(db.DateTime)
+    end = db.Column(db.DateTime, nullable=False)
     # Event type
     type_id = db.Column(db.Integer, db.ForeignKey("event_types.id"))
     # Whether the event is enabled
     enabled = db.Column(db.Boolean, default=True, nullable=False)
     # Whether users can register for the event
     registration_open = db.Column(db.Boolean, default=False)
+
+    # Total funds for event, in cents
+    funds = db.Column(db.Integer, default=0, nullable=False)
+    # Total running cost for event, in cents
+    cost = db.Column(db.Integer, default=0, nullable=False)
+    # Percentage of funds that go to the team
+    overhead = db.Column(db.Float, default=0.5, nullable=False)
 
     stamps: list[Stamps] = db.relationship("Stamps", back_populates="event")
     active: list[Active] = db.relationship("Active", back_populates="event")
@@ -402,6 +423,26 @@ class Event(db.Model):
     def end_local(self) -> str:
         "End time in local time zone"
         return correct_time_from_storage(self.end).strftime("%c")
+
+    @property
+    def funds_human(self) -> str:
+        "Get the funds in a human readable format"
+        return locale.currency(self.funds / 100.0)
+
+    @property
+    def cost_human(self) -> str:
+        "Get the cost in a human readable format"
+        return locale.currency(self.cost / 100.0)
+
+    @hybrid_property
+    def net_funds(self) -> int:
+        "Get the net funds"
+        return self.funds - self.cost
+
+    @property
+    def net_funds_human(self) -> str:
+        "Get the net funds in a human readable format"
+        return locale.currency(self.net_funds / 100.0)
 
     @property
     def adjusted_start(self) -> datetime:
@@ -442,6 +483,26 @@ class Event(db.Model):
     @property
     def total_time(self) -> timedelta:
         return sum((s.elapsed for s in self.stamps), start=timedelta())
+
+    def raw_funds_for(self, user: User) -> float:
+        "Calculate funds from an event for the given user"
+        if not user.role.receives_funds:
+            return 0.0
+        user_stamps = user.stamps_for_event(self)
+        user_hours = sum((stamp.elapsed for stamp in user_stamps), start=timedelta())
+        total_hours = sum(
+            (stamp.elapsed for stamp in self.stamps if stamp.user.role.receives_funds),
+            start=timedelta(),
+        )
+        user_proportion = (user_hours / total_hours) if total_hours else 0.0
+        return user_proportion * (1 - self.overhead) * self.net_funds / 100.0
+
+    def funds_for(self, user: User) -> str:
+        return locale.currency(self.raw_funds_for(user))
+
+    @property
+    def overhead_funds(self) -> str:
+        return locale.currency(self.net_funds * self.overhead / 100.0)
 
     def scan(self, user_code) -> StampEvent:
         if not self.is_active:
@@ -656,6 +717,7 @@ class Role(db.Model):
     can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
     default_role = db.Column(db.Boolean, nullable=False, default=False)
     visible = db.Column(db.Boolean, nullable=False, default=True)
+    receives_funds = db.Column(db.Boolean, nullable=False, default=False)
 
     users: list[User] = db.relationship("User", back_populates="role")
 

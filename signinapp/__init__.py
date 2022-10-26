@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import locale
 import os
 import zoneinfo
 
@@ -26,6 +27,8 @@ from .model import (
     User,
     db,
 )
+
+locale.setlocale(locale.LC_ALL, "")
 
 app = Flask(__name__)
 
@@ -165,8 +168,8 @@ def init_default_db():
     ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
     MENTOR = Role(name="mentor", mentor=True, can_display=True)
     DISPLAY = Role(name="display", can_display=True, autoload=True)
-    LEAD = Role(name="lead", can_see_subteam=True)
-    STUDENT = Role(name="student", default_role=True)
+    LEAD = Role(name="lead", can_see_subteam=True, receives_funds=True)
+    STUDENT = Role(name="student", default_role=True, receives_funds=True)
     GUARDIAN_LIMITED = Role(name="guardian_limited", guardian=True, visible=False)
     GUARDIAN = Role(name="guardian", guardian=True)
 

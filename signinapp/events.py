@@ -13,6 +13,7 @@ from wtforms import (
     BooleanField,
     DateField,
     DateTimeLocalField,
+    DecimalField,
     FieldList,
     Form,
     FormField,
@@ -24,7 +25,7 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, NumberRange
 
 from .mentor import mentor_required
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
@@ -62,6 +63,14 @@ class EventForm(FlaskForm):
     registration_open = BooleanField(
         default=False, description="Whether this event shows up for users to register"
     )
+    funds = DecimalField(label="Funds Received")
+    cost = DecimalField(label="Event Cost")
+    overhead = DecimalField(
+        label="Overhead Portion",
+        validators=[
+            NumberRange(min=0.0, max=1.0, message="Must be between 0.0 and 1.0")
+        ],
+    )
     submit = SubmitField()
 
     def validate(self):
@@ -86,6 +95,7 @@ class BulkEventForm(FlaskForm):
     start_time = TimeField(validators=[DataRequired()])
     end_time = TimeField(validators=[DataRequired()])
     type_id = SelectField(label="Type", choices=lambda: get_form_ids(EventType))
+    # No funds or cost field because we don't know this amount up front
     submit = SubmitField()
 
     def validate(self):
@@ -274,7 +284,7 @@ def new_event():
     if form.validate_on_submit():
 
         event_type = db.session.get(EventType, form.type_id.data)
-        Event.create(
+        ev = Event.create(
             name=form.name.data,
             description=form.description.data,
             location=form.location.data,
@@ -283,6 +293,8 @@ def new_event():
             event_type=event_type,
             registration_open=form.registration_open.data,
         )
+        ev.cost = int(form.cost.data / 100)
+        ev.funds = int(form.funds.data / 100)
         db.session.commit()
 
         return redirect(url_for("events.list_events"))
@@ -294,7 +306,7 @@ def new_event():
 @events.route("/events/edit", methods=["GET", "POST"])
 @mentor_required
 def edit_event():
-    event = db.session.get(Event, request.args["event_id"])
+    event: Event = db.session.get(Event, request.args["event_id"])
     if not event:
         flash("Event does not exist")
         return redirect(url_for("events.list_events"))
@@ -309,8 +321,13 @@ def edit_event():
         form.start.data = correct_time_for_storage(form.start.data)
         form.end.data = correct_time_for_storage(form.end.data)
         form.populate_obj(event)
+        event.cost = int(form.cost.data / 100)
+        event.funds = int(form.funds.data / 100)
         db.session.commit()
         return redirect(url_for("events.list_events"))
+
+    form.cost.process_data(form.cost.data * 100)
+    form.funds.process_data(form.funds.data * 100)
 
     form.type_id.process_data(event.type_id)
     return render_template(
