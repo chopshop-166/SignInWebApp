@@ -43,6 +43,7 @@ class GuardianDataForm(Form):
 class GuardianInfoForm(Form):
     name = StringField(
         "Name",
+        description="First and Last Names",
         validators=[Optional(), Regexp(NAME_RE)],
         filters=[strip],
     )
@@ -78,6 +79,7 @@ class UserForm(FlaskForm):
 
     name = StringField(
         "Name",
+        description="First and Last Names",
         validators=[
             DataRequired(),
             Regexp(NAME_RE),
