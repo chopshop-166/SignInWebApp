@@ -123,6 +123,7 @@ def edit_user():
     form.admin_data.role.process_data(user.role_id)
     form.admin_data.approved.process_data(user.approved)
     form.subteam.process_data(user.subteam_id)
+    form.tshirt_size.process_data(user.tshirt_size.value)
     return render_template(
         "form.html.jinja2",
         form=form,
