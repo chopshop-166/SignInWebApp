@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import zoneinfo
 
 import flask_excel as excel
 import yaml
@@ -66,6 +67,23 @@ if rv:
     app.config.from_file(rv, load=yaml.safe_load, silent=True)
 # ...then load from environment variables
 app.config.from_prefixed_env()
+
+# Now validate the config
+assert app.config["TITLE"], "Invalid title given in config"
+assert (
+    app.config["TIME_ZONE"] in zoneinfo.available_timezones()
+), "Invalid time zone given in config"
+assert (
+    app.config["PRE_EVENT_ACTIVE_TIME"] >= 0
+), "Invalid pre active time given in config"
+assert (
+    app.config["POST_EVENT_ACTIVE_TIME"] >= 0
+), "Invalid post active time given in config"
+assert app.config["AUTO_SIGNOUT_BEHAVIOR"] in (
+    "Credit",
+    "Discard",
+    "None",
+), "Invalid sign out behavior given in config"
 
 app.config.setdefault("SQLALCHEMY_DATABASE_URI", "sqlite:///" + app.config["DB_NAME"])
 app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", True)
