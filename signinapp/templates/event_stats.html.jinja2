@@ -2,6 +2,12 @@
 {% from 'bootstrap5/utils.html' import render_static %}
 {% block title %}Event {{event.name}}{% endblock %}
 {% block content %}
+<script>
+  function copyRegistrationLink() {
+    navigator.clipboard.writeText("{{registration_url}}");
+    alert("Copied: {{registration_url}}");
+  }
+</script>
 <div class="container table-responsive">
   <div class="row">
     <div class="col">
@@ -12,6 +18,41 @@
       {%- endif -%}
       <p>Location: {{event.location}}</p>
       <p>{{event.start}} - {{event.end}}</p>
+      <hr>
+      <h1>Signups</h1>
+      {# This is a link to allow manually navigating to the registration page, but clicking the button only copies the URl to the clipboard. #}
+      <a type="button" class="btn btn-primary" onclick="copyRegistrationLink(); return false;" href="{{registration_url}}">🔗 Registration Link</a>
+      <table id="blocks" class="table table-stripped table-hover table-dark">
+        <thead>
+          <tr>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col">Users Signed Up</th>
+          </tr>
+        </thead>
+        <tbody id="blocksbody">
+        {%- for block in blocks -%}
+          <tr>
+            <td>{{block[0].start}}</td>
+            <td>{{block[0].end}}</td>
+            <td>
+              <ul>
+                {%- for registration in block[1] -%}
+                  <li>
+                  {%- if registration[1] -%}
+                    <a role="button" class="link-info" data-bs-toggle="modal" data-bs-target="#commentModal" data-bs-user="{{registration[0]}}" data-bs-comment="{{registration[1]}}">
+                      {{registration[0]}}
+                    </a>
+                  {%- else -%}
+                    {{registration[0]}}
+                  {%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul> 
+            </td>
+          </tr>
+        {%- endfor -%}
+      </table>
     </div>
     <div class="col">
       <table id="users" class="table table-striped table-hover table-dark">
@@ -49,4 +90,31 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="commentModalTitle">BLANKS Comment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  </div>
+</div>
+<script>
+  var commentModal = document.getElementById('commentModal')
+  commentModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    var button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var user = button.getAttribute('data-bs-user')
+    var comment = button.getAttribute('data-bs-comment')
+    // Update the modal's content.
+    var modalTitle = commentModal.querySelector('.modal-title')
+    var modalBody = commentModal.querySelector('.modal-body')
+
+    modalTitle.textContent = user + "'s Comment"
+    modalBody.innerText = comment
+  })
+</script>
 {% endblock %}

@@ -105,7 +105,6 @@ scheduler.start()
 
 admin.init_app(app)
 auth.init_app(app)
-auth.init_app(app)
 dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
@@ -215,30 +214,35 @@ if app.config["DEBUG"]:
 
         now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0)
         offset = datetime.timedelta(hours=3)
-        training = Event(
+        training = Event.create(
             name="Training",
+            description="Test Training Event",
+            location="D124",
             code="5678",
             start=now,
             end=now + offset,
-            type_=db.session.scalar(select(EventType).filter_by(name="Training")),
+            event_type=EventType.from_name(name="Training"),
         )
-        notTraining = Event(
+        notTraining = Event.create(
             name="Not Training",
+            description="Test Build Event",
+            location="D124",
             code="5679",
             start=now,
             end=now + offset,
-            type_=db.session.scalar(select(EventType).filter_by(name="Build")),
+            event_type=EventType.from_name(name="Build"),
         )
 
-        expired_event = Event(
+        expired_event = Event.create(
             name="Ended Training",
+            description="Test Training Event",
+            location="D124",
             code="8765",
             start=now - offset,
             end=now
             - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
-            type_=db.session.scalar(select(EventType).filter_by(name="Build")),
+            event_type=EventType.from_name(name="Build"),
         )
-        db.session.add_all([training])
         db.session.commit()
 
         MENTOR = Role.from_name("mentor")

@@ -43,117 +43,120 @@
           {%- endif -%}
           <ul class="navbar-nav ms-auto">
             {%- if current_user.is_authenticated -%}
-            {%- if current_user.role.admin -%}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle btn btn-primary"
-                    href="#"
-                    id="navbarAdminDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                  Admin
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('admin.roles')}}">Roles</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('admin.subteams')}}">Subteams</a>
-                  </li>
-                </ul>
-              </li>
-            {%- endif -%}
-            {%- if current_user.role.mentor -%}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle btn btn-primary"
-                    href="#"
-                    id="navbarSearchDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                  Mentor
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('mentor.active')}}">Active Stamps</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('mentor.all_badges')}}">Badges</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('team.shirts')}}">Shirt Sizes</a>
-                  </li>
-                  <div class="dropdown-divider"></div>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('team.users')}}">Users</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('team.list_students')}}">Students</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('team.list_guardians')}}">Guardians</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('team.list_mentors')}}">Mentors</a>
-                  </li>
-                </ul>
-              </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle btn btn-primary"
-                    href="#"
-                    id="navbarEventDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                  Events
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarEventDropdown">
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('events.list_events')}}">All</a>
-                  </li>
-                  <div class="dropdown-divider"></div>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Previous</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('events.list_active_events') }}">Active</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('events.list_todays_events') }}">Today</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('events.list_upcoming_events') }}">Upcoming</a>
-                  </li>
-                </ul>
-              </li>
-            {%- endif-%}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle btn btn-primary"
-                    href="#"
-                    id="navbarUserDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                  User
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarUserDropdown">
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('user.profile_self')}}">Profile</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('event.export')}}">Export</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('auth.password')}}">Change Password</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('auth.logout')}}">Sign Out</a>
-                  </li>
-                </ul>
-              </li>
+              {%- if current_user.role.admin -%}
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle btn btn-primary"
+                      href="#"
+                      id="navbarAdminDropdown"
+                      role="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">
+                    Admin
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('admin.roles')}}">Roles</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('admin.subteams')}}">Subteams</a>
+                    </li>
+                  </ul>
+                </li>
+              {%- endif -%}
+              {%- if current_user.role.mentor -%}
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle btn btn-primary"
+                      href="#"
+                      id="navbarSearchDropdown"
+                      role="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">
+                    Mentor
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('mentor.active')}}">Active Stamps</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('mentor.all_badges')}}">Badges</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('search.hours')}}">Search Hours</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('team.shirts')}}">Shirt Sizes</a>
+                    </li>
+                    <div class="dropdown-divider"></div>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('team.users')}}">Users</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('team.list_students')}}">Students</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('team.list_guardians')}}">Guardians</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('team.list_mentors')}}">Mentors</a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle btn btn-primary"
+                      href="#"
+                      id="navbarEventDropdown"
+                      role="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">
+                    Events
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarEventDropdown">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('events.list_events')}}">All</a>
+                    </li>
+                    <div class="dropdown-divider"></div>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Previous</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('events.list_active_events') }}">Active</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('events.list_todays_events') }}">Today</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('events.list_upcoming_events') }}">Upcoming</a>
+                    </li>
+                  </ul>
+                </li>
+              {%- endif-%}
+                <li class="nav-item">
+                  <a class="nav-link btn" href="{{url_for('events.list_open_events')}}">Event Registration</a>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle btn btn-primary"
+                      href="#"
+                      id="navbarUserDropdown"
+                      role="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">
+                    User
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarUserDropdown">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('user.profile_self')}}">Profile</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('event.export')}}">Export</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('auth.password')}}">Change Password</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('auth.logout')}}">Sign Out</a>
+                    </li>
+                  </ul>
+                </li>
             {%- else -%}
               <div class="btn-group">
                 <a class="nav-link dropdown-toggle dropdown-toggle-split btn btn-primary"

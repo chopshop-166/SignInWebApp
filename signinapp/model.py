@@ -381,10 +381,13 @@ class Event(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey("event_types.id"))
     # Whether the event is enabled
     enabled = db.Column(db.Boolean, default=True, nullable=False)
+    # Whether users can register for the event
+    registration_open = db.Column(db.Boolean, default=False)
 
     stamps: list[Stamps] = db.relationship("Stamps", back_populates="event")
     active: list[Active] = db.relationship("Active", back_populates="event")
     type_: EventType = db.relationship("EventType", back_populates="events")
+    blocks: list[EventBlock] = db.relationship("EventBlock", back_populates="event")
 
     @staticmethod
     def get_from_code(event_code) -> Event | None:
@@ -471,6 +474,35 @@ class Event(db.Model):
         db.session.commit()
         return StampEvent(user.human_readable, "in")
 
+    @staticmethod
+    def create(
+        name: str,
+        description: str,
+        location: str,
+        start: datetime,
+        end: datetime,
+        event_type: EventType,
+        code: int = None,
+    ):
+        start = correct_time_for_storage(start)
+        end = correct_time_for_storage(end)
+        ev = Event(
+            name=name,
+            description=description,
+            location=location,
+            start=start,
+            end=end,
+            type_=event_type,
+            code=code,
+        )
+        db.session.add(ev)
+        db.session.flush()
+
+        # Add default block for the entire event time
+        block = EventBlock(start=start, end=end, event_id=ev.id)
+        db.session.add(block)
+        return ev
+
 
 def create_stamp_from_active(active: Active, end: datetime):
     stamp = Stamps(
@@ -493,6 +525,10 @@ class EventType(db.Model):
     autoload = db.Column(db.Boolean, nullable=False, default=False)
 
     events: list[Event] = db.relationship("Event", back_populates="type_")
+
+    @staticmethod
+    def from_name(name: str) -> EventType:
+        return db.session.scalar(select(EventType).filter_by(name=name))
 
 
 class Active(db.Model):
@@ -650,3 +686,62 @@ class Subteam(db.Model):
     def from_name(name) -> Subteam:
         "Get a subteam by name"
         return db.session.scalar(select(Subteam).filter_by(name=name))
+
+
+class EventRegistration(db.Model):
+    __tablename__ = "eventregistrations"
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Link to event block
+    event_block_id = db.Column(db.Integer, db.ForeignKey("eventblocks.id"))
+    event_block: EventBlock = db.relationship(
+        "EventBlock", back_populates="registrations"
+    )
+    # Link to user
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user: User = db.relationship("User")
+    # User comment for event block
+    comment = db.Column(db.String)
+
+    registered = db.Column(db.Boolean)
+
+    @staticmethod
+    def upsert(
+        event_block_id: int,
+        user: User,
+        comment: str,
+        registered: bool,
+    ):
+        existing_registration = db.session.scalar(
+            select(EventRegistration).filter_by(
+                user=user, event_block_id=event_block_id
+            )
+        )
+        if existing_registration:
+            existing_registration.registered = registered
+            existing_registration.comment = comment
+        else:
+            registration = EventRegistration(
+                event_block_id=event_block_id,
+                user=user,
+                comment=comment,
+                registered=registered,
+            )
+            db.session.add(registration)
+
+
+class EventBlock(db.Model):
+    __tablename__ = "eventblocks"
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Start Time for block
+    start = db.Column(db.DateTime)
+    # End time for block
+    end = db.Column(db.DateTime)
+    # Link to Event
+    event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
+    event: Event = db.relationship("Event", back_populates="blocks")
+
+    registrations: EventRegistration = db.relationship(
+        "EventRegistration", back_populates="event_block"
+    )
