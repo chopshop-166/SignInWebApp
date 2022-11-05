@@ -1,7 +1,6 @@
 from flask import Blueprint
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from sqlalchemy.future import select
 from wtforms import BooleanField, SelectField, SubmitField
 
 from .model import Badge, EventType, Role, Subteam, User, db, get_form_ids

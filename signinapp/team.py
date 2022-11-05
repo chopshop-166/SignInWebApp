@@ -45,18 +45,18 @@ def list_students():
             or_(User.role.has(name="student"), User.role.has(name="lead"))
         )
     )
-    return render_template(f"user_list.html.jinja2", role="Student", users=users)
+    return render_template("user_list.html.jinja2", role="Student", users=users)
 
 
 @team.route("/users/guardians")
 @mentor_required
 def list_guardians():
     users = db.session.scalars(select(User).where(User.role.has(guardian=True)))
-    return render_template(f"user_list.html.jinja2", role="Guardian", users=users)
+    return render_template("user_list.html.jinja2", role="Guardian", users=users)
 
 
 @team.route("/users/mentors")
 @mentor_required
 def list_mentors():
     users = db.session.scalars(select(User).where(User.role.has(mentor=True)))
-    return render_template(f"user_list.html.jinja2", role="Mentor", users=users)
+    return render_template("user_list.html.jinja2", role="Mentor", users=users)

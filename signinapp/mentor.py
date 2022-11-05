@@ -1,12 +1,11 @@
 from flask import Blueprint, flash, redirect, request, url_for
 from flask.templating import render_template
-from flask_login import current_user
 from flask_wtf import FlaskForm
 from sqlalchemy import delete
 from sqlalchemy.future import select
 from wtforms import SubmitField
 
-from .model import Active, Badge, Event, Stamps, User, db
+from .model import Active, Badge, Stamps, User, db
 from .util import MultiCheckboxField, mentor_required
 
 mentor = Blueprint("mentor", __name__)

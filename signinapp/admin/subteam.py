@@ -32,7 +32,7 @@ def new_subteam():
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
-    return render_template("form.html.jinja2", form=form, title=f"New Subteam")
+    return render_template("form.html.jinja2", form=form, title="New Subteam")
 
 
 @admin.route("/admin/subteams/edit", methods=["GET", "POST"])

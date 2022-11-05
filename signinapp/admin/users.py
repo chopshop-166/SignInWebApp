@@ -6,7 +6,7 @@ from wtforms import FormField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
 from ..forms import GuardianDataForm, StudentDataForm, UserForm
-from ..model import Role, ShirtSizes, Student, Subteam, User, db
+from ..model import Role, ShirtSizes, User, db
 from ..util import admin_required
 from .util import admin
 

@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, redirect, request, url_for, flash
+from flask import Blueprint, redirect, request, url_for, flash
 from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
