@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import List
 from zoneinfo import ZoneInfo
 
-from flask_apscheduler import APScheduler
 from flask import current_app
+from flask_apscheduler import APScheduler
 from sqlalchemy.future import select
 
 from .model import Active, create_stamp_from_active, db

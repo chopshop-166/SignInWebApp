@@ -16,6 +16,7 @@ from .auth import auth, login_manager
 from .dbadmin import init_dbadmin
 from .event import eventbp
 from .events import events
+from .jobs import scheduler
 from .mentor import mentor
 from .model import (
     Active,
@@ -33,7 +34,6 @@ from .qr import qr
 from .search import search
 from .team import team
 from .user import user
-from .jobs import scheduler
 
 app = Flask(__name__)
 

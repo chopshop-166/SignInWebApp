@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, request, url_for
+from flask import Blueprint, flash, redirect, url_for
 from flask.templating import render_template
 from flask_login import (
     LoginManager,
@@ -13,7 +13,7 @@ from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 
 from .forms import UserForm
-from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db, get_form_ids
+from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db
 
 login_manager = LoginManager()
 

@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import base64
 import dataclasses
-import datetime
 import enum
-from http import HTTPStatus
-import re
 import secrets
 from datetime import datetime, timedelta, timezone
+from http import HTTPStatus
 
-from flask import current_app, Response
+from flask import Response, current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func

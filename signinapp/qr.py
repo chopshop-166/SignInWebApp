@@ -1,7 +1,5 @@
-from flask import Blueprint, current_app, redirect, request, url_for
+from flask import Blueprint, request, url_for
 from flask.templating import render_template
-from sqlalchemy.future import select
-from flask import request
 
 qr = Blueprint("qr", __name__)
 

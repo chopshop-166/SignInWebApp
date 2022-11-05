@@ -41,7 +41,7 @@ def new_role():
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
-    return render_template("form.html.jinja2", form=form, title=f"New Subteam")
+    return render_template("form.html.jinja2", form=form, title="New Role")
 
 
 @admin.route("/admin/roles/edit", methods=["GET", "POST"])
