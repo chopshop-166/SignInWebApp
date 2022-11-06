@@ -208,7 +208,7 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def get_visible_users() -> list[User]:
-        return db.session.scalars(select(User).join(Role).where(Role.visible == True))
+        return db.session.scalars(select(User).where(User.role.has(visible=True)))
 
     @staticmethod
     def make(
@@ -566,11 +566,11 @@ class Stamps(db.Model):
     @staticmethod
     def get(user: User | None = None, event_code=None):
         "Get stamps matching a requirement"
-        stmt = select(Stamps).where(Stamps.event.enabled == True)
+        stmt = select(Stamps).where(Stamps.event.has(enabled=True))
         if event_code:
-            stmt = stmt.where(Stamps.event.code == event_code)
+            stmt = stmt.where(Stamps.event.has(code=event_code))
         if user:
-            stmt = stmt.where(Stamps.user.code == user.code)
+            stmt = stmt.where(Stamps.user == user)
         return [s.as_dict() for s in db.session.scalars(stmt)]
 
     @staticmethod
