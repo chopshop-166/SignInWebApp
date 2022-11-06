@@ -11,13 +11,9 @@ from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from sqlalchemy.future import select
 
-from .admin import admin
-from .auth import auth, login_manager
-from .dbadmin import init_dbadmin
-from .event import eventbp
-from .events import events
+from . import admin, auth, dbadmin, event, events, mentor, qr, search, team, user
+from .auth import login_manager
 from .jobs import scheduler
-from .mentor import mentor
 from .model import (
     Active,
     Badge,
@@ -30,10 +26,6 @@ from .model import (
     User,
     db,
 )
-from .qr import qr
-from .search import search
-from .team import team
-from .user import user
 
 app = Flask(__name__)
 
@@ -97,7 +89,6 @@ scss = Bundle(
 assets = Environment(app)
 assets.register("custom_css", scss)
 
-init_dbadmin(app)
 excel.init_excel(app)
 
 bootstrap = Bootstrap5(app)
@@ -112,15 +103,17 @@ with app.app_context():
 scheduler.init_app(app)
 scheduler.start()
 
-app.register_blueprint(admin)
-app.register_blueprint(auth)
-app.register_blueprint(eventbp)
-app.register_blueprint(events)
-app.register_blueprint(mentor)
-app.register_blueprint(search)
-app.register_blueprint(team)
-app.register_blueprint(user)
-app.register_blueprint(qr)
+admin.init_app(app)
+auth.init_app(app)
+auth.init_app(app)
+dbadmin.init_app(app)
+event.init_app(app)
+events.init_app(app)
+mentor.init_app(app)
+qr.init_app(app)
+search.init_app(app)
+team.init_app(app)
+user.init_app(app)
 
 
 @app.route("/")

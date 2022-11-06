@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 from dateutil.rrule import WEEKLY, rrule
-from flask import Blueprint, flash, redirect, request, url_for
+from flask import Blueprint, Flask, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from sqlalchemy import func
@@ -266,3 +266,7 @@ def search():
         return render_template("search/events.html.jinja2", form=form, results=results)
 
     return render_template("search/hours.html.jinja2", form=form, results=None)
+
+
+def init_app(app: Flask):
+    app.register_blueprint(events)

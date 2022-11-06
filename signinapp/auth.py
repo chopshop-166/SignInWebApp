@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, url_for
+from flask import Blueprint, Flask, flash, redirect, url_for
 from flask.templating import render_template
 from flask_login import (
     LoginManager,
@@ -224,3 +224,7 @@ def password():
 @auth.route("/forbidden")
 def forbidden():
     return render_template("auth/forbidden.html.jinja2")
+
+
+def init_app(app: Flask):
+    app.register_blueprint(auth)

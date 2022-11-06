@@ -1,4 +1,4 @@
-from flask import Blueprint, request, url_for
+from flask import Blueprint, Flask, request, url_for
 from flask.templating import render_template
 
 qr = Blueprint("qr", __name__)
@@ -26,3 +26,7 @@ def register_guardian_qr():
     return render_template(
         "qr.html.jinja2", register_url=f"{url}{url_for('auth.register_guardian')}"
     )
+
+
+def init_app(app: Flask):
+    app.register_blueprint(qr)

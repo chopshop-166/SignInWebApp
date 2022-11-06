@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, request, url_for, flash
+from flask import Blueprint, Flask, redirect, request, url_for, flash
 from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
@@ -39,3 +39,7 @@ def badge():
         )
         return render_template("badge.html.jinja2", badge=badge, awards=awards)
     return redirect(url_for("mentor.all_badges", badge_id=badge.id))
+
+
+def init_app(app: Flask):
+    app.register_blueprint(user)
