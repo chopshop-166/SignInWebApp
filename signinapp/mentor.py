@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, request, url_for
+from flask import Blueprint, Flask, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from sqlalchemy import delete
@@ -94,3 +94,7 @@ def award_badge():
         form=form,
         title=f"Award Badge {badge.name}",
     )
+
+
+def init_app(app: Flask):
+    app.register_blueprint(mentor)

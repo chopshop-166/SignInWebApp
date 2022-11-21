@@ -1,5 +1,5 @@
 from collections import defaultdict
-from flask import Blueprint, request
+from flask import Blueprint, Flask, request
 from flask.templating import render_template
 from flask_login import login_required
 from sqlalchemy import or_
@@ -60,3 +60,7 @@ def list_guardians():
 def list_mentors():
     users = db.session.scalars(select(User).where(User.role.has(mentor=True)))
     return render_template("user_list.html.jinja2", role="Mentor", users=users)
+
+
+def init_app(app: Flask):
+    app.register_blueprint(team)

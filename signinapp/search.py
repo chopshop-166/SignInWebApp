@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, Flask
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, SelectField, SubmitField
@@ -61,3 +61,7 @@ def hours():
         return render_template("search/hours.html.jinja2", form=form, results=results)
 
     return render_template("search/hours.html.jinja2", form=form, results=None)
+
+
+def init_app(app: Flask):
+    app.register_blueprint(search)

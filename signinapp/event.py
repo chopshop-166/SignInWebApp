@@ -1,6 +1,7 @@
 import flask_excel as excel
 from flask import (
     Blueprint,
+    Flask,
     Response,
     current_app,
     flash,
@@ -119,3 +120,7 @@ def export_subteam():
 
     subteam = current_user.subteam
     return excel.make_response_from_array(Stamps.export(subteam=subteam), "csv")
+
+
+def init_app(app: Flask):
+    app.register_blueprint(eventbp)

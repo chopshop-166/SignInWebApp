@@ -4,10 +4,7 @@ from flask.cli import with_appcontext
 from sqlalchemy.future import select
 
 # For application discovery by the 'flask' command.
-from . import app, init_default_db, db
-
-# For import side-effects of setting up routes.
-from . import auth, event, model, team, user
+from . import app, db, init_default_db, model
 
 
 @click.command("init-db")

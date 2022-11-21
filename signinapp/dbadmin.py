@@ -38,7 +38,7 @@ class AdminView(AdminIndexView):
             return abort(401)
 
 
-def init_dbadmin(app):
+def init_app(app):
 
     app.config["FLASK_ADMIN_SWATCH"] = "cyborg"
     flask_admin = Admin(
