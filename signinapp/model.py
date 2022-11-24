@@ -483,6 +483,7 @@ class Event(db.Model):
         end: datetime,
         event_type: EventType,
         code: int = None,
+        registration_open: bool = False,
     ):
         start = correct_time_for_storage(start)
         end = correct_time_for_storage(end)
@@ -494,6 +495,7 @@ class Event(db.Model):
             end=end,
             type_=event_type,
             code=code,
+            registration_open=registration_open,
         )
         db.session.add(ev)
         db.session.flush()

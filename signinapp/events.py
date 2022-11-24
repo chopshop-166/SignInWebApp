@@ -281,6 +281,7 @@ def new_event():
             start=form.start.data,
             end=form.end.data,
             event_type=event_type,
+            registration_open=form.registration_open.data,
         )
         db.session.commit()
 
