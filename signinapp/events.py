@@ -293,8 +293,8 @@ def new_event():
             event_type=event_type,
             registration_open=form.registration_open.data,
         )
-        ev.cost = int(form.cost.data / 100)
-        ev.funds = int(form.funds.data / 100)
+        ev.cost = int(form.cost.data * 100)
+        ev.funds = int(form.funds.data * 100)
         db.session.commit()
 
         return redirect(url_for("events.list_events"))
@@ -321,13 +321,13 @@ def edit_event():
         form.start.data = correct_time_for_storage(form.start.data)
         form.end.data = correct_time_for_storage(form.end.data)
         form.populate_obj(event)
-        event.cost = int(form.cost.data / 100)
-        event.funds = int(form.funds.data / 100)
+        event.cost = int(form.cost.data * 100)
+        event.funds = int(form.funds.data * 100)
         db.session.commit()
         return redirect(url_for("events.list_events"))
 
-    form.cost.process_data(form.cost.data * 100)
-    form.funds.process_data(form.funds.data * 100)
+    form.cost.process_data(form.cost.data / 100)
+    form.funds.process_data(form.funds.data / 100)
 
     form.type_id.process_data(event.type_id)
     return render_template(

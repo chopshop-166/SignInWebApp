@@ -12,7 +12,19 @@ from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from sqlalchemy.future import select
 
-from . import admin, auth, dbadmin, event, events, mentor, qr, search, team, user
+from . import (
+    admin,
+    auth,
+    dbadmin,
+    event,
+    events,
+    mentor,
+    qr,
+    search,
+    team,
+    user,
+    finance,
+)
 from .auth import login_manager
 from .jobs import scheduler
 from .model import (
@@ -111,6 +123,7 @@ auth.init_app(app)
 dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
+finance.init_app(app)
 mentor.init_app(app)
 qr.init_app(app)
 search.init_app(app)
