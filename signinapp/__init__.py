@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import locale
 import os
 import zoneinfo
 
@@ -11,7 +12,19 @@ from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
 from sqlalchemy.future import select
 
-from . import admin, auth, dbadmin, event, events, mentor, qr, search, team, user
+from . import (
+    admin,
+    auth,
+    dbadmin,
+    event,
+    events,
+    mentor,
+    qr,
+    search,
+    team,
+    user,
+    finance,
+)
 from .auth import login_manager
 from .jobs import scheduler
 from .model import (
@@ -26,6 +39,8 @@ from .model import (
     User,
     db,
 )
+
+locale.setlocale(locale.LC_ALL, "")
 
 app = Flask(__name__)
 
@@ -108,6 +123,7 @@ auth.init_app(app)
 dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
+finance.init_app(app)
 mentor.init_app(app)
 qr.init_app(app)
 search.init_app(app)
@@ -165,8 +181,8 @@ def init_default_db():
     ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
     MENTOR = Role(name="mentor", mentor=True, can_display=True)
     DISPLAY = Role(name="display", can_display=True, autoload=True)
-    LEAD = Role(name="lead", can_see_subteam=True)
-    STUDENT = Role(name="student", default_role=True)
+    LEAD = Role(name="lead", can_see_subteam=True, receives_funds=True)
+    STUDENT = Role(name="student", default_role=True, receives_funds=True)
     GUARDIAN_LIMITED = Role(name="guardian_limited", guardian=True, visible=False)
     GUARDIAN = Role(name="guardian", guardian=True)
 

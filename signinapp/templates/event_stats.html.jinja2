@@ -30,6 +30,8 @@
       {%- endif -%}
       <p>Location: {{event.location}}</p>
       <p>{{event.start}} - {{event.end}}</p>
+      <p>Amount Earned: {{event.funds_human}}</p>
+      <p>Overhead {{event.overhead_funds}}</p>
       <hr>
       <h1>Signups</h1>
       {# This is a link to allow manually navigating to the registration page, but clicking the button only copies the URL to the clipboard. #}
@@ -73,13 +75,15 @@
           <tr>
             <th scope="col">User</th>
             <th scope="col">Time Spent</th>
+            <th scope="col">Funds Earned</th>
           </tr>
         </thead>
         <tbody id="userbody">
-        {%- for username, usertime in users -%}
+        {%- for user, time in users -%}
           <tr>
-            <td>{{username}}</td>
-            <td>{{usertime}}</td>
+            <td>{{user.name}}</td>
+            <td>{{time}}</td>
+            <td>{{event.funds_for(user)}}</td>
           </tr>
         {%- endfor -%}
         </tbody>
