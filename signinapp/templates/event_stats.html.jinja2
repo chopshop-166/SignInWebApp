@@ -3,15 +3,27 @@
 {% block title %}Event {{event.name}}{% endblock %}
 {% block content %}
 <script>
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl, option)
+  })
   function copyRegistrationLink() {
     navigator.clipboard.writeText("{{registration_url}}");
-    alert("Copied: {{registration_url}}");
+    
+    var copiedToastEl = document.getElementById("linkCopiedToast");
+    var copiedToast = bootstrap.Toast.getOrCreateInstance(copiedToastEl);
+    var toastBody = document.getElementById("linkCopiedToastBody");
+    toastBody.innerText = "Copied: {{registration_url}}";
+
+    copiedToast.show();
+    return false;
   }
 </script>
+
 <div class="container table-responsive">
   <div class="row">
     <div class="col">
-      <h1><a href="{{url_for('event.event', event_code=event.code)}}">{{event.name}}</a></h1>
+      <h1><a class="link-secondary" href="{{url_for('event.event', event_code=event.code)}}">{{event.name}}</a></h1>
       <h2>{{event.type_.name}}</h2>
       {%- if event.descripion -%}
       <p>Description: {{event.description}}</p>
@@ -20,8 +32,9 @@
       <p>{{event.start}} - {{event.end}}</p>
       <hr>
       <h1>Signups</h1>
-      {# This is a link to allow manually navigating to the registration page, but clicking the button only copies the URl to the clipboard. #}
-      <a type="button" class="btn btn-primary" onclick="copyRegistrationLink(); return false;" href="{{registration_url}}">🔗 Registration Link</a>
+      {# This is a link to allow manually navigating to the registration page, but clicking the button only copies the URL to the clipboard. #}
+      <a class="link-secondary" href="{{registration_url}}">Event Registration</a>
+      <a type="button" id="liveToastBtn" class="btn btn-dark" onclick="copyRegistrationLink(); return false;" href="{{registration_url}}">Copy 🔗</a>
       <table id="blocks" class="table table-stripped table-hover table-dark">
         <thead>
           <tr>
@@ -31,20 +44,20 @@
           </tr>
         </thead>
         <tbody id="blocksbody">
-        {%- for block in blocks -%}
+        {%- for times, registrations in blocks -%}
           <tr>
-            <td>{{block[0].start}}</td>
-            <td>{{block[0].end}}</td>
+            <td>{{times.start}}</td>
+            <td>{{times.end}}</td>
             <td>
               <ul>
-                {%- for registration in block[1] -%}
+                {%- for user, comment in registrations -%}
                   <li>
-                  {%- if registration[1] -%}
-                    <a role="button" class="link-info" data-bs-toggle="modal" data-bs-target="#commentModal" data-bs-user="{{registration[0]}}" data-bs-comment="{{registration[1]}}">
-                      {{registration[0]}}
+                  {%- if comment -%}
+                    <a role="button" class="link-info" data-bs-toggle="modal" data-bs-target="#commentModal" data-bs-user="{{user}}" data-bs-comment="{{comment}}">
+                      {{user}}
                     </a>
                   {%- else -%}
-                    {{registration[0]}}
+                    {{user}}
                   {%- endif -%}
                   </li>
                 {%- endfor -%}
@@ -98,6 +111,16 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body"></div>
+    </div>
+  </div>
+</div>
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  <div id="linkCopiedToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body text-primary" id="linkCopiedToastBody">
+        {# Placeholder #}
+      </div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
 </div>
