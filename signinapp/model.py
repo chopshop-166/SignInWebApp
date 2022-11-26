@@ -481,12 +481,16 @@ class Event(db.Model):
         location: str,
         start: datetime,
         end: datetime,
-        event_type: EventType,
+        event_type: EventType | str,
         code: int = None,
         registration_open: bool = False,
     ):
         start = correct_time_for_storage(start)
         end = correct_time_for_storage(end)
+
+        if isinstance(event_type, str):
+            event_type = EventType.from_name(event_type)
+
         ev = Event(
             name=name,
             description=description,

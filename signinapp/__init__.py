@@ -221,7 +221,7 @@ if app.config["DEBUG"]:
             code="5678",
             start=now,
             end=now + offset,
-            event_type=EventType.from_name(name="Training"),
+            event_type="Training",
         )
         notTraining = Event.create(
             name="Not Training",
@@ -230,7 +230,7 @@ if app.config["DEBUG"]:
             code="5679",
             start=now,
             end=now + offset,
-            event_type=EventType.from_name(name="Build"),
+            event_type="Build",
         )
 
         expired_event = Event.create(
@@ -241,7 +241,7 @@ if app.config["DEBUG"]:
             start=now - offset,
             end=now
             - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
-            event_type=EventType.from_name(name="Build"),
+            event_type="Build",
         )
         db.session.commit()
 
