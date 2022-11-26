@@ -1,0 +1,39 @@
+{% extends "base.html.jinja2" %}
+{% block title %}Register for {{event_name}}{% endblock %}
+{% block content %}
+  <div class="container pt-3">
+  <h1>Registration for {{event.name}}</h1>
+   {%- if event.descripion -%}
+      <p>Description: {{event.description}}</p>
+    {%- endif -%}
+    <p>Location: {{event.location}}</p>
+    <p>{{event.start}} - {{event.end}}</p>
+  </div>
+  <div class="container pt-3">
+    {{- render_messages() -}}
+    <form method="POST" action="">
+      {{ form.hidden_tag() }}
+        <table id="eventblocks" class="table table-striped table-hover table-dark">
+          <thead>
+            <tr>
+              <th scope="col">Attending</th>
+              <th scope="col">Time</th>
+              <th scope="col">Comment</th>
+            </tr>
+          </thead>
+          <tbody id="eventblocksbody">
+            {%- for block in form.blocks -%}
+                <tr style="vertical-align: middle">
+                    <td>{{block.register}}</td>
+                    <td>
+                    Start: {{block.start.data}}<br>End: {{block.end.data}}
+                    </td>
+                    <td>{{block.comment}}</td>
+                </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+        <button>Submit</button>
+    </form>
+  </div>
+{% endblock %}

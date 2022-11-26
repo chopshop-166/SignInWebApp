@@ -1,0 +1,41 @@
+{% extends "base.html.jinja2" %}
+{% block title %}Event List{% endblock %}
+{% block content %}
+  <div class="pt-3 container">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>Events Open for Registration</h1>
+    </div>
+    {{- render_messages() -}}
+    <div class="table-responsive">
+      <table id="events" class="table table-striped table-hover table-dark">
+        <thead>
+          <tr>
+            <th scope="col">Event</th>
+            <th scope="col">Description</th>
+            <th scope="col">Type</th>
+            <th scope="col">Location</th>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col">Register</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for event in events -%}
+            <tr>
+              <td>{{ event.name }}</td>
+              <td>{{ event.description }}</td>
+              <td>{{ event.type_.name }}</td>
+              <td>{{ event.location }}</td>
+              <td>{{ event.start_local }}</td>
+              <td>{{ event.end_local }}</td>
+              <td>
+                <a class="btn btn-secondary" role="button"
+                   href="{{ url_for('events.register_event', event_id=event.id) }}">Register</a>
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
