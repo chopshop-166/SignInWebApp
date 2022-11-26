@@ -191,7 +191,7 @@ def list_open_events():
     events: list[Event] = db.session.scalars(
         select(Event)
         .filter_by(enabled=True, registration_open=True)
-        .order_by(Event.start)
+        .order_by(Event.start.desc(), Event.end.desc())
         .where(Event.end > func.now())
     )
 
@@ -370,7 +370,7 @@ def register_event():
                 registered=block["register"],
             )
         db.session.commit()
-        flash(f"Successfully Signed up for {event.name}")
+        flash(f"Successfully signed up for {event.name}")
         return redirect(url_for("index"))
 
     return render_template(
