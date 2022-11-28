@@ -179,7 +179,7 @@ class User(UserMixin, db.Model):
 
     def stamps_for(self, type_: EventType):
         "Get all stamps for an event type"
-        return [s for s in self.stamps if (s.event.type_ == type_) & s.event.enabled]
+        return [s for s in self.stamps if s.event.type_ == type_]
 
     def total_stamps_for(self, type_: EventType) -> timedelta:
         "Total time for an event type"
@@ -403,8 +403,6 @@ class Event(db.Model):
     end = db.Column(db.DateTime, nullable=False)
     # Event type
     type_id = db.Column(db.Integer, db.ForeignKey("event_types.id"))
-    # Whether the event is enabled
-    enabled = db.Column(db.Boolean, default=True, nullable=False)
     # Whether users can register for the event
     registration_open = db.Column(db.Boolean, default=False)
 
@@ -474,13 +472,12 @@ class Event(db.Model):
     def is_active(self) -> bool:
         "Test for if the event is currently active"
         now = datetime.now(tz=timezone.utc)
-        return self.enabled & (self.adjusted_start < now) & (now < self.adjusted_end)
+        return (self.adjusted_start < now) & (now < self.adjusted_end)
 
     @is_active.expression
     def is_active(cls):
         "Usable in queries"
         return and_(
-            cls.enabled,
             (
                 func.datetime(
                     cls.start,
@@ -685,7 +682,7 @@ class Stamps(db.Model):
     @staticmethod
     def get(user: User | None = None, event_code=None):
         "Get stamps matching a requirement"
-        stmt = select(Stamps).where(Stamps.event.has(enabled=True))
+        stmt = select(Stamps)
         if event_code:
             stmt = stmt.where(Stamps.event.has(code=event_code))
         if user:
@@ -701,7 +698,7 @@ class Stamps(db.Model):
         subteam: Subteam = None,
         headers=True,
     ) -> list[list[str]]:
-        stmt = select(Stamps).filter(Stamps.event.has(enabled=True))
+        stmt = select(Stamps)
         if user:
             stmt = stmt.where(Stamps.user.code == user.code)
         if start:

@@ -32,9 +32,7 @@ def event():
 def selfscan():
     event_code = request.values["event_code"]
 
-    ev: Event = db.session.scalar(
-        select(Event).filter_by(code=event_code, enabled=True)
-    )
+    ev: Event = db.session.scalar(select(Event).filter_by(code=event_code))
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
@@ -48,7 +46,7 @@ def scan():
     event = request.values["event_code"]
     user_code = request.values["user_code"]
 
-    ev: Event = db.session.scalar(select(Event).filter_by(code=event, enabled=True))
+    ev: Event = db.session.scalar(select(Event).filter_by(code=event))
 
     if not ev:
         return Response("Error: Invalid event code")
@@ -84,7 +82,7 @@ def autoevent():
 def active():
     event = request.args.get("event", None)
 
-    ev: Event = db.session.scalar(select(Event).filter_by(code=event, enabled=True))
+    ev: Event = db.session.scalar(select(Event).filter_by(code=event))
 
     if ev and not ev.is_active:
         return jsonify({"action": "redirect"})

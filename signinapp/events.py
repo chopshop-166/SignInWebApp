@@ -59,7 +59,6 @@ class EventForm(FlaskForm):
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
     type_id = SelectField(label="Type", choices=lambda: get_form_ids(EventType))
-    enabled = BooleanField(default=True)
     registration_open = BooleanField(
         default=False, description="Whether this event shows up for users to register"
     )
@@ -150,9 +149,7 @@ class DeleteEventForm(FlaskForm):
 @events.route("/events/")
 @mentor_required
 def list_events():
-    events: list[Event] = db.session.scalars(
-        select(Event).filter_by(enabled=True).order_by(Event.start)
-    )
+    events: list[Event] = db.session.scalars(select(Event).order_by(Event.start))
     return render_template("events.html.jinja2", events=events)
 
 
@@ -160,10 +157,7 @@ def list_events():
 @mentor_required
 def list_previous_events():
     events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(enabled=True)
-        .order_by(Event.start)
-        .where(Event.end <= func.now())
+        select(Event).order_by(Event.start).where(Event.end <= func.now())
     )
     return render_template("events.html.jinja2", prefix="Previous ", events=events)
 
@@ -172,10 +166,7 @@ def list_previous_events():
 @mentor_required
 def list_active_events():
     events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(enabled=True)
-        .order_by(Event.start)
-        .where(Event.is_active)
+        select(Event).order_by(Event.start).where(Event.is_active)
     )
     return render_template("events.html.jinja2", prefix="Active ", events=events)
 
@@ -185,7 +176,6 @@ def list_active_events():
 def list_todays_events():
     events: list[Event] = db.session.scalars(
         select(Event)
-        .filter_by(enabled=True)
         .order_by(Event.start)
         .where(
             Event.start < func.datetime("now", "+1 day", "start of day"),
@@ -199,10 +189,7 @@ def list_todays_events():
 @mentor_required
 def list_upcoming_events():
     events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(enabled=True)
-        .order_by(Event.start)
-        .where(Event.start > func.now())
+        select(Event).order_by(Event.start).where(Event.start > func.now())
     )
     return render_template("events.html.jinja2", prefix="Upcoming ", events=events)
 
@@ -211,7 +198,7 @@ def list_upcoming_events():
 def list_open_events():
     events: list[Event] = db.session.scalars(
         select(Event)
-        .filter_by(enabled=True, registration_open=True)
+        .filter_by(registration_open=True)
         .order_by(Event.start.desc(), Event.end.desc())
         .where(Event.end > func.now())
     )
