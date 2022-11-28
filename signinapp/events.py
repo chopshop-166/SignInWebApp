@@ -25,7 +25,7 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, NumberRange
+from wtforms.validators import DataRequired, EqualTo, NumberRange
 
 from .mentor import mentor_required
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
@@ -133,6 +133,17 @@ class EventBlockForm(Form):
 
 class EventRegistrationForm(FlaskForm):
     blocks = FieldList(FormField(EventBlockForm))
+    submit = SubmitField()
+
+
+class DeleteEventForm(FlaskForm):
+    name = StringField(validators=[DataRequired()], render_kw={"readonly": True})
+    start = DateTimeLocalField(render_kw={"readonly": True})
+    end = DateTimeLocalField(render_kw={"readonly": True})
+    verify = StringField(
+        "Confirm Name",
+        validators=[DataRequired(), EqualTo("name", message="Enter the event's name")],
+    )
     submit = SubmitField()
 
 
@@ -395,6 +406,27 @@ def register_event():
         event=event,
         form=form,
         title=f"Register Event {event.name}",
+    )
+
+
+@events.route("/admin/event/delete", methods=["GET", "POST"])
+@mentor_required
+def delete_event():
+    ev = db.session.get(Event, request.args["event_id"])
+    if not ev:
+        flash("Invalid event ID")
+        return redirect(url_for("events.list_events"))
+
+    form = DeleteEventForm(obj=ev)
+    if form.validate_on_submit():
+        db.session.delete(ev)
+        db.session.commit()
+        return redirect(url_for("events.list_events"))
+
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Delete Event {ev.name}",
     )
 
 

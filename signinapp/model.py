@@ -122,7 +122,11 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     approved = db.Column(db.Boolean, default=False)
 
-    stamps: list[Stamps] = db.relationship("Stamps", back_populates="user")
+    stamps: list[Stamps] = db.relationship(
+        "Stamps",
+        back_populates="user",
+        cascade="all, delete, delete-orphan",
+    )
     role: Role = db.relationship("Role", back_populates="users")
     subteam: Subteam = db.relationship("Subteam", back_populates="members")
 
@@ -133,12 +137,18 @@ class User(UserMixin, db.Model):
 
     # Guardian specific data
     guardian_user_data: Guardian = db.relationship(
-        "Guardian", back_populates="user", uselist=False
+        "Guardian",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete, delete-orphan",
     )
 
     # Student specific data
     student_user_data: Student = db.relationship(
-        "Student", back_populates="user", uselist=False
+        "Student",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete, delete-orphan",
     )
 
     @hybrid_property
@@ -405,10 +415,16 @@ class Event(db.Model):
     # Percentage of funds that go to the team
     overhead = db.Column(db.Float, default=0.5, nullable=False)
 
-    stamps: list[Stamps] = db.relationship("Stamps", back_populates="event")
-    active: list[Active] = db.relationship("Active", back_populates="event")
+    stamps: list[Stamps] = db.relationship(
+        "Stamps", back_populates="event", cascade="all, delete, delete-orphan"
+    )
+    active: list[Active] = db.relationship(
+        "Active", back_populates="event", cascade="all, delete, delete-orphan"
+    )
     type_: EventType = db.relationship("EventType", back_populates="events")
-    blocks: list[EventBlock] = db.relationship("EventBlock", back_populates="event")
+    blocks: list[EventBlock] = db.relationship(
+        "EventBlock", back_populates="event", cascade="all, delete, delete-orphan"
+    )
 
     @staticmethod
     def get_from_code(event_code) -> Event | None:

@@ -22,7 +22,7 @@ class EditStudentDataForm(FlaskForm):
 
 
 class DeleteUserForm(FlaskForm):
-    name = StringField(validators=[DataRequired()])
+    name = StringField(validators=[DataRequired()], render_kw={"readonly": True})
     verify = StringField(
         "Confirm Name",
         validators=[DataRequired(), EqualTo("name", message="Enter the user's name")],
@@ -200,18 +200,17 @@ def edit_guardian_data():
 @admin.route("/admin/users/delete", methods=["GET", "POST"])
 @admin_required
 def delete_user():
-    form = DeleteUserForm()
     user = db.session.get(User, request.args["user_id"])
     if not user:
         flash("Invalid user ID")
         return redirect(url_for("team.users"))
 
+    form = DeleteUserForm(obj=user)
     if form.validate_on_submit():
         db.session.delete(user)
         db.session.commit()
         return redirect(url_for("team.users"))
 
-    form.name.process_data(user.name)
     return render_template(
         "form.html.jinja2",
         form=form,
