@@ -122,7 +122,11 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
     approved = db.Column(db.Boolean, default=False)
 
-    stamps: list[Stamps] = db.relationship("Stamps", back_populates="user")
+    stamps: list[Stamps] = db.relationship(
+        "Stamps",
+        back_populates="user",
+        cascade="all, delete, delete-orphan",
+    )
     role: Role = db.relationship("Role", back_populates="users")
     subteam: Subteam = db.relationship("Subteam", back_populates="members")
 
@@ -133,12 +137,18 @@ class User(UserMixin, db.Model):
 
     # Guardian specific data
     guardian_user_data: Guardian = db.relationship(
-        "Guardian", back_populates="user", uselist=False
+        "Guardian",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete, delete-orphan",
     )
 
     # Student specific data
     student_user_data: Student = db.relationship(
-        "Student", back_populates="user", uselist=False
+        "Student",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete, delete-orphan",
     )
 
     @hybrid_property
@@ -169,7 +179,7 @@ class User(UserMixin, db.Model):
 
     def stamps_for(self, type_: EventType):
         "Get all stamps for an event type"
-        return [s for s in self.stamps if (s.event.type_ == type_) & s.event.enabled]
+        return [s for s in self.stamps if s.event.type_ == type_]
 
     def total_stamps_for(self, type_: EventType) -> timedelta:
         "Total time for an event type"
@@ -393,8 +403,6 @@ class Event(db.Model):
     end = db.Column(db.DateTime, nullable=False)
     # Event type
     type_id = db.Column(db.Integer, db.ForeignKey("event_types.id"))
-    # Whether the event is enabled
-    enabled = db.Column(db.Boolean, default=True, nullable=False)
     # Whether users can register for the event
     registration_open = db.Column(db.Boolean, default=False)
 
@@ -405,10 +413,16 @@ class Event(db.Model):
     # Percentage of funds that go to the team
     overhead = db.Column(db.Float, default=0.5, nullable=False)
 
-    stamps: list[Stamps] = db.relationship("Stamps", back_populates="event")
-    active: list[Active] = db.relationship("Active", back_populates="event")
+    stamps: list[Stamps] = db.relationship(
+        "Stamps", back_populates="event", cascade="all, delete, delete-orphan"
+    )
+    active: list[Active] = db.relationship(
+        "Active", back_populates="event", cascade="all, delete, delete-orphan"
+    )
     type_: EventType = db.relationship("EventType", back_populates="events")
-    blocks: list[EventBlock] = db.relationship("EventBlock", back_populates="event")
+    blocks: list[EventBlock] = db.relationship(
+        "EventBlock", back_populates="event", cascade="all, delete, delete-orphan"
+    )
 
     @staticmethod
     def get_from_code(event_code) -> Event | None:
@@ -458,13 +472,12 @@ class Event(db.Model):
     def is_active(self) -> bool:
         "Test for if the event is currently active"
         now = datetime.now(tz=timezone.utc)
-        return self.enabled & (self.adjusted_start < now) & (now < self.adjusted_end)
+        return (self.adjusted_start < now) & (now < self.adjusted_end)
 
     @is_active.expression
     def is_active(cls):
         "Usable in queries"
         return and_(
-            cls.enabled,
             (
                 func.datetime(
                     cls.start,
@@ -669,7 +682,7 @@ class Stamps(db.Model):
     @staticmethod
     def get(user: User | None = None, event_code=None):
         "Get stamps matching a requirement"
-        stmt = select(Stamps).where(Stamps.event.has(enabled=True))
+        stmt = select(Stamps)
         if event_code:
             stmt = stmt.where(Stamps.event.has(code=event_code))
         if user:
@@ -685,7 +698,7 @@ class Stamps(db.Model):
         subteam: Subteam = None,
         headers=True,
     ) -> list[list[str]]:
-        stmt = select(Stamps).filter(Stamps.event.has(enabled=True))
+        stmt = select(Stamps)
         if user:
             stmt = stmt.where(Stamps.user.code == user.code)
         if start:

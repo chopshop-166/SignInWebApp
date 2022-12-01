@@ -25,7 +25,7 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, NumberRange
+from wtforms.validators import DataRequired, EqualTo, NumberRange
 
 from .mentor import mentor_required
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
@@ -59,7 +59,6 @@ class EventForm(FlaskForm):
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
     type_id = SelectField(label="Type", choices=lambda: get_form_ids(EventType))
-    enabled = BooleanField(default=True)
     registration_open = BooleanField(
         default=False, description="Whether this event shows up for users to register"
     )
@@ -136,12 +135,21 @@ class EventRegistrationForm(FlaskForm):
     submit = SubmitField()
 
 
+class DeleteEventForm(FlaskForm):
+    name = StringField(validators=[DataRequired()], render_kw={"readonly": True})
+    start = DateTimeLocalField(render_kw={"readonly": True})
+    end = DateTimeLocalField(render_kw={"readonly": True})
+    verify = StringField(
+        "Confirm Name",
+        validators=[DataRequired(), EqualTo("name", message="Enter the event's name")],
+    )
+    submit = SubmitField()
+
+
 @events.route("/events/")
 @mentor_required
 def list_events():
-    events: list[Event] = db.session.scalars(
-        select(Event).filter_by(enabled=True).order_by(Event.start)
-    )
+    events: list[Event] = db.session.scalars(select(Event).order_by(Event.start))
     return render_template("events.html.jinja2", events=events)
 
 
@@ -149,10 +157,7 @@ def list_events():
 @mentor_required
 def list_previous_events():
     events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(enabled=True)
-        .order_by(Event.start)
-        .where(Event.end <= func.now())
+        select(Event).order_by(Event.start).where(Event.end <= func.now())
     )
     return render_template("events.html.jinja2", prefix="Previous ", events=events)
 
@@ -161,10 +166,7 @@ def list_previous_events():
 @mentor_required
 def list_active_events():
     events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(enabled=True)
-        .order_by(Event.start)
-        .where(Event.is_active)
+        select(Event).order_by(Event.start).where(Event.is_active)
     )
     return render_template("events.html.jinja2", prefix="Active ", events=events)
 
@@ -174,7 +176,6 @@ def list_active_events():
 def list_todays_events():
     events: list[Event] = db.session.scalars(
         select(Event)
-        .filter_by(enabled=True)
         .order_by(Event.start)
         .where(
             Event.start < func.datetime("now", "+1 day", "start of day"),
@@ -188,10 +189,7 @@ def list_todays_events():
 @mentor_required
 def list_upcoming_events():
     events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(enabled=True)
-        .order_by(Event.start)
-        .where(Event.start > func.now())
+        select(Event).order_by(Event.start).where(Event.start > func.now())
     )
     return render_template("events.html.jinja2", prefix="Upcoming ", events=events)
 
@@ -200,7 +198,7 @@ def list_upcoming_events():
 def list_open_events():
     events: list[Event] = db.session.scalars(
         select(Event)
-        .filter_by(enabled=True, registration_open=True)
+        .filter_by(registration_open=True)
         .order_by(Event.start.desc(), Event.end.desc())
         .where(Event.end > func.now())
     )
@@ -395,6 +393,27 @@ def register_event():
         event=event,
         form=form,
         title=f"Register Event {event.name}",
+    )
+
+
+@events.route("/admin/event/delete", methods=["GET", "POST"])
+@mentor_required
+def delete_event():
+    ev = db.session.get(Event, request.args["event_id"])
+    if not ev:
+        flash("Invalid event ID")
+        return redirect(url_for("events.list_events"))
+
+    form = DeleteEventForm(obj=ev)
+    if form.validate_on_submit():
+        db.session.delete(ev)
+        db.session.commit()
+        return redirect(url_for("events.list_events"))
+
+    return render_template(
+        "form.html.jinja2",
+        form=form,
+        title=f"Delete Event {ev.name}",
     )
 
 

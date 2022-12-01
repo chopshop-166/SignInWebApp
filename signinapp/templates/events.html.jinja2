@@ -45,6 +45,8 @@
               <td>
                 <a class="btn btn-secondary" role="button"
                    href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit</a>
+                <a class="btn btn-danger" role="button"
+                   href="{{ url_for('events.delete_event', event_id=event.id) }}">Delete</a>
               </td>
             </tr>
           {%- endfor -%}
