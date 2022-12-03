@@ -64,9 +64,7 @@ def normalize_phone_number_for_storage(number: str):
 
 def normalize_phone_number_from_storage(number: str):
     """Format the phone number for display"""
-    if number:
-        return f"({number[0:3]}) {number[3:6]}-{number[6:10]}"
-    return "N/A"
+    return f"({number[0:3]}) {number[3:6]}-{number[6:10]}" if number else ""
 
 
 def generate_grade_choices():
