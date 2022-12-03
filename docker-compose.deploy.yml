@@ -25,3 +25,4 @@ services:
     restart: unless-stopped
     environment:
       - FLASK_SECRET_KEY
+      - CSSIGNIN_CONFIG=/appdata/cssignin.yaml
