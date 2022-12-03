@@ -20,7 +20,7 @@ from signinapp.util import normalize_phone_number_for_storage
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
 NAME_RE = regex.compile(r"^(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*$")
-PHONE_RE = regex.compile(r"^\d{10}$")
+PHONE_RE = regex.compile(r"^(\d{10})?$")
 
 
 def strip(s):
@@ -92,7 +92,7 @@ class UserForm(FlaskForm):
     phone_number = TelField(
         "Phone Number",
         filters=[normalize_phone_number_for_storage],
-        validators=[DataRequired(), Regexp(PHONE_RE)],
+        validators=[Regexp(PHONE_RE)],
         render_kw={"placeholder": "555-555-5555"},
     )
     email = EmailField(

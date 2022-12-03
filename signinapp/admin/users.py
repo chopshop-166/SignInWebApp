@@ -118,12 +118,14 @@ def edit_user():
         db.session.commit()
         return redirect(url_for("team.users"))
 
-    form.phone_number.data = user.formatted_phone_number
+    form.phone_number.process_data(user.formatted_phone_number)
 
     form.admin_data.role.process_data(user.role_id)
     form.admin_data.approved.process_data(user.approved)
     form.subteam.process_data(user.subteam_id)
-    form.tshirt_size.process_data(user.tshirt_size.value)
+    form.tshirt_size.process_data(
+        user.tshirt_size.value if user.tshirt_size else "Large"
+    )
     return render_template(
         "form.html.jinja2",
         form=form,
