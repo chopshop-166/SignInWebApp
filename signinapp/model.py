@@ -239,9 +239,9 @@ class User(UserMixin, db.Model):
         username: str,
         name: str,
         password: str,
-        role: Role,
+        role: Role | str,
         approved=False,
-        subteam=None,
+        subteam: Subteam | str = None,
         **kwargs,
     ) -> User:
         "Make a user, with password and hash"
@@ -249,6 +249,13 @@ class User(UserMixin, db.Model):
             kwargs["phone_number"] = normalize_phone_number_for_storage(
                 kwargs["phone_number"]
             )
+
+        if isinstance(role, str):
+            role = Role.from_name(role)
+
+        if isinstance(subteam, str):
+            subteam = Role.from_name(subteam)
+
         user = User(
             username=username,
             name=name,
