@@ -82,7 +82,7 @@
             "jinja": true
         },
         {
-            "name": "Migrate DB",
+            "name": "Generate Migration",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -95,6 +95,21 @@
                 "migrate",
                 "-m",
                 "Initial Migration"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Migrate DB",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "signinapp/webapp.py",
+                "CSSIGNIN_CONFIG": "${workspaceFolder}/appdata/cssignin.yaml"
+            },
+            "args": [
+                "db",
+                "upgrade",
             ],
             "jinja": true
         }
