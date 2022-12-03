@@ -10,6 +10,7 @@ import yaml
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
+from flask_migrate import Migrate
 from sqlalchemy.future import select
 
 from . import (
@@ -114,6 +115,8 @@ login_manager.init_app(app)
 db.init_app(app)
 with app.app_context():
     db.create_all()
+
+migrate = Migrate(app, db)
 
 scheduler.init_app(app)
 scheduler.start()
