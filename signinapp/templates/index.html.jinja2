@@ -1,71 +1,70 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static, render_icon, render_messages %}
 {% block scripts %}
-  {{ super() }}
-  {% if current_user.is_authenticated %}
-    {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
-    <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{current_user.code}}");</script>
-  {% endif %}
+{{ super() }}
+{% if current_user.is_authenticated %}
+{{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
+<script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{current_user.code}}");</script>
+{% endif %}
 {% endblock %}
 {% block content %}
-  <div class="container pt-3">
-    {{render_messages()}}
-    {% if current_user.is_authenticated %}
-      <div class="row">
-        <div class="col-xl-4">
-          <div class="container bg-secondary rounded-3">
-            {# justify-content-between to get QR take up only the space it needs #}
-            <div class="d-flex justify-content-center pt-3">
-              <div id="qrPlaceholder"></div>
-            </div>
-            <h1 class="d-flex justify-content-center pt-3">{{ current_user.name }}</h1>
-            <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ current_user.subteam.name }}</h2>
-          </div>
+<div class="container pt-3">
+  {{render_messages()}}
+  {% if current_user.is_authenticated %}
+  <div class="row">
+    <div class="col-xl-4">
+      <div class="container bg-secondary rounded-3">
+        {# justify-content-between to get QR take up only the space it needs #}
+        <div class="d-flex justify-content-center pt-3">
+          <div id="qrPlaceholder"></div>
         </div>
-        {% if current_user.role.can_display %}
-          <div class="col-xl-8 px-4">
-            <div class="bg-primary rounded-3 py-3">
-              <ul>
-                <h1 class="pb-1">Available Events</h1>
-                <div class="d-flex gap-1 rounded-3">
-                  {% if events %}
-                    {% for event in events %}
-                      <a class="btn btn-secondary"
-                         href="{{ url_for('event.event', event_code=event.code)}}"
-                         role="button">{{ event.name }}</a>
-                    {% endfor %}
-                  {% else %}
-                    <li>None</li>
-                  {% endif %}
-                </div>
-              </ul>
-            </div>
-          </div>
-        {% endif %}
+        <h1 class="d-flex justify-content-center pt-3">{{ current_user.name }}</h1>
+        <h2 class="fw-light text-dark d-flex justify-content-center pb-3">{{ current_user.subteam.name }}</h2>
       </div>
-    {% else %}
-      <div class="card mb-3 bg-primary">
-        <img src="{{ url_for('static', filename='carLogo.png')}}" class="card-img-top p-5">
-        <div class="card-body">
-          <h1 class="card-title">FIRST Robotics Team Chop Shop 166</h1>
-          <p class="card-text">
-            {{ config["BLURB"] }}
-          </p>
-        </div>
-      {% endif %}
     </div>
-    {%- if current_user.is_authenticated and current_user.role.autoload -%}
-      <script type="text/javascript">
-function checkNewEvent() {
-  fetch("/autoevent")
-      .then(data => data.json())
-      .then(json => {
-        if (json["event"] !== "") {
-          window.location = "{{url_for('event.event')}}?event_code="+json["event"]
-        }
-      })
-}
-setInterval(checkNewEvent, 300000)
-      </script>
-    {%- endif -%}
+    {% if current_user.role.can_display %}
+    <div class="col-xl-8">
+      <div class="bg-primary rounded-3 py-3">
+        <ul>
+          <h1 class="pb-1">Available Events</h1>
+          <div class="d-flex gap-1 rounded-3">
+            {% if events %}
+            {% for event in events %}
+            <a class="btn btn-secondary" href="{{ url_for('event.event', event_code=event.code)}}" role="button">{{
+              event.name }}</a>
+            {% endfor %}
+            {% else %}
+            <li>None</li>
+            {% endif %}
+          </div>
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="card mb-3 bg-primary">
+    <img src="{{ url_for('static', filename='carLogo.png')}}" class="card-img-top p-5">
+    <div class="card-body">
+      <h1 class="card-title">FIRST Robotics Team Chop Shop 166</h1>
+      <p class="card-text">
+        {{ config["BLURB"] }}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+  {%- if current_user.is_authenticated and current_user.role.autoload -%}
+  <script type="text/javascript">
+    function checkNewEvent() {
+      fetch("/autoevent")
+        .then(data => data.json())
+        .then(json => {
+          if (json["event"] !== "") {
+            window.location = "{{url_for('event.event')}}?event_code=" + json["event"]
+          }
+        })
+    }
+    setInterval(checkNewEvent, 300000)
+  </script>
+  {%- endif -%}
   {% endblock %}
