@@ -86,8 +86,8 @@ def register():
         db.session.commit()
         return redirect("/login")
 
-    form.student_data.guardian.append_entry()
-    form.student_data.guardian.append_entry()
+    while len(form.student_data.guardian) < 2:
+        form.student_data.guardian.append_entry()
 
     return render_template(
         "auth/register.html.jinja2",
