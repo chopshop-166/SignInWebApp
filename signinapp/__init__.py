@@ -176,51 +176,43 @@ def internal_server_error_ex(e: Exception):
     )
 
 
+def create_if_not_exists(cls, name, **kwargs):
+    if not cls.from_name(name):
+        item = cls(name=name, **kwargs)
+        db.session.add(item)
+
+
 def init_default_db():
 
-    ADMIN = Role(name="admin", mentor=True, can_display=True, admin=True)
-    MENTOR = Role(name="mentor", mentor=True, can_display=True)
-    DISPLAY = Role(name="display", can_display=True, autoload=True)
-    LEAD = Role(name="lead", can_see_subteam=True, receives_funds=True)
-    STUDENT = Role(name="student", default_role=True, receives_funds=True)
-    GUARDIAN_LIMITED = Role(name="guardian_limited", guardian=True, visible=False)
-    GUARDIAN = Role(name="guardian", guardian=True)
+    create_if_not_exists(Role, name="admin", mentor=True, can_display=True, admin=True)
+    create_if_not_exists(Role, name="mentor", mentor=True, can_display=True)
+    create_if_not_exists(Role, name="display", can_display=True, autoload=True)
+    create_if_not_exists(Role, name="lead", can_see_subteam=True, receives_funds=True)
+    create_if_not_exists(Role, name="student", default_role=True, receives_funds=True)
+    create_if_not_exists(Role, name="guardian_limited", guardian=True, visible=False)
+    create_if_not_exists(Role, name="guardian", guardian=True)
 
-    TRAINING = EventType(name="Training", description="Training Session", autoload=True)
-    BUILD = EventType(name="Build", description="Build Season", autoload=True)
-    FUNDRAISER = EventType(name="Fundraiser", description="Fundraiser")
-    COMPETITION = EventType(name="Competition", description="Competition")
-
-    SOFTWARE = Subteam(name="Software")
-    MECH = Subteam(name="Mechanical")
-    CAD = Subteam(name="CAD")
-    MARKETING = Subteam(name="Marketing")
-    OUTREACH = Subteam(name="Outreach")
-
-    db.session.add_all(
-        [
-            ADMIN,
-            MENTOR,
-            DISPLAY,
-            LEAD,
-            STUDENT,
-            GUARDIAN_LIMITED,
-            GUARDIAN,
-            TRAINING,
-            BUILD,
-            FUNDRAISER,
-            COMPETITION,
-            SOFTWARE,
-            MECH,
-            CAD,
-            MARKETING,
-            OUTREACH,
-        ]
+    create_if_not_exists(
+        EventType, name="Training", description="Training Session", autoload=True
     )
+    create_if_not_exists(
+        EventType, name="Build", description="Build Season", autoload=True
+    )
+    create_if_not_exists(EventType, name="Fundraiser", description="Fundraiser")
+    create_if_not_exists(EventType, name="Competition", description="Competition")
+
+    create_if_not_exists(Subteam, name="Software")
+    create_if_not_exists(Subteam, name="Mechanical")
+    create_if_not_exists(Subteam, name="CAD")
+    create_if_not_exists(Subteam, name="Marketing")
+    create_if_not_exists(Subteam, name="Outreach")
+
     db.session.commit()
 
-    User.make("admin", "admin", password="1234", role=ADMIN, approved=True)
-    User.make("display", "display", password="1234", role=DISPLAY, approved=True)
+    if not db.session.scalar(select(User).filter_by(username="admin")):
+        User.make("admin", "admin", password="1234", role="admin", approved=True)
+    if not db.session.scalar(select(User).filter_by(username="display")):
+        User.make("display", "display", password="1234", role="display", approved=True)
     db.session.commit()
 
 
@@ -261,10 +253,6 @@ if app.config["DEBUG"]:
         )
         db.session.commit()
 
-        MENTOR = Role.from_name("mentor")
-        STUDENT = Role.from_name("student")
-        SOFTWARE = Subteam.from_name("Software")
-
         mentor = User.make(
             "msoucy",
             "Matt Soucy",
@@ -275,7 +263,7 @@ if app.config["DEBUG"]:
             address="123 First Street",
             tshirt_size="Large",
             password="1234",
-            role=MENTOR,
+            role="mentor",
             approved=True,
         )
         student = Student.make(
@@ -285,7 +273,7 @@ if app.config["DEBUG"]:
             code="code-jburke",
             password="1234",
             graduation_year=2022,
-            subteam=SOFTWARE,
+            subteam="Software",
             approved=True,
             tshirt_size="Large",
         )
