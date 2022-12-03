@@ -15,3 +15,4 @@ services:
     environment:
       - FLASK_SECRET_KEY
       - CSSIGNIN_CONFIG=/appdata/cssignin.yaml
+      - LANG=en_US.UTF-8
