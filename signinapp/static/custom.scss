@@ -1,6 +1,6 @@
 //$primary: #2525db;
 $primary: #0d2b8d;
-$secondary: #1442d9;
+$secondary: #1036b3;
 $info: #60a0ff;
 $body-bg: #242526;
 $body-color: #e4e6eb;
@@ -125,5 +125,5 @@ th {
 }
 
 div #qrPlaceholder {
-    @extend .border, .border-5, .bg-light
+    border: 10px solid white;
 }
