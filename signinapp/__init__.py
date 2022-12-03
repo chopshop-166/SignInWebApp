@@ -287,6 +287,7 @@ if app.config["DEBUG"]:
             graduation_year=2022,
             subteam=SOFTWARE,
             approved=True,
+            tshirt_size="Large",
         )
         student.student_user_data.add_guardian(
             guardian=Guardian.get_from(
