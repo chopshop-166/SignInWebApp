@@ -139,5 +139,5 @@ table {
 }
 
 div #qrPlaceholder {
-    border: 9px solid white;
+    @extend .border, .border-white, .border-5
 }
