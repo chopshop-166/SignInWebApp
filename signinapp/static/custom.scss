@@ -42,7 +42,9 @@ $border-widths: (
     background-size: cover;
 }
 
-;
+.width-100 {
+    width: 100%;
+}
 
 .parent {
     min-height: 80vH;

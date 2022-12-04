@@ -1,36 +1,38 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static %}
-
-{% block title %}Badge {{badge.name}}{% endblock %}
-
+{% block title %}
+  Badge {{ badge.name }}
+{% endblock title %}
 {% block content %}
-<div class="container table-responsive">
-  <div class="row">
-    <div class="col">
-      <h1>{{badge.name}}</h1>
-      {{badge.description}}
-    </div>
-    <div class="col">
-      <table id="users">
-        <thead>
-          <tr>
-            <th scope="col">User</th>
-            <th scope="col">Subteam</th>
-            <th scope="col">Date Received</th>
-          </tr>
-        </thead>
-        <tbody id="userbody">
-          {%- for award in awards -%}
-          <tr>
-            <td><a class="link-light"
-                href="{{url_for('user.profile', username=award.owner.username)}}">{{award.owner.name}}</a></td>
-            <td>{{award.owner.subteam.name}}</td>
-            <td>{{award.received}}</td>
-          </tr>
-          {%- endfor -%}
-        </tbody>
-      </table>
+  <div class="container table-responsive">
+    <div class="row">
+      <div class="col">
+        <h1>{{ badge.name }}</h1>
+        {{ badge.description }}
+      </div>
+      <div class="col">
+        <table id="users">
+          <thead>
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">Subteam</th>
+              <th scope="col">Date Received</th>
+            </tr>
+          </thead>
+          <tbody id="userbody">
+            {%- for award in awards -%}
+              <tr>
+                <td>
+                  <a class="link-light"
+                     href="{{ url_for('user.profile', username=award.owner.username)}}">{{ award.owner.name }}</a>
+                </td>
+                <td>{{ award.owner.subteam.name }}</td>
+                <td>{{ award.received }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
-{% endblock %}
+{% endblock content %}

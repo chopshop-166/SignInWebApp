@@ -1,56 +1,67 @@
 {% extends "base.html.jinja2" %}
-{% block title %}Event List{% endblock %}
+{% block title %}
+  Event List
+{% endblock title %}
 {% block content %}
-<div class="pt-3 container">
-  <div class="d-flex flex-row align-items-center justify-content-between">
-    <h1>{{prefix|d('', true)}}Events</h1>
-    <div>
-      <a class="btn btn-primary" href="{{ url_for('events.new_event')}}" role="button">New Event</a>
-      <a class="btn btn-primary" href="{{ url_for('events.bulk_events')}}" role="button">Bulk Add Events</a>
-      <a class="btn btn-primary" href="{{ url_for('events.search')}}" role="button">Search Events</a>
+  <div class="pt-3 container">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>{{ prefix|d('', true)}}Events</h1>
+      <div>
+        <a class="btn btn-primary"
+           href="{{ url_for('events.new_event')}}"
+           role="button">New Event</a>
+        <a class="btn btn-primary"
+           href="{{ url_for('events.bulk_events')}}"
+           role="button">Bulk Add Events</a>
+        <a class="btn btn-primary"
+           href="{{ url_for('events.search')}}"
+           role="button">Search Events</a>
+      </div>
+    </div>
+    {{- render_messages() -}}
+    <div class="table-responsive">
+      <table id="events">
+        <thead>
+          <tr>
+            <th scope="col">Event</th>
+            <th scope="col">Description</th>
+            <th scope="col">Type</th>
+            <th scope="col">Location</th>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col">Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for event in events|reverse -%}
+            <tr>
+              <th scope="row">
+                <div class="d-flex justify-content-between align-items-center">
+                  <p class="m-0">{{ event.name }}</p>
+                  <a role="button"
+                     class="btn btn-sm btn-secondary"
+                     href="{{ url_for('events.event_stats', event_id=event.id) }}">Go to event</a>
+                </div>
+              </th>
+              <td>{{ event.description }}</td>
+              <td>{{ event.type_.name }}</td>
+              <td>{{ event.location }}</td>
+              <td>{{ event.start_local }}</td>
+              <td>{{ event.end_local }}</td>
+              <td>
+                <div class="btn-group" role="group">
+                  <a class="btn btn-sm btn-secondary"
+                     role="button"
+                     href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit</a>
+                  <a class="btn btn-sm btn-danger"
+                     role="button"
+                     href="{{ url_for('events.delete_event', event_id=event.id) }}">Delete</a>
+                </div>
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
     </div>
   </div>
-  {{- render_messages() -}}
-  <div class="table-responsive">
-    <table id="events">
-      <thead>
-        <tr>
-          <th scope="col">Event</th>
-          <th scope="col">Description</th>
-          <th scope="col">Type</th>
-          <th scope="col">Location</th>
-          <th scope="col">Start</th>
-          <th scope="col">End</th>
-          <th scope="col">Edit</th>
-        </tr>
-      </thead>
-      <tbody>
-        {%- for event in events|reverse -%}
-        <tr>
-          <th scope="row">
-            <div class="d-flex justify-content-between align-items-center">
-              <p class="m-0">{{ event.name }}</p>
-              <a role="button" class="btn btn-sm btn-secondary"
-                href="{{ url_for('events.event_stats', event_id=event.id) }}">Go to event</a>
-            </div>
-          </th>
-          <td>{{ event.description }}</td>
-          <td>{{ event.type_.name }}</td>
-          <td>{{ event.location }}</td>
-          <td>{{ event.start_local }}</td>
-          <td>{{ event.end_local }}</td>
-          <td>
-            <div class="btn-group" role="group">
-              <a class="btn btn-sm btn-secondary" role="button"
-                href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit</a>
-              <a class="btn btn-sm btn-danger" role="button"
-                href="{{ url_for('events.delete_event', event_id=event.id) }}">Delete</a>
-            </div>
-          </td>
-        </tr>
-        {%- endfor -%}
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endblock %}
+{% endblock content %}

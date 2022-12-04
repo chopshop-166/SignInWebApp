@@ -1,29 +1,31 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_form, render_messages %}
-{% block title %}Finances - Chop Shop Sign In{% endblock %}
+{% block title %}
+  Finances - Chop Shop Sign In
+{% endblock title %}
 {% block content %}
-<div id="searchContainer" class="container pt-3">
-  <div class="row">
-    {{ render_messages() }}
-    <div class="col">
-      <p>Overhead: {{total_overhead}}</p>
-    </div>
-    <div class="col-lg-6 py-3">
-      <table>
-        <thead>
-          <th scope="col">Name</th>
-          <th scope="col">Funds Earned</th>
-        </thead>
-        <tbody>
-          {%- for name, funds in user_funds -%}
-          <tr>
-            <td>{{name}}</td>
-            <td>{{funds}}</td>
-          </tr>
-          {%- endfor -%}
-        </tbody>
-      </table>
+  <div id="searchContainer" class="container pt-3">
+    <div class="row">
+      {{ render_messages() }}
+      <div class="col">
+        <p>Overhead: {{ total_overhead }}</p>
+      </div>
+      <div class="col-lg-6 py-3">
+        <table>
+          <thead>
+            <th scope="col">Name</th>
+            <th scope="col">Funds Earned</th>
+          </thead>
+          <tbody>
+            {%- for name, funds in user_funds -%}
+              <tr>
+                <td>{{ name }}</td>
+                <td>{{ funds }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
-{% endblock %}
+{% endblock content %}

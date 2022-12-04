@@ -1,11 +1,13 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static, render_icon %}
-{% block title %}Profile for {{ user.name }}{% endblock %}
+{% block title %}
+  Profile for {{ user.name }}
+{% endblock title %}
 {% block scripts %}
   {{ super() }}
   {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", False) }}
   <script type="text/javascript">new QRCode(document.getElementById("qrPlaceholder"), "{{user.code}}");</script>
-{% endblock %}
+{% endblock scripts %}
 {% block content %}
   <div class="container pt-3">
     <div class="row">
@@ -18,67 +20,75 @@
           <h1 class="fw-bold d-flex justify-content-center pt-3">{{ user.name }}</h1>
           <h2 class="fw-light text-light d-flex justify-content-center">{{ user.subteam.name }}</h2>
           {% if user.student_user_data %}
-          <h2 class="fw-light text-light d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
+            <h2 class="fw-light text-light d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
           {% endif %}
           {%- if current_user.is_authenticated and current_user.role.admin -%}
-          <div class="btn-group d-flex justify-content-center pb-3" role="group" aria-label="User Actions">
-            <a class="btn btn-primary"
-               href="{{ url_for('admin.edit_user', user_id=user.id)}}"
-               role="button">Edit User Data</a>
-            {% if user.student_user_data %}
+            <div class="btn-group d-flex justify-content-center pb-3"
+                 role="group"
+                 aria-label="User Actions">
               <a class="btn btn-primary"
-                 href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
-                 role="button">Edit Student Data</a>
-            {% endif %}
-          </div>
+                 href="{{ url_for('admin.edit_user', user_id=user.id)}}"
+                 role="button">Edit User
+              Data</a>
+              {% if user.student_user_data %}
+                <a class="btn btn-primary"
+                   href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                   role="button">Edit
+                Student Data</a>
+              {% endif %}
+            </div>
           {%- endif -%}
         </div>
       </div>
       <div class="col-xl-8 px-4">
         {%- if current_user.role.mentor -%}
           {%- if user.role -%}
-          <div class="row pb-3">
-            <div class="bg-primary rounded-3 py-3">
-              <div class="d-flex flex-row align-items-center justify-content-between">
-                <h2>Funding Info:</h2>
+            <div class="row pb-3">
+              <div class="bg-primary rounded-3 py-3">
+                <div class="d-flex flex-row align-items-center justify-content-between">
+                  <h2>Funding Info:</h2>
+                </div>
+                <p>Funds received: {{ user.total_funds }}</p>
               </div>
-              <p>Funds received: {{user.total_funds}}</p>
             </div>
-          </div>
           {%- endif -%}
           {%- if user.student_user_data and user.student_user_data.guardians -%}
-          <div class="row pb-3">
-            <div class="bg-primary rounded-3 py-3">
-              <div class="d-flex flex-row align-items-center justify-content-between">
-                <h2>Parent/Guardian Info:</h2>
+            <div class="row pb-3">
+              <div class="bg-primary rounded-3 py-3">
+                <div class="d-flex flex-row align-items-center justify-content-between">
+                  <h2>Parent/Guardian Info:</h2>
+                </div>
+                <ul>
+                  {%- for guardian in user.student_user_data.guardians -%}
+                    <li>{{ guardian.user.name }} | {{ guardian.user.formatted_phone_number }} | {{ guardian.user.email }}</li>
+                  {%- endfor -%}
+                </ul>
               </div>
-              <ul>
-                {%- for guardian in user.student_user_data.guardians -%}
-                  <li>{{ guardian.user.name }} | {{ guardian.user.formatted_phone_number }} | {{ guardian.user.email }}</li>
-                {%- endfor -%}
-              </ul>
             </div>
-          </div>
           {%- elif user.guardian_user_data and user.guardian_user_data.students -%}
-          <div class="row pb-3">
-            <div class="bg-primary rounded-3 py-3">
-              <div class="d-flex flex-row align-items-center justify-content-between">
-                <h2>Student Info:</h2>
+            <div class="row pb-3">
+              <div class="bg-primary rounded-3 py-3">
+                <div class="d-flex flex-row align-items-center justify-content-between">
+                  <h2>Student Info:</h2>
+                </div>
+                <ul>
+                  {%- for student in user.guardian_user_data.students -%}
+                    <li>
+                      <a class="text-light"
+                         href="{{ url_for('user.profile', username=student.user.username)}}">{{
+                      student.user.name }}</a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
               </div>
-              <ul>
-                {%- for student in user.guardian_user_data.students -%}
-                  <li><a class="text-light" href="{{url_for('user.profile', username=student.user.username)}}">{{ student.user.name }}</a></li>
-                {%- endfor -%}
-              </ul>
             </div>
-          </div>
           {%- endif -%}
         {%- endif -%}
         <div class="row">
           <div class="bg-primary rounded-3 py-3">
             <div class="d-flex flex-row align-items-center justify-content-between">
               <h2>Time Recorded:</h2>
-              <a class="btn btn-light" href="{{ url_for('event.export')}}">Export</a>
+              <a class="btn btn-secondary" href="{{ url_for('event.export')}}">Export</a>
             </div>
             <ul>
               {%- for type_ in event_types -%}
@@ -96,8 +106,7 @@
               {% if user.badges %}
                 {% for b in user.badges|sort(attribute="name") %}
                   <li>
-                    <a class="link-light"
-                       href="{{ url_for('user.badge', badge_id=b.id)}}">{{ show_badge(b)}}</a>
+                    <a class="link-light" href="{{ url_for('user.badge', badge_id=b.id)}}">{{ show_badge(b)}}</a>
                   </li>
                 {% endfor %}
               {% else %}
@@ -109,4 +118,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

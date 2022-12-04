@@ -1,44 +1,49 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static %}
 {% block scripts %}
-{{ super() }}
-{{ render_static('js', "https://unpkg.com/html5-qrcode", false)}}
-{{ render_static('js', 'qr.js') }}
-{% endblock %}
+  {{ super() }}
+  {{ render_static('js', "https://unpkg.com/html5-qrcode", false)}}
+  {{ render_static('js', 'qr.js') }}
+{% endblock scripts %}
 {% block content %}
-<script type="text/javascript">const event_code = "{{ event_code }}"</script>
-<div class="container pt-3">
-  <div class="custom-row">
-    <div class="content-secondary">
-      <div class="d-inline-flex justify-content-center m-auto container bg-secondary rounded-3 display-1"
-        id="dateTimeBlock">
-      </div>
-      <table id="users">
-        <thead>
-          <tr>
-            <th scope="col">User</th>
-            <th scope="col">Time</th>
-          </tr>
-        </thead>
-        <tbody id="userbody">
-        </tbody>
-      </table>
-      <div id="liveAlertPlaceholder"></div>
-      {%- if current_user.role.mentor -%}
-      <div class="d-inline-flex justify-content-center m-auto container" id="mentorSelfSignIn">
-        {%- if current_user.is_signed_into(event_code) -%}
-        <a class="btn btn-primary" href="{{ url_for('event.selfscan', event_code=event_code) }}" role="button">Sign Me
-          Out</a>
-        {%- else -%}
-        <a class="btn btn-primary" href="{{ url_for('event.selfscan', event_code=event_code) }}" role="button">Sign Me
-          In</a>
+  <script type="text/javascript">const event_code = "{{ event_code }}"</script>
+  <div class="container pt-3">
+    <div class="custom-row">
+      <div class="content-secondary">
+        <div class="d-inline-flex justify-content-center m-auto container bg-secondary rounded-3 display-1"
+             id="dateTimeBlock">
+        </div>
+        <table id="users">
+          <thead>
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">Time</th>
+            </tr>
+          </thead>
+          <tbody id="userbody">
+          </tbody>
+        </table>
+        <div id="liveAlertPlaceholder"></div>
+        {%- if current_user.role.mentor -%}
+          <div class="d-inline-flex justify-content-center m-auto container"
+               id="mentorSelfSignIn">
+            {%- if current_user.is_signed_into(event_code) -%}
+              <a class="btn btn-primary"
+                 href="{{ url_for('event.selfscan', event_code=event_code) }}"
+                 role="button">Sign Me
+              Out</a>
+            {%- else -%}
+              <a class="btn btn-primary"
+                 href="{{ url_for('event.selfscan', event_code=event_code) }}"
+                 role="button">Sign Me
+              In</a>
+            {%- endif -%}
+          </div>
         {%- endif -%}
       </div>
-      {%- endif -%}
-    </div>
-    <div class="content-primary float-start">
-      <div class="d-inline-flex m-auto hidesmall" id="reader" style="width: 100%;"></div>
+      <div class="content-primary float-start">
+        <div class="d-inline-flex m-auto hidesmall width-100" id="reader"></div>
+      </div>
     </div>
   </div>
-</div>
-{% endblock %}
+{% endblock content %}

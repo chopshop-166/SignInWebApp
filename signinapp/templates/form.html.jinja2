@@ -1,9 +1,11 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_form, render_messages %}
-{% block title %}{{title}}{%endblock%}
+{% block title %}
+  {{ title }}
+{% endblock title %}
 {% block content %}
-<div class="container">
-  {{ render_messages() }}
-  {{ render_form(form) }}
-</div>
-{% endblock %}
+  <div class="container">
+    {{ render_messages() }}
+    {{ render_form(form) }}
+  </div>
+{% endblock content %}

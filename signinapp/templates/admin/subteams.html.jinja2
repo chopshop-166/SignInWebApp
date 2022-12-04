@@ -1,42 +1,49 @@
 {% extends "base.html.jinja2" %}
-{% block title %}Subteam Admin - Chop Shop Sign In{% endblock %}
+{% block title %}
+  Subteam Admin - Chop Shop Sign In
+{% endblock title %}
 {% block content %}
-<div class="pt-3 container">
-  <div class="d-flex flex-row align-items-center justify-content-between">
-    <h1>Subteams</h1>
-    <a href="{{ url_for('admin.new_subteam')}}">
-      <button class="btn btn-primary">New Subteam</button>
-    </a>
+  <div class="pt-3 container">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>Subteams</h1>
+      <a href="{{ url_for('admin.new_subteam')}}">
+        <button class="btn btn-primary">New Subteam</button>
+      </a>
+    </div>
+    {{- render_messages() -}}
+    <div class="table-responsive">
+      <table id="subteams" class="table table-striped table-hover table-dark">
+        <thead>
+          <tr>
+            <th scope="col">Subteam</th>
+            <th scope="col">Members</th>
+            <th scope="col">ID</th>
+            <th scope="col">Tools</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for subteam in subteams -%}
+            <tr>
+              <th scope="row">
+                <p class="m-0">{{ subteam.name }}</p>
+              </th>
+              <td>
+                <a role="button"
+                   class="btn btn-sm btn-secondary"
+                   href="{{ url_for('team.subteam', st_id=subteam.id)}}">
+                  {{ subteam.name }} members
+                </a>
+              </td>
+              <td>{{ subteam.id }}</td>
+              <td>
+                <a class="btn btn-secondary"
+                   href="{{ url_for('admin.edit_subteam', st_id=subteam.id)}}"
+                   role="button">Edit</a>
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
   </div>
-  {{- render_messages() -}}
-  <div class="table-responsive">
-    <table id="subteams" class="table table-striped table-hover table-dark">
-      <thead>
-        <tr>
-          <th scope="col">Subteam</th>
-          <th scope="col">Members</th>
-          <th scope="col">ID</th>
-          <th scope="col">Tools</th>
-        </tr>
-      </thead>
-      <tbody>
-        {%- for subteam in subteams -%}
-        <tr>
-          <th scope="row">
-            <p class="m-0">{{subteam.name}}</p>
-          </th>
-          <td><a role="button" class="btn btn-sm btn-secondary" href="{{ url_for('team.subteam', st_id=subteam.id)}}">
-              {{subteam.name}} members
-            </a></td>
-          <td>{{ subteam.id }}</td>
-          <td>
-            <a class="btn btn-secondary" href="{{ url_for('admin.edit_subteam', st_id=subteam.id)}}"
-              role="button">Edit</a>
-          </td>
-        </tr>
-        {%- endfor -%}
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endblock %}
+{% endblock content %}
