@@ -1,8 +1,10 @@
 //$primary: #2525db;
 $primary: #0d2b8d;
 $secondary: #1036b3;
+$danger: #ab0f0f;
 $info: #60a0ff;
-$body-bg: #242526;
+$body-bg: #212529;
+$dark: #111315;
 $body-color: #e4e6eb;
 $form-check-input-bg: white;
 $form-check-input-checked-color: $secondary;
@@ -114,10 +116,18 @@ th {
 }
 
 .search-form li {
-    @extend .list-group-item, .list-group-item-primary;
+    @extend .list-group-item, .list-group-item-dark;
+}
+
+.search-form li > input {
+    @extend .form-check-input, .me-1;
 }
 
 @import "scss/bootstrap.scss";
+
+table {
+    @extend .table, .table-striped, .table-hover, .table-dark, .table-borderless, .align-middle;
+}
 
 #searchContainer #role {
     padding: 0;

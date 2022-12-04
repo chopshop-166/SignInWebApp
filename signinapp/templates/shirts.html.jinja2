@@ -6,21 +6,21 @@
   <h1>Shirt Sizes</h1>
   <div class="row">
     <div class="col">
-      <table class="table table-striped table-hover table-dark">
+      <table>
         <thead>
           <th scope="col">Size</th>
           <th scope="col">Quantity Per Role</th>
         </thead>
         <tbody>
           {%- for size, role_table in shirts.items() -%}
-            <tr>
-              <td>{{size.name}}</td>
-              <td>
+          <tr>
+            <td>{{size.name}}</td>
+            <td>
               {%- for role, quantity in role_table.items() -%}
-                <li>{{role.name}}: {{quantity}}</li>
+              <li>{{role.name}}: {{quantity}}</li>
               {%- endfor -%}
-              </td>
-            </tr>
+            </td>
+          </tr>
           {%- endfor -%}
         </tbody>
       </table>
