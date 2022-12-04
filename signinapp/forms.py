@@ -91,7 +91,7 @@ class UserForm(FlaskForm):
         description="Leave blank for none",
         validators=[
             Optional(),
-            Regexp(NAME_RE), 
+            Regexp(NAME_RE),
         ],
         filters=[strip],
     )
