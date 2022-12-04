@@ -22,7 +22,7 @@ def profile(username):
         flash("Invalid user for profile")
         return redirect(url_for("index"))
     if not current_user.can_view(user):
-        flash(f"No acces to view user data for {user.name}")
+        flash(f"No access to view user data for {user.name}")
         return redirect(url_for("index"))
     event_types = db.session.scalars(select(EventType))
     return render_template("profile.html.jinja2", user=user, event_types=event_types)
