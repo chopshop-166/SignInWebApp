@@ -30,7 +30,7 @@ from wtforms.validators import DataRequired, EqualTo, NumberRange
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
 from .util import correct_time_for_storage, correct_time_from_storage, mentor_required
 
-events = Blueprint("events", __name__)
+bp = Blueprint("events", __name__, url_prefix="/events")
 
 DATE_FORMATS = [
     "%Y-%m-%d %H:%M:%S",
@@ -145,34 +145,34 @@ class DeleteEventForm(FlaskForm):
     submit = SubmitField()
 
 
-@events.route("/events/")
+@bp.route("/", endpoint="list")
 @mentor_required
 def list_events():
     events: list[Event] = db.session.scalars(select(Event).order_by(Event.start))
     return render_template("events.html.jinja2", events=events)
 
 
-@events.route("/events/previous")
+@bp.route("/previous")
 @mentor_required
-def list_previous_events():
+def previous():
     events: list[Event] = db.session.scalars(
         select(Event).order_by(Event.start).where(Event.end <= func.now())
     )
     return render_template("events.html.jinja2", prefix="Previous ", events=events)
 
 
-@events.route("/events/active")
+@bp.route("/active")
 @mentor_required
-def list_active_events():
+def active():
     events: list[Event] = db.session.scalars(
         select(Event).order_by(Event.start).where(Event.is_active)
     )
     return render_template("events.html.jinja2", prefix="Active ", events=events)
 
 
-@events.route("/events/today")
+@bp.route("/today")
 @mentor_required
-def list_todays_events():
+def todays():
     events: list[Event] = db.session.scalars(
         select(Event)
         .order_by(Event.start)
@@ -184,17 +184,17 @@ def list_todays_events():
     return render_template("events.html.jinja2", prefix="Today's ", events=events)
 
 
-@events.route("/events/upcoming")
+@bp.route("/upcoming")
 @mentor_required
-def list_upcoming_events():
+def upcoming():
     events: list[Event] = db.session.scalars(
         select(Event).order_by(Event.start).where(Event.start > func.now())
     )
     return render_template("events.html.jinja2", prefix="Upcoming ", events=events)
 
 
-@events.route("/events/open")
-def list_open_events():
+@bp.route("/open", endpoint="open")
+def list_open():
     events: list[Event] = db.session.scalars(
         select(Event)
         .filter_by(registration_open=True)
@@ -205,9 +205,9 @@ def list_open_events():
     return render_template("open_events.html.jinja2", events=events)
 
 
-@events.route("/events/stats")
+@bp.route("/stats")
 @mentor_required
-def event_stats():
+def stats():
     event: Event = db.session.get(Event, request.args["event_id"])
     users = defaultdict(timedelta)
     subteams = defaultdict(timedelta)
@@ -237,7 +237,7 @@ def event_stats():
         ((s, t) for s, t in subteams.items() if s), key=lambda subteam: subteam[0].name
     )
     registration_url = parse.urljoin(
-        request.host_url, url_for("events.register_event", event_id=event.id)
+        request.host_url, url_for("events.register", event_id=event.id)
     )
     return render_template(
         "event_stats.html.jinja2",
@@ -249,9 +249,9 @@ def event_stats():
     )
 
 
-@events.route("/events/bulk", methods=["GET", "POST"])
+@bp.route("/bulk", methods=["GET", "POST"])
 @mentor_required
-def bulk_events():
+def bulk():
     form = BulkEventForm()
 
     if form.validate_on_submit():
@@ -272,13 +272,13 @@ def bulk_events():
             )
         db.session.commit()
 
-        return redirect(url_for("events.list_events"))
+        return redirect(url_for("events.list"))
     return render_template("form.html.jinja2", form=form, title="Bulk Event Add")
 
 
-@events.route("/events/new", methods=["GET", "POST"])
+@bp.route("/new", methods=["GET", "POST"])
 @mentor_required
-def new_event():
+def new():
     form = EventForm()
     if form.validate_on_submit():
 
@@ -296,19 +296,19 @@ def new_event():
         ev.funds = int(form.funds.data * 100)
         db.session.commit()
 
-        return redirect(url_for("events.list_events"))
+        return redirect(url_for("events.list"))
 
     form.code.process_data(gen_code())
     return render_template("form.html.jinja2", form=form, title="New Event")
 
 
-@events.route("/events/edit", methods=["GET", "POST"])
+@bp.route("/edit", methods=["GET", "POST"])
 @mentor_required
-def edit_event():
+def edit():
     event: Event = db.session.get(Event, request.args["event_id"])
     if not event:
         flash("Event does not exist")
-        return redirect(url_for("events.list_events"))
+        return redirect(url_for("events.list"))
 
     form = EventForm(obj=event)
     # Only re-format the times when initialy sending the form.
@@ -323,7 +323,7 @@ def edit_event():
         event.cost = int(form.cost.data * 100)
         event.funds = int(form.funds.data * 100)
         db.session.commit()
-        return redirect(url_for("events.list_events"))
+        return redirect(url_for("events.list"))
 
     form.cost.process_data(form.cost.data / 100)
     form.funds.process_data(form.funds.data / 100)
@@ -336,7 +336,7 @@ def edit_event():
     )
 
 
-@events.route("/events/search", methods=["GET", "POST"])
+@bp.route("/search", methods=["GET", "POST"])
 @mentor_required
 def search():
     form = EventSearchForm()
@@ -349,8 +349,8 @@ def search():
     return render_template("search/hours.html.jinja2", form=form, results=None)
 
 
-@events.route("/events/register", methods=["GET", "POST"])
-def register_event():
+@bp.route("/register", methods=["GET", "POST"])
+def register():
     event: list[Event] = db.session.get(Event, request.args["event_id"])
     if not event:
         flash("Event does not exist, please double check the URL")
@@ -397,19 +397,19 @@ def register_event():
     )
 
 
-@events.route("/admin/event/delete", methods=["GET", "POST"])
+@bp.route("/delete", methods=["GET", "POST"])
 @mentor_required
-def delete_event():
+def delete():
     ev = db.session.get(Event, request.args["event_id"])
     if not ev:
         flash("Invalid event ID")
-        return redirect(url_for("events.list_events"))
+        return redirect(url_for("events.list"))
 
     form = DeleteEventForm(obj=ev)
     if form.validate_on_submit():
         db.session.delete(ev)
         db.session.commit()
-        return redirect(url_for("events.list_events"))
+        return redirect(url_for("events.list"))
 
     return render_template(
         "form.html.jinja2",
@@ -419,4 +419,4 @@ def delete_event():
 
 
 def init_app(app: Flask):
-    app.register_blueprint(events)
+    app.register_blueprint(bp)
