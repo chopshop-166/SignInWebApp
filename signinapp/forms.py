@@ -87,7 +87,10 @@ class UserForm(FlaskForm):
         filters=[strip],
     )
     preferred_name = StringField(
-        "Preferred Name", description="Leave blank for none", validators=[Regexp(NAME_RE)], filters=[strip]
+        "Preferred Name",
+        description="Leave blank for none",
+        validators=[Regexp(NAME_RE)],
+        filters=[strip],
     )
 
     phone_number = TelField(
@@ -101,7 +104,9 @@ class UserForm(FlaskForm):
         validators=[DataRequired(), Email()],
         description="Preferably a non-school address",
     )
-    address = StringField("Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)])
+    address = StringField(
+        "Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)]
+    )
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
     )
