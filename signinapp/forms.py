@@ -20,6 +20,7 @@ from signinapp.util import normalize_phone_number_for_storage
 from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
 
 NAME_RE = regex.compile(r"^(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*$")
+ADDRESS_RE = regex.compile(r"[A-Za-z0-9'\.\-\s\,]+")
 PHONE_RE = regex.compile(r"^(\d{10})?$")
 
 
@@ -86,7 +87,7 @@ class UserForm(FlaskForm):
         filters=[strip],
     )
     preferred_name = StringField(
-        "Preferred Name", description="Leave blank for none", filters=[strip]
+        "Preferred Name", description="Leave blank for none", validators=[Regexp(NAME_RE)], filters=[strip]
     )
 
     phone_number = TelField(
@@ -100,7 +101,7 @@ class UserForm(FlaskForm):
         validators=[DataRequired(), Email()],
         description="Preferably a non-school address",
     )
-    address = StringField("Street Address", validators=[DataRequired()])
+    address = StringField("Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)])
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
     )
