@@ -126,7 +126,11 @@ th {
 @import "scss/bootstrap.scss";
 
 table {
-    @extend .table, .table-striped, .table-hover, .table-dark, .table-borderless, .align-middle;
+    @extend .table, .table-striped, .table-hover, .table-dark, .table-borderless, .align-middle, .mb-0;
+}
+
+.table-responsive {
+    @extend .rounded
 }
 
 #searchContainer #role {

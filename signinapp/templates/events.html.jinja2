@@ -28,7 +28,11 @@
         {%- for event in events|reverse -%}
         <tr>
           <th scope="row">
-            <a class="link-light" href="{{ url_for('events.event_stats', event_id=event.id) }}">{{ event.name }}</a>
+            <div class="d-flex justify-content-between align-items-center">
+              <p class="m-0">{{ event.name }}</p>
+              <button class="btn btn-sm btn-secondary " href="{{ url_for('events.event_stats', event_id=event.id) }}">Go
+                to
+                event</button>
           </th>
           <td>{{ event.description }}</td>
           <td>{{ event.type_.name }}</td>
@@ -37,9 +41,9 @@
           <td>{{ event.end_local }}</td>
           <td>
             <div class="btn-group" role="group">
-              <button class="btn btn-secondary" type="button"
+              <button class="btn btn-sm btn-secondary" type="button"
                 href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit</button>
-              <button class="btn btn-danger" button="button"
+              <button class="btn btn-sm btn-danger" button="button"
                 href="{{ url_for('events.delete_event', event_id=event.id) }}">Delete</button>
             </div>
           </td>
