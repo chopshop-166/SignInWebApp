@@ -254,7 +254,7 @@ class User(UserMixin, db.Model):
             role = Role.from_name(role)
 
         if isinstance(subteam, str):
-            subteam = Role.from_name(subteam)
+            subteam = Subteam.from_name(subteam)
 
         user = User(
             username=username,

@@ -276,7 +276,7 @@ if app.config["DEBUG"]:
             code="code-jburke",
             password="1234",
             graduation_year=2022,
-            subteam=Subteam.from_name("Software"),
+            subteam="Software",
             approved=True,
             tshirt_size="Large",
         )
