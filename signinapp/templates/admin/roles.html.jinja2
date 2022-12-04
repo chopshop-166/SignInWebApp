@@ -28,19 +28,18 @@
         <tbody>
           {%- for role in roles -%}
             <tr>
-              <th>
-                <p>{{ role.name }}</p>
-                <a class="link-light"
-                   href="{{ url_for('admin.edit_role', role_id=role.id)}}">{{
-                  role.name
-                }}</a>
-              </th>
+              <th>{{ role.name }}</th>
               <td>{{ role.admin }}</td>
               <td>{{ role.mentor }}</td>
               <td>{{ role.can_display }}</td>
               <td>{{ role.autoload }}</td>
               <td>{{ role.can_see_subteam }}</td>
               <td>{{ role.receives_funds }}</td>
+              <td>
+                <a role="button"
+                   class="btn btn-sm btn-secondary"
+                   href="{{ url_for('admin.edit_role', role_id=role.id)}}">Edit</a>
+              </td>
             </tr>
           {%- endfor -%}
         </tbody>

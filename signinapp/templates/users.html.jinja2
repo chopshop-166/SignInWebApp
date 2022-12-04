@@ -33,7 +33,7 @@
                   <a class="btn btn-sm btn-secondary"
                      role="button"
                      href="{{ url_for('user.profile', username=user.username)}}">
-                    Go to user
+                    Profile
                   </a>
                 </div>
               </th>
@@ -67,7 +67,7 @@
                           action="{{ url_for('admin.user_approve', user_id=user.id)}}"
                           id="approve{{ user.id }}"
                           method="post">
-                      <button class="btn btn-warning" action="submit">Approve</button>
+                      <button class="btn btn-sm btn-warning" action="submit">Approve</button>
                     </form>
                   {%- endif -%}
                 </td>

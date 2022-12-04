@@ -44,8 +44,11 @@
           {%- for user in users -%}
             <tr>
               <th>
-                <a class="link-light"
-                   href="{{ url_for('user.profile', username=user.username)}}">{{ user.full_name }}</a>
+                <div class="d-flex justify-content-between align-items-center">
+                  {{ user.full_name }}
+                  <a class="btn btn-sm btn-secondary"
+                     href="{{ url_for('user.profile', username=user.username)}}">Profile</a>
+                </div>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
@@ -80,26 +83,26 @@
               {%- if current_user.is_authenticated and current_user.role.admin -%}
                 <td>
                   <div class="btn-group" role="group" aria-label="User Actions">
-                    <a class="btn btn-secondary"
+                    <a class="btn btn-sm btn-secondary"
                        href="{{ url_for('admin.edit_user', user_id=user.id) }}"
                        role="button">Edit</a>
                     {%- if user.role.name == "student" -%}
-                      <a class="btn btn-info"
+                      <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_student_data', user_id=user.id) }}"
                          role="button"
                          action="submit">Edit Student</a>
                     {%- elif role == "Guardian" -%}
-                      <a class="btn btn-info"
+                      <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_guardian_data', user_id=user.id) }}"
                          role="button"
                          action="submit">Edit Guardian</a>
                       {%- if user.role.name == "guardian_limited" -%}
-                        <a class="btn btn-warning"
+                        <a class="btn btn-sm btn-warning"
                            href="{{ url_for('admin.user_promote', user_id=user.id) }}"
                            action="submit">Create User</a>
                       {%- endif -%}
                     {%- endif -%}
-                    <a class="btn btn-danger"
+                    <a class="btn btn-sm btn-danger"
                        href="{{ url_for('admin.delete_user', user_id=user.id) }}"
                        role="button">Delete</a>
                   </div>
@@ -108,7 +111,7 @@
                           action="{{ url_for('admin.user_approve', user_id=user.id) }}"
                           id="approve{{ user.id }}"
                           method="post">
-                      <button class="btn btn-warning" action="submit">
+                      <button class="btn btn-sm btn-warning" action="submit">
                         Approve
                       </button>
                     </form>

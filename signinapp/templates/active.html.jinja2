@@ -38,14 +38,14 @@
               <td>
                 <form class="inlineform" id="signout{{ ac.id }}" method="post">
                   <input type="hidden" value="{{ ac.id }}" name="active_id"/>
-                  <button class="btn btn-secondary" type="submit">Sign Out</button>
+                  <button class="btn btn-sm btn-secondary" type="submit">Sign Out</button>
                 </form>
                 <form class="inlineform"
                       action="{{ url_for('mentor.active_delete') }}"
                       id="drop{{ ac.id }}"
                       method="post">
                   <input type="hidden" value="{{ ac.id }}" name="active_id"/>
-                  <button class="btn btn-danger" type="submit">Drop</button>
+                  <button class="btn btn-sm btn-danger" type="submit">Drop</button>
                 </form>
               </td>
             </tr>

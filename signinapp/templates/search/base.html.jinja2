@@ -9,10 +9,12 @@
       {{ render_messages() }}
       <div class="col">{{ render_form(form, extra_classes="search-form") }}</div>
       <div class="col-lg-6 py-3">
-        <table>
-          {%- block searchtable -%}
-          {%- endblock -%}
-        </table>
+        <div class="table-responsive">
+          <table>
+            {%- block searchtable -%}
+            {%- endblock -%}
+          </table>
+        </div>
       </div>
     </div>
   </div>
