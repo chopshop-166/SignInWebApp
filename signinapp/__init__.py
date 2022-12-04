@@ -14,12 +14,13 @@ from flask_migrate import Migrate
 from sqlalchemy.future import select
 
 from . import (
+    active,
     admin,
     auth,
+    badge,
     dbadmin,
     event,
     events,
-    mentor,
     qr,
     search,
     team,
@@ -121,13 +122,14 @@ migrate = Migrate(app, db)
 scheduler.init_app(app)
 scheduler.start()
 
+active.init_app(app)
 admin.init_app(app)
 auth.init_app(app)
+badge.init_app(app)
 dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
 finance.init_app(app)
-mentor.init_app(app)
 qr.init_app(app)
 search.init_app(app)
 team.init_app(app)
@@ -256,7 +258,7 @@ if app.config["DEBUG"]:
         )
         db.session.commit()
 
-        mentor = User.make(
+        active = User.make(
             "msoucy",
             "Matt Soucy",
             preferred_name="Matt",
@@ -303,5 +305,5 @@ if app.config["DEBUG"]:
         db.session.add(safe)
         db.session.commit()
 
-        mentor.award_badge(safe)
+        active.award_badge(safe)
         db.session.commit()

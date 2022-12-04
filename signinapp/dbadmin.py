@@ -47,14 +47,14 @@ def init_app(app):
     )
 
     flask_admin.add_views(
-        AuthModelView(Badge, db.session, endpoint="badge"),
-        AuthModelView(Event, db.session, endpoint="adminevent"),
+        AuthModelView(Badge, db.session, endpoint="admin_badge"),
+        AuthModelView(Event, db.session, endpoint="admin_event"),
         AuthModelView(EventType, db.session, endpoint="eventtype"),
         AuthModelView(Guardian, db.session, endpoint="guardian"),
         AuthModelView(Role, db.session, endpoint="role"),
         AuthModelView(Student, db.session, endpoint="student"),
         AuthModelView(Subteam, db.session, endpoint="subteam"),
-        AuthModelView(User, db.session, endpoint="adminuser"),
+        AuthModelView(User, db.session, endpoint="admin_user"),
         AuthModelView(Stamps, db.session, endpoint="stamps"),
     )
 

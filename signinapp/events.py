@@ -27,9 +27,8 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, EqualTo, NumberRange
 
-from .mentor import mentor_required
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
-from .util import correct_time_for_storage, correct_time_from_storage
+from .util import correct_time_for_storage, correct_time_from_storage, mentor_required
 
 events = Blueprint("events", __name__)
 
