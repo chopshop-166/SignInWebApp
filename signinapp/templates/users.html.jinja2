@@ -25,10 +25,14 @@
       <tbody>
         {%- for user in users -%}
         <tr>
-          <th>
-            <a class="link-light" href="{{ url_for('user.profile', username=user.username)}}">
-              {{user.full_name}}
-            </a>
+          <th scope="row">
+            <div class="d-flex justify-content-between align-items-center">
+              <p class="m-0">{{user.full_name}}</p>
+              <a class="btn btn-sm btn-secondary" role="button"
+                href="{{ url_for('user.profile', username=user.username)}}">
+                Go to user
+              </a>
+            </div>
           </th>
           <td>{{ user.subteam.name }}</td>
           <td>{{ user.total_time }}</td>
@@ -39,16 +43,16 @@
           {%- if current_user.is_authenticated and current_user.role.admin -%}
           <td>
             <div class="btn-group" role="group" aria-label="User Actions">
-              <a class="btn btn-secondary" href="{{ url_for('admin.edit_user', user_id=user.id)}}"
+              <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.edit_user', user_id=user.id)}}"
                 role="button">Edit</a>
               {%- if user.role.name == "student" -%}
-              <a class="btn btn-info" href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+              <a class="btn btn-sm btn-info" href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
                 action="submit">Edit Student</a>
               {%- elif user.role.guardian -%}
-              <a class="btn btn-info" href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
+              <a class="btn btn-sm btn-info" href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
                 action="submit">Edit Guardian</a>
               {%- endif -%}
-              <a class="btn btn-danger" href="{{ url_for('admin.delete_user', user_id=user.id)}}"
+              <a class="btn btn-sm btn-danger" href="{{ url_for('admin.delete_user', user_id=user.id)}}"
                 role="button">Delete</a>
             </div>
             {%- if not user.approved -%}
