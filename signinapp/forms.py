@@ -89,7 +89,10 @@ class UserForm(FlaskForm):
     preferred_name = StringField(
         "Preferred Name",
         description="Leave blank for none",
-        validators=[Regexp(NAME_RE)],
+        validators=[
+            Optional(),
+            Regexp(NAME_RE), 
+        ],
         filters=[strip],
     )
 
