@@ -52,7 +52,7 @@ def delete_expired():
     return redirect(url_for("mentor.active"))
 
 
-@bp.route("/admin/active/delete_all")
+@bp.route("/delete_all")
 @admin_required
 def delete_all():
     db.session.execute(delete(Active))
