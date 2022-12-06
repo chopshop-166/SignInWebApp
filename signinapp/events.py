@@ -234,7 +234,9 @@ def event_stats():
     )
 
     users = sorted(users.items(), key=lambda user: user[0].human_readable)
-    subteams = sorted((s, t) for s, t in subteams.items() if s)
+    subteams = sorted(
+        ((s, t) for s, t in subteams.items() if s), key=lambda subteam: subteam[0].name
+    )
     registration_url = parse.urljoin(
         request.host_url, url_for("events.register_event", event_id=event.id)
     )
