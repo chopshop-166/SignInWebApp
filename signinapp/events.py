@@ -233,7 +233,7 @@ def event_stats():
         key=lambda block: block[0].start,
     )
 
-    users = sorted(users.items(), key=lambda user: user.human_readable)
+    users = sorted(users.items(), key=lambda user: user[0].human_readable)
     subteams = sorted((s, t) for s, t in subteams.items() if s)
     registration_url = parse.urljoin(
         request.host_url, url_for("events.register_event", event_id=event.id)
