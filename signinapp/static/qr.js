@@ -83,7 +83,7 @@ const html5QrCode = new Html5Qrcode("reader");
 const config = { fps: 10, rememberLastUsedCamera: true };
 
 // If you want to prefer front camera
-html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
+html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
 setInterval(updateUserData, 300000)
 setInterval(updateTime, 1000)
 updateUserData()
