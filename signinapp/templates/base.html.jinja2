@@ -12,21 +12,26 @@
   <head>
     {% block head %}
       <!-- Required meta tags -->
-      <meta charset="utf-8">
+      <meta charset="utf-8" />
       <meta name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no">
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+      <meta name="description" />
+      <meta name="keywords" />
       {% block styles %}
         <!-- Bootstrap CSS -->
         {% assets "custom_css" %}
-          <link rel="stylesheet" href="{{ ASSET_URL }}">
+          <link rel="stylesheet" href="{{ ASSET_URL }}" />
         {% endassets %}
-      {% endblock %}
+      {% endblock styles %}
       <title>
-        {% block title %}Chop Shop Sign In{% endblock %} - {{ config['TITLE'] }}
+        {% block title %}
+          Chop Shop Sign In
+        {% endblock title %}
+        - {{ config['TITLE'] }}
       </title>
-    {% endblock %}
+    {% endblock head %}
   </head>
-  <body {% block bodyAttrs %}{% endblock %}>
+  <body {% block bodyAttrs %}{% endblock bodyAttrs %}>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container-fluid">
@@ -43,17 +48,23 @@
           {%- endif -%}
           <ul class="navbar-nav ms-auto">
             {%- if current_user.is_authenticated -%}
+              <li class="nav-item">
+                <a class="nav-link btn btn-primary"
+                   href="{{ url_for('events.list_open_events') }}">Event
+                Registration</a>
+              </li>
               {%- if current_user.role.admin -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
-                      href="#"
-                      id="navbarAdminDropdown"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false">
+                     href="#"
+                     id="navbarAdminDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false">
                     Admin
                   </a>
-                  <ul class="dropdown-menu" aria-labelledby="navbarAdminDropdown">
+                  <ul class="dropdown-menu dropdown-menu-dark"
+                      aria-labelledby="navbarAdminDropdown">
                     <li>
                       <a class="dropdown-item" href="{{ url_for('finance.overview')}}">Finances</a>
                     </li>
@@ -69,14 +80,15 @@
               {%- if current_user.role.mentor -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
-                      href="#"
-                      id="navbarSearchDropdown"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false">
+                     href="#"
+                     id="navbarSearchDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false">
                     Mentor
                   </a>
-                  <ul class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
+                  <ul class="dropdown-menu dropdown-menu-dark"
+                      aria-labelledby="navbarSearchDropdown">
                     <li>
                       <a class="dropdown-item" href="{{ url_for('mentor.active')}}">Active Stamps</a>
                     </li>
@@ -106,71 +118,75 @@
                 </li>
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
-                      href="#"
-                      id="navbarEventDropdown"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false">
+                     href="#"
+                     id="navbarEventDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false">
                     Events
                   </a>
-                  <ul class="dropdown-menu" aria-labelledby="navbarEventDropdown">
+                  <ul class="dropdown-menu dropdown-menu-dark"
+                      aria-labelledby="navbarEventDropdown">
                     <li>
                       <a class="dropdown-item" href="{{ url_for('events.list_events')}}">All</a>
                     </li>
                     <div class="dropdown-divider"></div>
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('events.list_previous_events') }}">Previous</a>
+                      <a class="dropdown-item"
+                         href="{{ url_for('events.list_previous_events') }}">Previous</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('events.list_active_events') }}">Active</a>
+                      <a class="dropdown-item"
+                         href="{{ url_for('events.list_active_events') }}">Active</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('events.list_todays_events') }}">Today</a>
+                      <a class="dropdown-item"
+                         href="{{ url_for('events.list_todays_events') }}">Today</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('events.list_upcoming_events') }}">Upcoming</a>
+                      <a class="dropdown-item"
+                         href="{{ url_for('events.list_upcoming_events') }}">Upcoming</a>
                     </li>
                   </ul>
                 </li>
-              {%- endif-%}
-                <li class="nav-item">
-                  <a class="nav-link btn" href="{{url_for('events.list_open_events')}}">Event Registration</a>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle btn btn-primary"
-                      href="#"
-                      id="navbarUserDropdown"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false">
-                    User
-                  </a>
-                  <ul class="dropdown-menu" aria-labelledby="navbarUserDropdown">
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('user.profile_self')}}">Profile</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('event.export')}}">Export</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('auth.password')}}">Change Password</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('auth.logout')}}">Sign Out</a>
-                    </li>
-                  </ul>
-                </li>
+              {%- endif -%}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle btn btn-primary"
+                   href="#"
+                   id="navbarUserDropdown"
+                   role="button"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false">
+                  User
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark"
+                    aria-labelledby="navbarUserDropdown">
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('user.profile_self')}}">Profile</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('event.export')}}">Export</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('auth.password')}}">Change Password</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('auth.logout')}}">Sign Out</a>
+                  </li>
+                </ul>
+              </li>
             {%- else -%}
               <div class="btn-group">
                 <a class="nav-link dropdown-toggle dropdown-toggle-split btn btn-primary"
-                    href="#"
-                    id="registerDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
+                   href="#"
+                   id="registerDropdown"
+                   role="button"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false">
                   Register
                 </a>
-                <ul class="dropdown-menu" aria-labelledby="registerDropdown">
+                <ul class="dropdown-menu dropdown-menu-dark"
+                    aria-labelledby="registerDropdown">
                   <li>
                     <a class="dropdown-item" href="{{ url_for('auth.register')}}">Student</a>
                   </li>
@@ -187,19 +203,23 @@
               </li>
             {%- endif -%}
           </ul>
-          <div class="d-flex justify-content-center">
+          <div class="d-flex justify-content-center ps-2">
             <a class="navbar-brand" href="{{ url_for('index')}}">
-              <img src="{{ url_for('static', filename='logo.png')}}" height="36">
+              <img src="{{ url_for('static', filename='logo.png')}}"
+                   height="36"
+                   width="152"
+                   alt="Chop Shop Car"/>
             </a>
           </div>
         </div>
       </div>
     </nav>
     <!-- Page content -->
-    {% block content %}{% endblock %}
+    {% block content %}
+    {% endblock content %}
     {% block scripts %}
       <!-- Optional JavaScript -->
       {{ bootstrap.load_js() }}
-    {% endblock %}
+    {% endblock scripts %}
   </body>
 </html>

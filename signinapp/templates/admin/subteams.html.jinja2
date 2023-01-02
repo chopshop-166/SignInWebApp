@@ -1,5 +1,7 @@
 {% extends "base.html.jinja2" %}
-{% block title %}Subteam Admin - Chop Shop Sign In{% endblock %}
+{% block title %}
+  Subteam Admin - Chop Shop Sign In
+{% endblock title %}
 {% block content %}
   <div class="pt-3 container">
     <div class="d-flex flex-row align-items-center justify-content-between">
@@ -14,6 +16,7 @@
         <thead>
           <tr>
             <th scope="col">Subteam</th>
+            <th scope="col">Members</th>
             <th scope="col">ID</th>
             <th scope="col">Tools</th>
           </tr>
@@ -21,13 +24,19 @@
         <tbody>
           {%- for subteam in subteams -%}
             <tr>
-              <th>
-                <a class="link-light"
-                   href="{{ url_for('team.subteam', st_id=subteam.id)}}">{{ subteam.name }}</a>
+              <th scope="row">
+                <p class="m-0">{{ subteam.name }}</p>
               </th>
+              <td>
+                <a role="button"
+                   class="btn btn-sm btn-secondary"
+                   href="{{ url_for('team.subteam', st_id=subteam.id)}}">
+                  {{ subteam.name }} members
+                </a>
+              </td>
               <td>{{ subteam.id }}</td>
               <td>
-                <a class="btn btn-secondary"
+                <a class="btn btn-sm btn-secondary"
                    href="{{ url_for('admin.edit_subteam', st_id=subteam.id)}}"
                    role="button">Edit</a>
               </td>
@@ -37,4 +46,4 @@
       </table>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

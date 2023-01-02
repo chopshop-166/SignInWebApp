@@ -1,17 +1,21 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_form, render_messages %}
-{% block title %}Search - Chop Shop Sign In{% endblock %}
+{% block title %}
+  Search - Chop Shop Sign In
+{% endblock title %}
 {% block content %}
   <div id="searchContainer" class="container pt-3">
     <div class="row">
       {{ render_messages() }}
       <div class="col">{{ render_form(form, extra_classes="search-form") }}</div>
       <div class="col-lg-6 py-3">
-        <table class="table table-striped table-hover table-dark">
-          {%- block searchtable -%}
-          {%- endblock -%}
-        </table>
+        <div class="table-responsive">
+          <table>
+            {%- block searchtable -%}
+            {%- endblock -%}
+          </table>
+        </div>
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

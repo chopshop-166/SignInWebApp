@@ -1,8 +1,10 @@
 //$primary: #2525db;
-$primary: #0f2b8e;
-$secondary: #1a46e4;
+$primary: #0d2b8d;
+$secondary: #1036b3;
+$danger: #ab0f0f;
 $info: #60a0ff;
-$body-bg: #242526;
+$body-bg: #212529;
+$dark: #111315;
 $body-color: #e4e6eb;
 $form-check-input-bg: white;
 $form-check-input-checked-color: $secondary;
@@ -16,7 +18,7 @@ $border-widths: (
     5: 10px
 );
 
-@import "scss/bootstrap-utilities.scss"; 
+@import "scss/bootstrap-utilities.scss";
 
 .login {
     background-image: url('LoginBackground.png');
@@ -38,7 +40,11 @@ $border-widths: (
     background-repeat: no-repeat;
     background-attachment: scroll;
     background-size: cover;
-};
+}
+
+.width-100 {
+    width: 100%;
+}
 
 .parent {
     min-height: 80vH;
@@ -54,43 +60,50 @@ $border-widths: (
 
 .custom-row {
     @include make-row();
-  }
-  
+}
+
 .content-primary {
     @include make-col-ready();
 
     @include media-breakpoint-up(sm) {
         @include make-col(6);
+
         .hidesmall {
             visibility: hidden !important;
         }
     }
+
     @include media-breakpoint-up(xs) {
         @include make-col(6);
+
         .hidesmall {
             visibility: hidden !important;
         }
     }
+
     @include media-breakpoint-up(lg) {
         .hidesmall {
             visibility: visible !important;
         }
+
         @include make-col(6);
     }
 }
-  
+
 .content-secondary {
     @include make-col-ready();
-  
+
     @include media-breakpoint-up(sm) {
         @include make-col(6);
     }
+
     @include media-breakpoint-up(lg) {
         @include make-col(6);
     }
 }
 
-.table td, th {
+.table td,
+th {
     white-space: nowrap;
 }
 
@@ -105,10 +118,22 @@ $border-widths: (
 }
 
 .search-form li {
-    @extend .list-group-item, .list-group-item-primary;
+    @extend .list-group-item, .list-group-item-dark;
+}
+
+.search-form li > input {
+    @extend .form-check-input, .me-1;
 }
 
 @import "scss/bootstrap.scss";
+
+table {
+    @extend .table, .table-striped, .table-hover, .table-dark, .table-borderless, .align-middle, .mb-0;
+}
+
+.table-responsive {
+    @extend .rounded
+}
 
 #searchContainer #role {
     padding: 0;
@@ -116,5 +141,5 @@ $border-widths: (
 }
 
 div #qrPlaceholder {
-    @extend .border, .border-5, .bg-light
+    @extend .border, .border-white, .border-5
 }

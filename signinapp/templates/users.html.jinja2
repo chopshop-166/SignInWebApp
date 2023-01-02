@@ -1,5 +1,7 @@
 {% extends "base.html.jinja2" %}
-{% block title %}User Admin{% endblock %}
+{% block title %}
+  User Admin
+{% endblock title %}
 {% block content %}
   <div id="userListContainer" class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
@@ -7,7 +9,7 @@
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
-      <table id="users" class="table table-striped table-hover table-dark">
+      <table id="users">
         <thead>
           <tr>
             <th scope="col">User</th>
@@ -18,17 +20,22 @@
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
             {%- if current_user.is_authenticated and current_user.role.admin -%}
-            <th scope="col">Edit</th>
+              <th scope="col">Edit</th>
             {%- endif -%}
           </tr>
         </thead>
         <tbody>
           {%- for user in users -%}
             <tr>
-              <th>
-                <a class="link-light" href="{{ url_for('user.profile', username=user.username)}}">
-                   {{user.full_name}}
-                </a>
+              <th scope="row">
+                <div class="d-flex justify-content-between align-items-center">
+                  <p class="m-0">{{ user.full_name }}</p>
+                  <a class="btn btn-sm btn-secondary"
+                     role="button"
+                     href="{{ url_for('user.profile', username=user.username)}}">
+                    Profile
+                  </a>
+                </div>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
@@ -37,34 +44,33 @@
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
               {%- if current_user.is_authenticated and current_user.role.admin -%}
-              <td>
-                <div class="btn-group" role="group" aria-label="User Actions">
-                  <a class="btn btn-secondary"
-                    href="{{ url_for('admin.edit_user', user_id=user.id)}}"
-                    role="button">Edit</a>
-                  {%- if user.role.name == "student" -%}
-                    <a class="btn btn-info"
-                      href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
-                      action="submit">Edit Student</a>
-                  {%- elif user.role.guardian -%}
-                    <a class="btn btn-info"
-                      href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
-                      action="submit">Edit Guardian</a>
+                <td>
+                  <div class="btn-group" role="group" aria-label="User Actions">
+                    <a class="btn btn-sm btn-secondary"
+                       href="{{ url_for('admin.edit_user', user_id=user.id)}}"
+                       role="button">Edit</a>
+                    {%- if user.role.name == "student" -%}
+                      <a class="btn btn-sm btn-info"
+                         href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
+                         action="submit">Edit Student</a>
+                    {%- elif user.role.guardian -%}
+                      <a class="btn btn-sm btn-info"
+                         href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
+                         action="submit">Edit Guardian</a>
+                    {%- endif -%}
+                    <a class="btn btn-sm btn-danger"
+                       href="{{ url_for('admin.delete_user', user_id=user.id)}}"
+                       role="button">Delete</a>
+                  </div>
+                  {%- if not user.approved -%}
+                    <form class="inlineform"
+                          action="{{ url_for('admin.user_approve', user_id=user.id)}}"
+                          id="approve{{ user.id }}"
+                          method="post">
+                      <button class="btn btn-sm btn-warning" action="submit">Approve</button>
+                    </form>
                   {%- endif -%}
-                  <a class="btn btn-danger"
-                    href="{{ url_for('admin.delete_user', user_id=user.id)}}"
-                    role="button">Delete</a>
-                </div>
-                {%- if not user.approved -%}
-                <form class="inlineform"
-                      action="{{ url_for('admin.user_approve', user_id=user.id)}}"
-                      id="approve{{ user.id }}"
-                      method="POST">
-                  <button class="btn btn-warning"
-                    action="submit">Approve</button>
-                </form>
-                {%- endif -%}
-              </td>
+                </td>
               {%- endif -%}
             </tr>
           {%- endfor -%}
@@ -72,4 +78,4 @@
       </table>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

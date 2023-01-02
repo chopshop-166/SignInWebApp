@@ -1,12 +1,14 @@
 {% extends "base.html.jinja2" %}
-{% block title %}Role Admin - Chop Shop Sign In{% endblock %}
+{% block title %}
+  Role Admin - Chop Shop Sign In
+{% endblock title %}
 {% block content %}
   <div class="pt-3 container">
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Assignable Roles</h1>
       <a class="btn btn-primary"
-        href="{{ url_for('admin.new_role')}}"
-        role="button">New Role</a>
+         href="{{ url_for('admin.new_role')}}"
+         role="button">New Role</a>
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
@@ -20,25 +22,28 @@
             <th scope="col">Autoload</th>
             <th scope="col">Can See Subteam Info</th>
             <th scope="col">Receives Funds</th>
+            <th scope="col">Edit</th>
           </tr>
         </thead>
         <tbody>
           {%- for role in roles -%}
             <tr>
-              <th>
-                <a class="link-light"
-                   href="{{ url_for('admin.edit_role', role_id=role.id)}}">{{ role.name }}</a>
-              </th>
+              <th>{{ role.name }}</th>
               <td>{{ role.admin }}</td>
               <td>{{ role.mentor }}</td>
               <td>{{ role.can_display }}</td>
               <td>{{ role.autoload }}</td>
               <td>{{ role.can_see_subteam }}</td>
               <td>{{ role.receives_funds }}</td>
+              <td>
+                <a role="button"
+                   class="btn btn-sm btn-secondary"
+                   href="{{ url_for('admin.edit_role', role_id=role.id)}}">Edit</a>
+              </td>
             </tr>
           {%- endfor -%}
         </tbody>
       </table>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

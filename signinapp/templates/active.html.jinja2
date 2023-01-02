@@ -1,23 +1,26 @@
 {% extends "base.html.jinja2" %}
-{% block title %}Active User Admin{% endblock %}
+{% block title %}
+  Active User Admin
+{% endblock title %}
 {% block content %}
   <div class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>Active Users</h1>
       <div>
-        <a class="btn btn-danger"
-          href="{{ url_for('mentor.active_delete_expired')}}"
-          role="button">Delete Expired Stamps</a>
+        <a class="btn btn-danger me-1"
+           href="{{ url_for('mentor.active_delete_expired')}}"
+           role="button">Delete Expired
+        Stamps</a>
         {%- if current_user.is_authenticated and current_user.role.admin -%}
-        <a class="btn btn-danger"
-          href="{{ url_for('admin.active_deleteall')}}"
-          role="button">Delete All Stamps</a>
+          <a class="btn btn-danger"
+             href="{{ url_for('admin.active_deleteall')}}"
+             role="button">Delete All Stamps</a>
         {%- endif -%}
       </div>
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
-      <table id="actives" class="table table-striped table-hover table-dark">
+      <table id="actives">
         <thead>
           <tr>
             <th scope="col">User</th>
@@ -33,16 +36,16 @@
               <td>{{ ac.event.name }}</td>
               <td>{{ ac.start_local }}</td>
               <td>
-                <form class="inlineform" id="signout{{ ac.id }}" method="POST">
-                  <input type="hidden" value="{{ ac.id }}" name="active_id">
-                  <button class="btn btn-secondary" type="submit">Sign Out</button>
+                <form class="inlineform" id="signout{{ ac.id }}" method="post">
+                  <input type="hidden" value="{{ ac.id }}" name="active_id"/>
+                  <button class="btn btn-sm btn-secondary" type="submit">Sign Out</button>
                 </form>
                 <form class="inlineform"
                       action="{{ url_for('mentor.active_delete') }}"
                       id="drop{{ ac.id }}"
-                      method="POST">
-                  <input type="hidden" value="{{ ac.id }}" name="active_id">
-                  <button class="btn btn-danger" type="submit">Drop</button>
+                      method="post">
+                  <input type="hidden" value="{{ ac.id }}" name="active_id"/>
+                  <button class="btn btn-sm btn-danger" type="submit">Drop</button>
                 </form>
               </td>
             </tr>
@@ -51,4 +54,4 @@
       </table>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

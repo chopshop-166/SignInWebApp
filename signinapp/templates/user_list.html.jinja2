@@ -1,23 +1,25 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/form.html' import render_messages %}
-{% block title %}{{role}} users{% endblock %}
+{% block title %}
+  {{ role }} users
+{% endblock title %}
 {% block content %}
   <div id="userListContainer" class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
-      <h1>{{role}} List</h1>
+      <h1>{{ role }} List</h1>
       {% if role == "Student" %}
-      <a class="btn btn-primary"
-        href="{{ url_for('auth.register')}}"
-        role="button">New Student</a>
+        <a class="btn btn-primary"
+           href="{{ url_for('auth.register')}}"
+           role="button">New Student</a>
       {% elif role == "Mentor" %}
-      <a class="btn btn-primary"
-        href="{{ url_for('auth.register_mentor')}}"
-        role="button">New Mentor</a>
+        <a class="btn btn-primary"
+           href="{{ url_for('auth.register_mentor')}}"
+           role="button">New Mentor</a>
       {% endif %}
     </div>
     {{- render_messages() -}}
     <div class="table-responsive">
-      <table id="users" class="table table-striped table-hover table-dark">
+      <table id="users">
         <thead>
           <tr>
             <th scope="col">User</th>
@@ -28,13 +30,13 @@
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
             {% if role == "Student" %}
-            <th scope="col">Grade</th>
-            <th scope="col">Parents/Guardians</th>
+              <th scope="col">Grade</th>
+              <th scope="col">Parents/Guardians</th>
             {% elif role == "Guardian" %}
-            <th scope="col">Students</th>
+              <th scope="col">Students</th>
             {% endif %}
             {%- if current_user.is_authenticated and current_user.role.admin -%}
-            <th scope="col">Edit</th>
+              <th scope="col">Edit</th>
             {%- endif -%}
           </tr>
         </thead>
@@ -42,9 +44,11 @@
           {%- for user in users -%}
             <tr>
               <th>
-                <a class="link-light" href="{{ url_for('user.profile', username=user.username)}}">
+                <div class="d-flex justify-content-between align-items-center">
                   {{ user.full_name }}
-                </a>
+                  <a class="btn btn-sm btn-secondary"
+                     href="{{ url_for('user.profile', username=user.username)}}">Profile</a>
+                </div>
               </th>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
@@ -53,57 +57,66 @@
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
               {% if role == "Student" %}
-              <td>{{ user.student_user_data.display_grade }}</td>
-              <td>
-                <ul>
-                {% for guardian in user.student_user_data.guardians %}
-                  <li><a class="link-light" href="{{url_for('user.profile', username=guardian.user.username)}}">{{guardian.user.name}}</a></li>
-                {% endfor %}
-                </ul>
-              </td>
+                <td>{{ user.student_user_data.display_grade }}</td>
+                <td>
+                  <ul>
+                    {% for guardian in user.student_user_data.guardians %}
+                      <li>
+                        <a class="link-light"
+                           href="{{ url_for('user.profile', username=guardian.user.username)}}">{{ guardian.user.name }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </td>
               {% elif role == "Guardian" %}
-              <td>
-                <ul>
-                {% for student in user.guardian_user_data.students %}
-                  <li><a class="link-light" href="{{url_for('user.profile', username=student.user.username)}}">{{student.user.name}}</a></li>
-                {% endfor %}
-                </ul>
-              </td>
+                <td>
+                  <ul>
+                    {% for student in user.guardian_user_data.students %}
+                      <li>
+                        <a class="link-light"
+                           href="{{ url_for('user.profile', username=student.user.username)}}">{{ student.user.name }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </td>
               {% endif %}
               {%- if current_user.is_authenticated and current_user.role.admin -%}
-              <td>
-                <div class="btn-group" role="group" aria-label="User Actions">
-                  <a class="btn btn-secondary"
-                    href="{{ url_for('admin.edit_user', user_id=user.id)}}"
-                    role="button">Edit</a>
-                  {%- if user.role.name == "student" -%}
-                    <a class="btn btn-info"
-                      href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
-                      action="submit">Edit Student</a>
-                  {%- elif role == "Guardian" -%}
-                    <a class="btn btn-info"
-                      href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
-                      action="submit">Edit Guardian</a>
-                  {%- if user.role.name == "guardian_limited" -%}
-                    <a class="btn btn-warning"
-                      href="{{ url_for('admin.user_promote', user_id=user.id)}}"
-                      action="submit">Create User</a>
+                <td>
+                  <div class="btn-group" role="group" aria-label="User Actions">
+                    <a class="btn btn-sm btn-secondary"
+                       href="{{ url_for('admin.edit_user', user_id=user.id) }}"
+                       role="button">Edit</a>
+                    {%- if user.role.name == "student" -%}
+                      <a class="btn btn-sm btn-info"
+                         href="{{ url_for('admin.edit_student_data', user_id=user.id) }}"
+                         role="button"
+                         action="submit">Edit Student</a>
+                    {%- elif role == "Guardian" -%}
+                      <a class="btn btn-sm btn-info"
+                         href="{{ url_for('admin.edit_guardian_data', user_id=user.id) }}"
+                         role="button"
+                         action="submit">Edit Guardian</a>
+                      {%- if user.role.name == "guardian_limited" -%}
+                        <a class="btn btn-sm btn-warning"
+                           href="{{ url_for('admin.user_promote', user_id=user.id) }}"
+                           action="submit">Create User</a>
+                      {%- endif -%}
+                    {%- endif -%}
+                    <a class="btn btn-sm btn-danger"
+                       href="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                       role="button">Delete</a>
+                  </div>
+                  {%- if not user.approved -%}
+                    <form class="inlineform"
+                          action="{{ url_for('admin.user_approve', user_id=user.id) }}"
+                          id="approve{{ user.id }}"
+                          method="post">
+                      <button class="btn btn-sm btn-warning" action="submit">
+                        Approve
+                      </button>
+                    </form>
                   {%- endif -%}
-                  {%- endif -%}
-                  <a class="btn btn-danger"
-                    href="{{ url_for('admin.delete_user', user_id=user.id)}}"
-                    role="button">Delete</a>
-                </div>
-                {%- if not user.approved -%}
-                <form class="inlineform"
-                      action="{{ url_for('admin.user_approve', user_id=user.id)}}"
-                      id="approve{{ user.id }}"
-                      method="POST">
-                  <button class="btn btn-warning"
-                    action="submit">Approve</button>
-                </form>
-                {%- endif -%}
-              </td>
+                </td>
               {%- endif -%}
             </tr>
           {%- endfor -%}
@@ -111,4 +124,4 @@
       </table>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

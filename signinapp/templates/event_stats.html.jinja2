@@ -1,15 +1,17 @@
 {% extends "base.html.jinja2" %}
 {% from 'bootstrap5/utils.html' import render_static %}
-{% block title %}Event {{event.name}}{% endblock %}
+{% block title %}
+  Event {{ event.name }}
+{% endblock title %}
 {% block content %}
-<script>
+  <script>
   var toastElList = [].slice.call(document.querySelectorAll('.toast'))
   var toastList = toastElList.map(function (toastEl) {
     return new bootstrap.Toast(toastEl, option)
   })
   function copyRegistrationLink() {
     navigator.clipboard.writeText("{{registration_url}}");
-    
+
     var copiedToastEl = document.getElementById("linkCopiedToast");
     var copiedToast = bootstrap.Toast.getOrCreateInstance(copiedToastEl);
     var toastBody = document.getElementById("linkCopiedToastBody");
@@ -18,117 +20,165 @@
     copiedToast.show();
     return false;
   }
-</script>
-
-<div class="container table-responsive">
-  <div class="row">
-    <div class="col">
-      <h1><a class="link-secondary" href="{{url_for('event.event', event_code=event.code)}}">{{event.name}}</a></h1>
-      <h2>{{event.type_.name}}</h2>
-      {%- if event.descripion -%}
-      <p>Description: {{event.description}}</p>
-      {%- endif -%}
-      <p>Location: {{event.location}}</p>
-      <p>{{event.start}} - {{event.end}}</p>
-      <p>Amount Earned: {{event.funds_human}}</p>
-      <p>Overhead {{event.overhead_funds}}</p>
-      <hr>
-      <h1>Signups</h1>
-      {# This is a link to allow manually navigating to the registration page, but clicking the button only copies the URL to the clipboard. #}
-      <a class="link-secondary" href="{{registration_url}}">Event Registration</a>
-      <a type="button" id="liveToastBtn" class="btn btn-dark" onclick="copyRegistrationLink(); return false;" href="{{registration_url}}">Copy 🔗</a>
-      <table id="blocks" class="table table-stripped table-hover table-dark">
-        <thead>
-          <tr>
-            <th scope="col">Start</th>
-            <th scope="col">End</th>
-            <th scope="col">Users Signed Up</th>
-          </tr>
-        </thead>
-        <tbody id="blocksbody">
-        {%- for times, registrations in blocks -%}
-          <tr>
-            <td>{{times.start}}</td>
-            <td>{{times.end}}</td>
-            <td>
-              <ul>
-                {%- for user, comment in registrations -%}
-                  <li>
-                  {%- if comment -%}
-                    <a role="button" class="link-info" data-bs-toggle="modal" data-bs-target="#commentModal" data-bs-user="{{user}}" data-bs-comment="{{comment}}">
-                      {{user}}
-                    </a>
-                  {%- else -%}
-                    {{user}}
-                  {%- endif -%}
-                  </li>
-                {%- endfor -%}
-              </ul> 
-            </td>
-          </tr>
-        {%- endfor -%}
-      </table>
-    </div>
-    <div class="col">
-      <table id="users" class="table table-striped table-hover table-dark">
-        <thead>
-          <tr>
-            <th scope="col">User</th>
-            <th scope="col">Time Spent</th>
-            <th scope="col">Funds Earned</th>
-          </tr>
-        </thead>
-        <tbody id="userbody">
-        {%- for user, time in users -%}
-          <tr>
-            <td>{{user.name}}</td>
-            <td>{{time}}</td>
-            <td>{{event.funds_for(user)}}</td>
-          </tr>
-        {%- endfor -%}
-        </tbody>
-      </table>
-      <table id="subteams" class="table table-striped table-hover table-dark">
-        <thead>
-          <tr>
-            <th scope="col">Subteam</th>
-            <th scope="col">Time Spent</th>
-          </tr>
-        </thead>
-        <tbody id="userbody">
-        {%- for subteam, time in subteams -%}
-          <tr>
-            <td>{{subteam.name}}</td>
-            <td>{{time}}</td>
-          </tr>
-        {%- endfor -%}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="commentModalTitle">BLANKS Comment</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+  </script>
+  <div class="container pt-3">
+    <div class="row">
+      <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2>{{ event.name }}: {{ event.type_.name }}</h2>
+          <a role="button"
+             class="btn btn-secondary"
+             href="{{ url_for('event.event', event_code=event.code)}}">Go to event</a>
+        </div>
+        {%- if event.descripion -%}
+          <p>Description: {{ event.description }}</p>
+        {%- endif -%}
+        <div class="d-flex justify-content-between align-items-center">
+          <p>Location: {{ event.location }}</p>
+          <p>Start - End: {{ event.start }} - {{ event.end }}</p>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <p>Overhead {{ event.overhead_funds }}</p>
+          <p>Amount Earned: {{ event.funds_human }}</p>
+        </div>
+        <hr/>
+        <div class="d-flex justify-content-between align-items-center">
+          <h2>Signups</h2>
+          {# This is a link to allow manually navigating to the registration page, but clicking the button only copies the
+      URL to the clipboard. #}
+          <div class="btn-group pb-2">
+            <a role="button" class="btn btn-secondary" href="{{ registration_url }}">Event Registration</a>
+            <a role="button"
+               id="liveToastBtn"
+               class="btn btn-dark"
+               onclick="copyRegistrationLink(); return false;"
+               href="{{ registration_url }}">Copy 🔗</a>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table id="blocks">
+            <thead>
+              <tr>
+                <th scope="col">Start</th>
+                <th scope="col">End</th>
+                <th scope="col">Users Signed Up</th>
+              </tr>
+            </thead>
+            <tbody id="blocksbody">
+              {%- for times, registrations in blocks -%}
+                <tr>
+                  <td>{{ times.start }}</td>
+                  <td>{{ times.end }}</td>
+                  <td>
+                    <ul>
+                      {%- for user, comment in registrations -%}
+                        <li>
+                          {%- if comment -%}
+                            <a role="button"
+                               class="link-info"
+                               data-bs-toggle="modal"
+                               data-bs-target="#commentModal"
+                               data-bs-user="{{ user }}"
+                               data-bs-comment="{{ comment }}">
+                              {{ user }}
+                            </a>
+                          {%- else -%}
+                            {{ user }}
+                          {%- endif -%}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="modal-body"></div>
-    </div>
-  </div>
-</div>
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-  <div id="linkCopiedToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div class="toast-body text-primary" id="linkCopiedToastBody">
-        {# Placeholder #}
+      <div class="col">
+        <div class="table-responsive">
+          <table id="users">
+            <thead>
+              <tr>
+                <th scope="col">User</th>
+                <th scope="col">Time Spent</th>
+                <th scope="col">Funds Earned</th>
+              </tr>
+            </thead>
+            <tbody id="userbody">
+              {%- for user, time in users -%}
+                <tr>
+                  <td>{{ user.name }}</td>
+                  <td>{{ time }}</td>
+                  <td>{{ event.funds_for(user)}}</td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+        <div class="table-responsive">
+          <table id="subteams">
+            <thead>
+              <tr>
+                <th scope="col">Subteam</th>
+                <th scope="col">Time Spent</th>
+              </tr>
+            </thead>
+            <tbody id="userbody">
+              {%- for subteam, time in subteams -%}
+                <tr>
+                  <td>{{ subteam.name }}</td>
+                  <td>{{ time }}</td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
-</div>
-<script>
+  <div class="modal fade"
+       id="commentModal"
+       tabindex="-1"
+       role="dialog"
+       aria-labelledby="commentModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="commentModalTitle">
+            BLANKS Comment
+          </h5>
+          <button type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="Close">
+          </button>
+        </div>
+        <div class="modal-body">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="position-fixed bottom-0 end-0 p-3">
+    <div id="linkCopiedToast"
+         class="toast hide"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body text-primary" id="linkCopiedToastBody">
+          {# Placeholder #}
+        </div>
+        <button type="button"
+                class="btn-close me-2 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="Close">
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
   var commentModal = document.getElementById('commentModal')
   commentModal.addEventListener('show.bs.modal', function (event) {
     // Button that triggered the modal
@@ -143,5 +193,5 @@
     modalTitle.textContent = user + "'s Comment"
     modalBody.innerText = comment
   })
-</script>
-{% endblock %}
+  </script>
+{% endblock content %}
