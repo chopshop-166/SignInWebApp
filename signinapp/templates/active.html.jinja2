@@ -8,12 +8,12 @@
       <h1>Active Users</h1>
       <div>
         <a class="btn btn-danger me-1"
-          href="{{ url_for('active.delete_expired')}}"
-          role="button">Delete Expired Stamps</a>
+            href="{{ url_for('active.delete_expired')}}"
+            role="button">Delete Expired Stamps</a>
         {%- if current_user.is_authenticated and current_user.role.admin -%}
         <a class="btn btn-danger"
-          href="{{ url_for('active.delete_all')}}"
-          role="button">Delete All Stamps</a>
+            href="{{ url_for('active.delete_all')}}"
+            role="button">Delete All Stamps</a>
         {%- endif -%}
       </div>
     </div>
@@ -43,7 +43,7 @@
                       action="{{ url_for('active.delete') }}"
                       id="drop{{ ac.id }}"
                       method="DELETE">
-                  <input type="hidden" value="{{ ac.id }}" name="active_id">
+                  <input type="hidden" value="{{ ac.id }}" name="active_id"/>
                   <button class="btn btn-sm btn-danger" type="submit">Drop</button>
                 </form>
               </td>
