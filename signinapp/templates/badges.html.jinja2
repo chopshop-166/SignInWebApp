@@ -8,13 +8,13 @@
       <h1>Available Badges!</h1>
       <div>
         {%- if current_user.is_authenticated and current_user.role.admin -%}
-          <a class="btn btn-primary me-1"
-             href="{{ url_for('admin.new_badge')}}"
-             role="button">New Badge</a>
+        <a class="btn btn-primary me-1"
+          href="{{url_for('badge.new')}}"
+          role="button">New Badge</a>
         {%- endif -%}
         <a class="btn btn-primary"
-           href="{{ url_for('search.badges')}}"
-           role="button">Search Badges</a>
+          href="{{ url_for('badge.search')}}"
+          role="button">Search Badges</a>
       </div>
     </div>
     {{- render_messages() -}}
@@ -33,17 +33,17 @@
             <tr>
               <th>
                 <a class="link-light"
-                   href="{{ url_for('user.badge', badge_id=badge.id)}}">{{ show_badge(badge)}}</a>
+                   href="{{ url_for('badge.view', badge_id=badge.id)}}">{{ show_badge(badge) }}</a>
               </th>
-              <td>{{ badge.id }}</td>
-              <td>{{ badge.description }}</td>
+              <td>{{badge.id}}</td>
+              <td>{{badge.description}}</td>
               <td>
                 <a class="btn btn-sm btn-secondary"
-                   href="{{ url_for('admin.edit_badge', badge_id=badge.id)}}"
-                   role="button">Edit</a>
+                    href="{{ url_for('badge.edit', badge_id=badge.id)}}"
+                    role="button">Edit</a>
                 <a class="btn btn-sm btn-secondary"
-                   href="{{ url_for('mentor.award_badge', badge_id=badge.id)}}"
-                   role="button">Award</a>
+                    href="{{ url_for('badge.award', badge_id=badge.id)}}"
+                    role="button">Award</a>
               </td>
             </tr>
           {%- endfor -%}

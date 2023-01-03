@@ -14,12 +14,13 @@ from flask_migrate import Migrate
 from sqlalchemy.future import select
 
 from . import (
+    active,
     admin,
     auth,
+    badge,
     dbadmin,
     event,
     events,
-    mentor,
     qr,
     search,
     team,
@@ -121,13 +122,14 @@ migrate = Migrate(app, db)
 scheduler.init_app(app)
 scheduler.start()
 
+active.init_app(app)
 admin.init_app(app)
 auth.init_app(app)
+badge.init_app(app)
 dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
 finance.init_app(app)
-mentor.init_app(app)
 qr.init_app(app)
 search.init_app(app)
 team.init_app(app)
@@ -256,7 +258,7 @@ if app.config["DEBUG"]:
         )
         db.session.commit()
 
-        mentor = User.make(
+        mentor_user = User.make(
             "msoucy",
             "Matt Soucy",
             preferred_name="Matt",
@@ -269,7 +271,7 @@ if app.config["DEBUG"]:
             role="mentor",
             approved=True,
         )
-        student = Student.make(
+        student_user = Student.make(
             "jburke",
             "Jeff Burke",
             preferred_name="Jeff",
@@ -280,7 +282,7 @@ if app.config["DEBUG"]:
             approved=True,
             tshirt_size="Large",
         )
-        student.student_user_data.add_guardian(
+        student_user.student_user_data.add_guardian(
             guardian=Guardian.get_from(
                 name="Parent Burke",
                 phone_number="(603)555-5555",
@@ -290,7 +292,7 @@ if app.config["DEBUG"]:
         )
 
         student_training_event = Active(
-            user_id=student.id, event_id=expired_event.id, start=now - offset
+            user_id=student_user.id, event_id=expired_event.id, start=now - offset
         )
         db.session.add(student_training_event)
 
@@ -303,5 +305,5 @@ if app.config["DEBUG"]:
         db.session.add(safe)
         db.session.commit()
 
-        mentor.award_badge(safe)
+        mentor_user.award_badge(safe)
         db.session.commit()
