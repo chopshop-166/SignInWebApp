@@ -707,7 +707,7 @@ class Stamps(db.Model):
     ) -> list[list[str]]:
         stmt = select(Stamps)
         if user:
-            stmt = stmt.where(Stamps.user.code == user.code)
+            stmt = stmt.where(Stamps.user == user)
         if start:
             stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
         if end:
