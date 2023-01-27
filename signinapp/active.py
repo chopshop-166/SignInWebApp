@@ -26,7 +26,7 @@ def post():
     db.session.delete(active_event)
     db.session.add(stamp)
     db.session.commit()
-    return redirect(url_for("mentor.active"))
+    return redirect(url_for("active.get"))
 
 
 @bp.route("/", methods=["DELETE"], endpoint="delete")
@@ -36,7 +36,7 @@ def delete_one():
     active_event = db.session.get(Active, request.form["active_id"])
     db.session.delete(active_event)
     db.session.commit()
-    return redirect(url_for("mentor.active"))
+    return redirect(url_for("active.get"))
 
 
 @bp.route("/delete_expired")
@@ -49,7 +49,7 @@ def delete_expired():
     )
     db.session.commit()
     flash("Deleted all expired stamps")
-    return redirect(url_for("mentor.active"))
+    return redirect(url_for("active.get"))
 
 
 @bp.route("/delete_all")
@@ -57,7 +57,7 @@ def delete_expired():
 def delete_all():
     db.session.execute(delete(Active))
     db.session.commit()
-    return redirect(url_for("mentor.active"))
+    return redirect(url_for("active.get"))
 
 
 def init_app(app: Flask):
