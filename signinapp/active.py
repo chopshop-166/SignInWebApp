@@ -29,9 +29,9 @@ def post():
     return redirect(url_for("mentor.active"))
 
 
-@bp.route("/", methods=["DELETE"])
+@bp.route("/", methods=["DELETE"], endpoint="delete")
 @mentor_required
-def delete():
+def delete_one():
     # TODO: Check permissions
     active_event = db.session.get(Active, request.form["active_id"])
     db.session.delete(active_event)
