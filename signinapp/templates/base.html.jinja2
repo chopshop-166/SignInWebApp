@@ -50,8 +50,7 @@
             {%- if current_user.is_authenticated -%}
               <li class="nav-item">
                 <a class="nav-link btn btn-primary"
-                   href="{{ url_for('events.open') }}">Event
-                Registration</a>
+                   href="{{ url_for('events.open') }}">Event Registration</a>
               </li>
               {%- if current_user.role.admin -%}
                 <li class="nav-item dropdown">
@@ -146,9 +145,6 @@
                   </ul>
                 </li>
               {%- endif -%}
-              <li class="nav-item">
-                <a class="nav-link btn" href="{{url_for('events.open')}}">Event Registration</a>
-              </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle btn btn-primary"
                    href="#"
