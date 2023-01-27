@@ -50,7 +50,7 @@
             {%- if current_user.is_authenticated -%}
               <li class="nav-item">
                 <a class="nav-link btn btn-primary"
-                   href="{{ url_for('events.list_open') }}">Event
+                   href="{{ url_for('events.open') }}">Event
                 Registration</a>
               </li>
               {%- if current_user.role.admin -%}
