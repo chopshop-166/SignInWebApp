@@ -59,8 +59,8 @@ def selfevent():
         flash("Event is not active")
         return redirect(url_for("index"))
 
-    if not current_user.is_signed_into(ev.code):
-        ev.scan(current_user.code)
+    if not current_user.is_signed_into(ev):
+        ev.scan(current_user)
 
     return render_template("selfscan.html.jinja2", event=ev, event_code=ev.code)
 

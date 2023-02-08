@@ -217,12 +217,10 @@ class User(UserMixin, db.Model):
             return f"{self.name} ({self.preferred_name})"
         return self.name
 
-    def is_signed_into(self, code: str) -> bool:
-        return bool(
-            db.session.scalar(
-                select(Active).where(Active.user == self, Active.event.has(code=code))
-            )
-        )
+    def is_signed_into(self, ev: str | Event) -> bool:
+        if isinstance(ev, str):
+            ev = Event.get_from_code(ev)
+        return bool(db.session.scalar(select(Active).filter_by(user=self, event=ev)))
 
     @property
     def total_funds(self) -> str:
@@ -642,10 +640,12 @@ class Active(db.Model):
         }
 
     @staticmethod
-    def get(event_code=None) -> list[dict]:
+    def get(event_code: str | Event | None = None) -> list[dict]:
         stmt = select(Active)
         if event_code:
-            stmt = stmt.filter(Active.event.has(code=event_code))
+            if isinstance(event_code, str):
+                event_code = Event.get_from_code(event_code)
+            stmt = stmt.filter_by(event=event_code)
         return [active.as_dict() for active in db.session.scalars(stmt)]
 
 
