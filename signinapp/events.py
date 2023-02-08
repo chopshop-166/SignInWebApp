@@ -281,7 +281,6 @@ def bulk():
 def new():
     form = EventForm()
     if form.validate_on_submit():
-
         event_type = db.session.get(EventType, form.type_id.data)
         ev = Event.create(
             name=form.name.data,

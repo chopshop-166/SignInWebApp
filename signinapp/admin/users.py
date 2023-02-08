@@ -175,7 +175,6 @@ def edit_guardian_data():
     form = EditGuardianDataForm(obj=user)
 
     if form.validate_on_submit():
-
         user.guardian_user_data.students = [
             db.session.get(User, s).student_user_data
             for s in form.guardian_data.data["student"]

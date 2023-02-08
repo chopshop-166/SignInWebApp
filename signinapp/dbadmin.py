@@ -39,7 +39,6 @@ class AdminView(AdminIndexView):
 
 
 def init_app(app):
-
     app.config["FLASK_ADMIN_SWATCH"] = "cyborg"
     flask_admin = Admin(
         index_view=AdminView(name="Home", url="/dbadmin", endpoint="dbadmin"),

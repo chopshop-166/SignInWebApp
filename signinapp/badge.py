@@ -88,7 +88,6 @@ def award():
 @bp.route("/new", methods=["GET", "POST"])
 @admin_required
 def new():
-
     form = BadgeForm()
     if form.validate_on_submit():
         badge = Badge()
