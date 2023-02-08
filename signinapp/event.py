@@ -25,7 +25,9 @@ def event():
     if not event_code or not Event.get_from_code(event_code):
         flash("Invalid event code")
         return redirect(url_for("index"))
-    return render_template("event.html.jinja2", event_code=event_code)
+    return render_template(
+        "event.html.jinja2", url_base=request.host_url, event_code=event_code
+    )
 
 
 @eventbp.route("/scan/self")
