@@ -537,21 +537,20 @@ class Event(db.Model):
         if not user.approved:
             return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
 
-        active = db.session.scalar(
-            select(Active).where(Active.user == user, Active.event == self)
-        )
-
-        if active:
-            stamp = create_stamp_from_active(active, None)
+        if user.is_signed_into(self):
+            active: Active = db.session.scalar(
+                select(Active).filter_by(user=user, event=self)
+            )
+            stamp = active.convert_to_stamp(None)
             # Elapsed needs to be taken after committing to the DB
             # otherwise it won't be populated
             sign = f"out after {stamp.elapsed}"
             return StampEvent(user.human_readable, sign)
-
-        active = Active(user=user, event=self)
-        db.session.add(active)
-        db.session.commit()
-        return StampEvent(user.human_readable, "in")
+        else:
+            active = Active(user=user, event=self)
+            db.session.add(active)
+            db.session.commit()
+            return StampEvent(user.human_readable, "in")
 
     @staticmethod
     def create(
@@ -587,19 +586,6 @@ class Event(db.Model):
         block = EventBlock(start=start, end=end, event_id=ev.id)
         db.session.add(block)
         return ev
-
-
-def create_stamp_from_active(active: Active, end: datetime):
-    stamp = Stamps(
-        user=active.user,
-        event=active.event,
-        start=active.start,
-        end=end,
-    )
-    db.session.delete(active)
-    db.session.add(stamp)
-    db.session.commit()
-    return stamp
 
 
 class EventType(db.Model):
@@ -638,6 +624,18 @@ class Active(db.Model):
             "start": self.start,
             "event": self.event.name,
         }
+
+    def convert_to_stamp(self: Active, end: datetime | None = None):
+        stamp = Stamps(
+            user=self.user,
+            event=self.event,
+            start=self.start,
+            end=end,
+        )
+        db.session.delete(self)
+        db.session.add(stamp)
+        db.session.commit()
+        return stamp
 
     @staticmethod
     def get(event_code: str | Event | None = None) -> list[dict]:

@@ -6,7 +6,7 @@ from flask import current_app
 from flask_apscheduler import APScheduler
 from sqlalchemy.future import select
 
-from .model import Active, create_stamp_from_active, db
+from .model import Active, db
 
 # initialize scheduler
 scheduler = APScheduler()
@@ -26,7 +26,7 @@ def EventEndJob():
             if active.event.adjusted_end < time:
                 if current_app.config["AUTO_SIGNOUT_BEHAVIOR"] == "Credit":
                     # Expire the active session
-                    create_stamp_from_active(active, active.event.end)
+                    active.convert_to_stamp(active.event.end)
                 elif current_app.config["AUTO_SIGNOUT_BEHAVIOR"] == "Discard":
                     # Delete active entry without crediting the user
                     db.session.delete(active)
