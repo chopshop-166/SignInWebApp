@@ -1,0 +1,17 @@
+{% extends "base.html.jinja2" %}
+{% from 'bootstrap5/form.html' import render_messages %}
+{% block title %}
+  {{ role }} users
+{% endblock title %}
+{% block content %}
+  <div id="mainContainer" class="container pt-3">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <h1>You are signed in to {{event.name}}</h1>
+    </div>
+    {{- render_messages() -}}
+    <div class="content-primary card mb-3 bg-primary">
+      <a class="btn btn-danger"
+         href="{{url_for('event.selfscan', event_code=event.code)}}">Sign Out</a>
+    </div>
+  </div>
+{% endblock content %}

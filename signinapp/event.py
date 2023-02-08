@@ -21,7 +21,7 @@ eventbp = Blueprint("event", __name__)
 
 @eventbp.route("/event")
 def event():
-    event_code = request.args.get("event_code")
+    event_code = request.values.get("event_code")
     if not event_code or not Event.get_from_code(event_code):
         flash("Invalid event code")
         return redirect(url_for("index"))
@@ -30,21 +30,43 @@ def event():
 
 @eventbp.route("/scan/self")
 def selfscan():
-    event_code = request.values["event_code"]
+    event_code = request.values.get("event_code")
 
-    ev: Event = db.session.scalar(select(Event).filter_by(code=event_code))
+    if not event_code or not (ev := Event.get_from_code(event_code)):
+        flash("Invalid event code")
+        return redirect(url_for("index"))
 
     if not ev.is_active:
+        flash("Event is not active")
         return jsonify({"action": "redirect"})
 
     ev.scan(current_user.code)
     return redirect(url_for("event.event", event_code=event_code))
 
 
+@eventbp.route("/event/self")
+@login_required
+def selfevent():
+    event_code = request.values.get("event_code")
+
+    if not event_code or not (ev := Event.get_from_code(event_code)):
+        flash("Invalid event code")
+        return redirect(url_for("index"))
+
+    if not ev.is_active:
+        flash("Event is not active")
+        return redirect(url_for("index"))
+
+    if not current_user.is_signed_into(ev.code):
+        ev.scan(current_user.code)
+
+    return render_template("selfscan.html.jinja2", event=ev, event_code=ev.code)
+
+
 @eventbp.route("/scan", methods=["POST"])
 def scan():
-    event = request.values["event_code"]
-    user_code = request.values["user_code"]
+    event = request.values.get("event_code")
+    user_code = request.values.get("user_code")
 
     ev: Event = db.session.scalar(select(Event).filter_by(code=event))
 
@@ -80,9 +102,9 @@ def autoevent():
 
 @eventbp.route("/active")
 def active():
-    event = request.args.get("event", None)
+    event = request.values.get("event", None)
 
-    ev: Event = db.session.scalar(select(Event).filter_by(code=event))
+    ev: Event = Event.get_from_code(event)
 
     if ev and not ev.is_active:
         return jsonify({"action": "redirect"})
@@ -100,7 +122,7 @@ def active():
 @login_required
 def export():
     if current_user.role.admin:
-        name = request.args.get("name", None)
+        name = request.values.get("name", None)
     else:
         name = current_user.name
     user = User.from_username(name)

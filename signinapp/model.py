@@ -432,7 +432,7 @@ class Event(db.Model):
     )
 
     @staticmethod
-    def get_from_code(event_code) -> Event | None:
+    def get_from_code(event_code: str) -> Event | None:
         return db.session.scalar(select(Event).filter_by(code=event_code))
 
     @property
