@@ -60,7 +60,7 @@ def selfevent():
         return redirect(url_for("index"))
 
     if not current_user.is_signed_into(ev):
-        ev.scan(current_user)
+        ev.scan(current_user.code)
 
     return render_template("selfscan.html.jinja2", event=ev, event_code=ev.code)
 
