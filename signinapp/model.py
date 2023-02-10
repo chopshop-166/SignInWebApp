@@ -217,12 +217,10 @@ class User(UserMixin, db.Model):
             return f"{self.name} ({self.preferred_name})"
         return self.name
 
-    def is_signed_into(self, code: str) -> bool:
-        return bool(
-            db.session.scalar(
-                select(Active).where(Active.user == self, Active.event.has(code=code))
-            )
-        )
+    def is_signed_into(self, ev: str | Event) -> bool:
+        if isinstance(ev, str):
+            ev = Event.get_from_code(ev)
+        return bool(db.session.scalar(select(Active).filter_by(user=self, event=ev)))
 
     @property
     def total_funds(self) -> str:
@@ -432,7 +430,7 @@ class Event(db.Model):
     )
 
     @staticmethod
-    def get_from_code(event_code) -> Event | None:
+    def get_from_code(event_code: str) -> Event | None:
         return db.session.scalar(select(Event).filter_by(code=event_code))
 
     @property
@@ -539,21 +537,20 @@ class Event(db.Model):
         if not user.approved:
             return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
 
-        active = db.session.scalar(
-            select(Active).where(Active.user == user, Active.event == self)
-        )
-
-        if active:
-            stamp = create_stamp_from_active(active, None)
+        if user.is_signed_into(self):
+            active: Active = db.session.scalar(
+                select(Active).filter_by(user=user, event=self)
+            )
+            stamp = active.convert_to_stamp(None)
             # Elapsed needs to be taken after committing to the DB
             # otherwise it won't be populated
             sign = f"out after {stamp.elapsed}"
             return StampEvent(user.human_readable, sign)
-
-        active = Active(user=user, event=self)
-        db.session.add(active)
-        db.session.commit()
-        return StampEvent(user.human_readable, "in")
+        else:
+            active = Active(user=user, event=self)
+            db.session.add(active)
+            db.session.commit()
+            return StampEvent(user.human_readable, "in")
 
     @staticmethod
     def create(
@@ -589,19 +586,6 @@ class Event(db.Model):
         block = EventBlock(start=start, end=end, event_id=ev.id)
         db.session.add(block)
         return ev
-
-
-def create_stamp_from_active(active: Active, end: datetime):
-    stamp = Stamps(
-        user=active.user,
-        event=active.event,
-        start=active.start,
-        end=end,
-    )
-    db.session.delete(active)
-    db.session.add(stamp)
-    db.session.commit()
-    return stamp
 
 
 class EventType(db.Model):
@@ -641,11 +625,25 @@ class Active(db.Model):
             "event": self.event.name,
         }
 
+    def convert_to_stamp(self: Active, end: datetime | None = None):
+        stamp = Stamps(
+            user=self.user,
+            event=self.event,
+            start=self.start,
+            end=end,
+        )
+        db.session.delete(self)
+        db.session.add(stamp)
+        db.session.commit()
+        return stamp
+
     @staticmethod
-    def get(event_code=None) -> list[dict]:
+    def get(event_code: str | Event | None = None) -> list[dict]:
         stmt = select(Active)
         if event_code:
-            stmt = stmt.filter(Active.event.has(code=event_code))
+            if isinstance(event_code, str):
+                event_code = Event.get_from_code(event_code)
+            stmt = stmt.filter_by(event=event_code)
         return [active.as_dict() for active in db.session.scalars(stmt)]
 
 

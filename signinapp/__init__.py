@@ -188,7 +188,6 @@ def create_if_not_exists(cls, name, **kwargs):
 
 
 def init_default_db():
-
     create_if_not_exists(Role, name="admin", mentor=True, can_display=True, admin=True)
     create_if_not_exists(Role, name="mentor", mentor=True, can_display=True)
     create_if_not_exists(Role, name="display", can_display=True, autoload=True)

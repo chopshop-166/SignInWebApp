@@ -4,6 +4,11 @@
   {{ super() }}
   {{ render_static('js', "https://unpkg.com/html5-qrcode", false)}}
   {{ render_static('js', 'qr.js') }}
+  {{ render_static("js", "https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js", false) }}
+  <script type="text/javascript">
+    new QRCode(document.getElementById("qrPlaceholder"),
+               "{{url_base}}{{url_for('event.selfevent', event_code=event_code)}}");
+  </script>
 {% endblock scripts %}
 {% block content %}
   <script type="text/javascript">const event_code = "{{ event_code }}"</script>
@@ -41,8 +46,12 @@
           </div>
         {%- endif -%}
       </div>
-      <div class="content-primary float-start">
+      <div class="bg-secondary rounded-3 py-3 content-primary float-start">
+        {# justify-content-between to get QR take up only the space it needs #}
         <div class="d-inline-flex m-auto hidesmall width-100" id="reader"></div>
+        <div class="d-flex justify-content-center pt-3">
+          <div id="qrPlaceholder"></div>
+        </div>
       </div>
     </div>
   </div>
