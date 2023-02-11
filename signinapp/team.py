@@ -1,11 +1,12 @@
 from collections import defaultdict
+
 from flask import Blueprint, Flask, request
 from flask.templating import render_template
 from flask_login import login_required
 from sqlalchemy import or_
 from sqlalchemy.future import select
 
-from .model import Role, Subteam, User, db
+from .model import Role, ShirtSizes, Subteam, User, db
 from .util import mentor_required
 
 team = Blueprint("team", __name__)
@@ -23,6 +24,8 @@ def users():
 @mentor_required
 def shirts():
     shirts = defaultdict(lambda: defaultdict(lambda: 0))
+    for size in ShirtSizes:
+        shirts[size]
     for u in User.get_visible_users():
         if u.tshirt_size:
             shirts[u.tshirt_size][u.role] += 1
