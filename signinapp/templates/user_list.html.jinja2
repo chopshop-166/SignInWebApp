@@ -86,7 +86,7 @@
                     <a class="btn btn-sm btn-secondary"
                        href="{{ url_for('admin.edit_user', user_id=user.id) }}"
                        role="button">Edit</a>
-                    {%- if user.role.name == "student" -%}
+                    {%- if user.student_user_data -%}
                       <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_student_data', user_id=user.id) }}"
                          role="button"
