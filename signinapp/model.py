@@ -630,15 +630,6 @@ class Active(db.Model):
         db.session.commit()
         return stamp
 
-    @staticmethod
-    def get(event_code: str | Event | None = None) -> list[dict]:
-        stmt = select(Active)
-        if event_code:
-            if isinstance(event_code, str):
-                event_code = Event.get_from_code(event_code)
-            stmt = stmt.filter_by(event=event_code)
-        return [active.as_dict() for active in db.session.scalars(stmt)]
-
 
 class Stamps(db.Model):
     __tablename__ = "stamps"

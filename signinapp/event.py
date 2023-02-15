@@ -109,7 +109,7 @@ def scan():
         return jsonify(
             {
                 "message": f"{stamp.name} signed {stamp.event}",
-                "users": Active.get(event),
+                "users": [active.as_dict() for active in ev.active],
                 "action": "update",
             }
         )
@@ -135,7 +135,7 @@ def active():
 
     return jsonify(
         {
-            "users": Active.get(event),
+            "users": [active.as_dict() for active in ev.active],
             "action": "update",
             "message": "Updated user data",
         }
