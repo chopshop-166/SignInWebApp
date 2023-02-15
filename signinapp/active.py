@@ -16,19 +16,6 @@ def get():
     return render_template("active.html.jinja2", active=actives)
 
 
-@bp.route("/", methods=["POST"])
-@mentor_required
-def post():
-    active_event = db.session.get(Active, request.form["active_id"])
-    stamp = Stamps(
-        user=active_event.user, event=active_event.event, start=active_event.start
-    )
-    db.session.delete(active_event)
-    db.session.add(stamp)
-    db.session.commit()
-    return redirect(url_for("active.get"))
-
-
 @bp.route("/", methods=["DELETE"], endpoint="delete")
 @mentor_required
 def delete_one():

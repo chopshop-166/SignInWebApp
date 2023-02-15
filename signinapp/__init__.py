@@ -213,9 +213,9 @@ def init_default_db():
 
     db.session.commit()
 
-    if not db.session.scalar(select(User).filter_by(username="admin")):
+    if not User.from_username("admin"):
         User.make("admin", "admin", password="1234", role="admin", approved=True)
-    if not db.session.scalar(select(User).filter_by(username="display")):
+    if not User.from_username("display"):
         User.make("display", "display", password="1234", role="display", approved=True)
     db.session.commit()
 
