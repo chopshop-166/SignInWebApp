@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import flask_excel as excel
 from flask import (
     Blueprint,
@@ -70,7 +72,7 @@ def selfout():
         active: Active = db.session.scalar(
             select(Active).filter_by(user=current_user, event=ev)
         )
-        stamp = active.convert_to_stamp(None)
+        active.convert_to_stamp()
 
     return redirect(url_for("index"))
 
@@ -80,6 +82,16 @@ def scan():
     event = request.values.get("event_code")
     user_code = request.values.get("user_code")
 
+    if not user_code:
+        return Response(
+            f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
+        )
+    if not (user := User.from_code(user_code)):
+        return Response("Error: User does not exist", HTTPStatus.BAD_REQUEST)
+
+    if not user.approved:
+        return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
+
     ev: Event = Event.get_from_code(event)
 
     if not ev:
@@ -88,7 +100,7 @@ def scan():
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    stamp = ev.scan(user_code)
+    stamp = ev.scan(user)
 
     if isinstance(stamp, Response):
         print(stamp)

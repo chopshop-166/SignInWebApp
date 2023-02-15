@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from http import HTTPStatus
 import locale
 import re
 import secrets
@@ -26,7 +25,6 @@ from .util import (
     normalize_phone_number_for_storage,
     normalize_phone_number_from_storage,
 )
-
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -527,24 +525,11 @@ class Event(db.Model):
     def overhead_funds(self) -> str:
         return locale.currency(self.net_funds * self.overhead / 100.0)
 
-    def scan(self, user_code) -> StampEvent:
-        if not self.is_active:
-            return Response("Error: Event is not active", HTTPStatus.BAD_REQUEST)
-
-        if not user_code:
-            return Response(
-                f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
-            )
-
-        if not (user := User.from_code(user_code)):
-            return Response("Error: User does not exist", HTTPStatus.BAD_REQUEST)
-        if not user.approved:
-            return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
-
-        if user.is_signed_into(self):
-            active: Active = db.session.scalar(
-                select(Active).filter_by(user=user, event=self)
-            )
+    def scan(self, user: User) -> StampEvent:
+        active: Active | None = db.session.scalar(
+            select(Active).filter_by(user=user, event=self)
+        )
+        if active:
             stamp = active.convert_to_stamp()
             # Elapsed needs to be taken after committing to the DB
             # otherwise it won't be populated
@@ -554,9 +539,7 @@ class Event(db.Model):
             self.sign_in(user)
             return StampEvent(user.human_readable, "in")
 
-    def sign_in(self, user: User | str):
-        if isinstance(user, str):
-            user = User.from_code(user)
+    def sign_in(self, user: User):
         active = Active(user=user, event=self)
         db.session.add(active)
         db.session.commit()
