@@ -32,17 +32,15 @@
         {%- if current_user.role.mentor -%}
           <div class="d-inline-flex justify-content-center m-auto container"
                id="mentorSelfSignIn">
+            <a class="btn btn-primary"
+              href="{{ url_for('event.selfscan', event_code=event_code) }}"
+              role="button">
             {%- if current_user.is_signed_into(event_code) -%}
-              <a class="btn btn-primary"
-                 href="{{ url_for('event.selfscan', event_code=event_code) }}"
-                 role="button">Sign Me
-              Out</a>
+                Self Scan (Already Signed In)
             {%- else -%}
-              <a class="btn btn-primary"
-                 href="{{ url_for('event.selfscan', event_code=event_code) }}"
-                 role="button">Sign Me
-              In</a>
+                Self Scan
             {%- endif -%}
+            </a>
           </div>
         {%- endif -%}
       </div>

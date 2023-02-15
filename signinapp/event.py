@@ -20,7 +20,11 @@ eventbp = Blueprint("event", __name__)
 
 
 @eventbp.route("/event")
+@login_required
 def event():
+    if not current_user.role.can_display:
+        flash("You don't have permissions to view the event scan page")
+        return redirect(url_for("index"))
     event_code = request.values.get("event_code")
     if not event_code or not Event.get_from_code(event_code):
         flash("Invalid event code")
@@ -28,22 +32,6 @@ def event():
     return render_template(
         "event.html.jinja2", url_base=request.host_url, event_code=event_code
     )
-
-
-@eventbp.route("/scan/self")
-def selfscan():
-    event_code = request.values.get("event_code")
-
-    if not event_code or not (ev := Event.get_from_code(event_code)):
-        flash("Invalid event code")
-        return redirect(url_for("index"))
-
-    if not ev.is_active:
-        flash("Event is not active")
-        return jsonify({"action": "redirect"})
-
-    ev.scan(current_user.code)
-    return redirect(url_for("event.event", event_code=event_code))
 
 
 @eventbp.route("/event/self")
@@ -60,9 +48,31 @@ def selfevent():
         return redirect(url_for("index"))
 
     if not current_user.is_signed_into(ev):
-        ev.scan(current_user.code)
+        ev.sign_in(current_user)
 
     return render_template("selfscan.html.jinja2", event=ev, event_code=ev.code)
+
+
+@eventbp.route("/event/self/out")
+@login_required
+def selfout():
+    event_code = request.values.get("event_code")
+
+    if not event_code or not (ev := Event.get_from_code(event_code)):
+        flash("Invalid event code")
+        return redirect(url_for("index"))
+
+    if not ev.is_active:
+        flash("Event is not active")
+        return redirect(url_for("index"))
+
+    if current_user.is_signed_into(ev):
+        active: Active = db.session.scalar(
+            select(Active).filter_by(user=current_user, event=ev)
+        )
+        stamp = active.convert_to_stamp(None)
+
+    return redirect(url_for("index"))
 
 
 @eventbp.route("/scan", methods=["POST"])
@@ -70,7 +80,7 @@ def scan():
     event = request.values.get("event_code")
     user_code = request.values.get("user_code")
 
-    ev: Event = db.session.scalar(select(Event).filter_by(code=event))
+    ev: Event = Event.get_from_code(event)
 
     if not ev:
         return Response("Error: Invalid event code")

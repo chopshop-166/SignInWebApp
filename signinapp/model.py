@@ -541,16 +541,21 @@ class Event(db.Model):
             active: Active = db.session.scalar(
                 select(Active).filter_by(user=user, event=self)
             )
-            stamp = active.convert_to_stamp(None)
+            stamp = active.convert_to_stamp()
             # Elapsed needs to be taken after committing to the DB
             # otherwise it won't be populated
             sign = f"out after {stamp.elapsed}"
             return StampEvent(user.human_readable, sign)
         else:
-            active = Active(user=user, event=self)
-            db.session.add(active)
-            db.session.commit()
+            self.sign_in(user)
             return StampEvent(user.human_readable, "in")
+
+    def sign_in(self, user: User | str):
+        if isinstance(user, str):
+            user = User.from_code(user)
+        active = Active(user=user, event=self)
+        db.session.add(active)
+        db.session.commit()
 
     @staticmethod
     def create(
@@ -630,8 +635,9 @@ class Active(db.Model):
             user=self.user,
             event=self.event,
             start=self.start,
-            end=end,
         )
+        if end is not None:
+            stamp.end = end
         db.session.delete(self)
         db.session.add(stamp)
         db.session.commit()
