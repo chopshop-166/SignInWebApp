@@ -289,6 +289,11 @@ class User(UserMixin, db.Model):
         "Look up user by username"
         return db.session.scalar(select(User).filter_by(username=username))
 
+    @staticmethod
+    def from_code(user_code: str) -> User | None:
+        "Look up user by secret code"
+        return db.session.scalar(select(User).filter_by(code=user_code))
+
 
 class Guardian(db.Model):
     """
@@ -531,8 +536,7 @@ class Event(db.Model):
                 f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
             )
 
-        user = db.session.scalar(select(User).filter_by(code=user_code))
-        if not user:
+        if not (user := User.from_code(user_code)):
             return Response("Error: User does not exist", HTTPStatus.BAD_REQUEST)
         if not user.approved:
             return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
