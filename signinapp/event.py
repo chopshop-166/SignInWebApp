@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 
 import flask_excel as excel
@@ -16,7 +17,8 @@ from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
 
-from .model import Active, Event, EventType, Stamps, User, db
+from .model import Active, Event, EventType, Stamps, Subteam, User, db
+from .util import correct_time_for_storage, correct_time_from_storage
 
 eventbp = Blueprint("event", __name__)
 
@@ -142,6 +144,43 @@ def active():
     )
 
 
+def export_stamps(
+    user: User | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
+    type_: str | None = None,
+    subteam: Subteam | None = None,
+    headers=True,
+) -> list[list[str]]:
+    stmt = select(Stamps)
+    if user:
+        stmt = stmt.where(Stamps.user == user)
+    if start:
+        stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
+    if end:
+        stmt = stmt.where(Stamps.end > correct_time_for_storage(end))
+    if type_:
+        stmt = stmt.where(Stamps.event.has(type_=type_))
+    if subteam:
+        stmt.where(Stamps.user.has(subteam=subteam))
+
+    result = [
+        [
+            stamp.user.human_readable,
+            correct_time_from_storage(stamp.start),
+            correct_time_from_storage(stamp.end),
+            stamp.elapsed,
+            stamp.event.name,
+            stamp.event.type_.name,
+        ]
+        for stamp in db.session.scalars(stmt)
+    ]
+
+    if headers:
+        result = [["Name", "Start", "End", "Elapsed", "Event", "Event Type"]] + result
+    return result
+
+
 @eventbp.route("/export")
 @login_required
 def export():
@@ -153,7 +192,9 @@ def export():
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)
-    return excel.make_response_from_array(Stamps.export(user, start, end, type_), "csv")
+    return excel.make_response_from_array(
+        export_stamps(user=user, start=start, end=end, type_=type_), "csv"
+    )
 
 
 @eventbp.route("/export/subteam")
@@ -163,7 +204,7 @@ def export_subteam():
         return current_app.login_manager.unauthorized()
 
     subteam = current_user.subteam
-    return excel.make_response_from_array(Stamps.export(subteam=subteam), "csv")
+    return excel.make_response_from_array(export_stamps(subteam=subteam), "csv")
 
 
 def init_app(app: Flask):

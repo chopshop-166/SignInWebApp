@@ -647,64 +647,6 @@ class Stamps(db.Model):
         "Elapsed time for a stamp"
         return self.end - self.start
 
-    def as_dict(self):
-        "Return a dictionary for sending to the web page"
-        return {
-            "user": self.user.human_readable,
-            "elapsed": str(self.elapsed),
-            "start": correct_time_from_storage(self.start),
-            "end": correct_time_from_storage(self.end),
-            "event": self.event.name,
-        }
-
-    def as_list(self):
-        "Return a list for sending to the web page"
-        return [
-            self.user.human_readable,
-            correct_time_from_storage(self.start),
-            correct_time_from_storage(self.end),
-            self.elapsed,
-            self.event.name,
-            self.event.type_.name,
-        ]
-
-    @staticmethod
-    def get(user: User | None = None, event_code=None):
-        "Get stamps matching a requirement"
-        stmt = select(Stamps)
-        if event_code:
-            stmt = stmt.where(Stamps.event.has(code=event_code))
-        if user:
-            stmt = stmt.where(Stamps.user == user)
-        return [s.as_dict() for s in db.session.scalars(stmt)]
-
-    @staticmethod
-    def export(
-        user: User | None = None,
-        start: datetime = None,
-        end: datetime = None,
-        type_: str = None,
-        subteam: Subteam = None,
-        headers=True,
-    ) -> list[list[str]]:
-        stmt = select(Stamps)
-        if user:
-            stmt = stmt.where(Stamps.user == user)
-        if start:
-            stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
-        if end:
-            stmt = stmt.where(Stamps.end > correct_time_for_storage(end))
-        if type_:
-            stmt = stmt.where(Stamps.event.has(type_=type_))
-        if subteam:
-            stmt.where(Stamps.user.subteam == subteam)
-        result = [stamp.as_list() for stamp in db.session.scalars(stmt)]
-        if headers:
-            result = [
-                ["Name", "Start", "End", "Elapsed", "Event", "Event Type"]
-            ] + result
-        return result
-
 
 class Role(db.Model):
     __tablename__ = "account_types"
