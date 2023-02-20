@@ -89,10 +89,10 @@ def scan():
             f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
         )
     if not (user := User.from_code(user_code)):
-        return Response("Error: User does not exist", HTTPStatus.BAD_REQUEST)
+        return Response("Error: User does not exist", HTTPStatus.NOT_FOUND)
 
     if not user.approved:
-        return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
+        return Response("Error: User is not approved", HTTPStatus.UNAUTHORIZED)
 
     ev: Event = Event.get_from_code(event)
 

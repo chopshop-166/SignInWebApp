@@ -33,7 +33,7 @@
           <div class="d-inline-flex justify-content-center m-auto container"
                id="mentorSelfSignIn">
             <a class="btn btn-primary"
-              href="{{ url_for('event.selfscan', event_code=event_code) }}"
+              href="{{ url_for('event.selfevent', event_code=event_code) }}"
               role="button">
             {%- if current_user.is_signed_into(event_code) -%}
                 Self Scan (Already Signed In)
