@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from http import HTTPStatus
 import locale
 import re
 import secrets
@@ -26,7 +25,6 @@ from .util import (
     normalize_phone_number_for_storage,
     normalize_phone_number_from_storage,
 )
-
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
@@ -289,6 +287,11 @@ class User(UserMixin, db.Model):
         "Look up user by username"
         return db.session.scalar(select(User).filter_by(username=username))
 
+    @staticmethod
+    def from_code(user_code: str) -> User | None:
+        "Look up user by secret code"
+        return db.session.scalar(select(User).filter_by(code=user_code))
+
 
 class Guardian(db.Model):
     """
@@ -522,35 +525,24 @@ class Event(db.Model):
     def overhead_funds(self) -> str:
         return locale.currency(self.net_funds * self.overhead / 100.0)
 
-    def scan(self, user_code) -> StampEvent:
-        if not self.is_active:
-            return Response("Error: Event is not active", HTTPStatus.BAD_REQUEST)
-
-        if not user_code:
-            return Response(
-                f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
-            )
-
-        user = db.session.scalar(select(User).filter_by(code=user_code))
-        if not user:
-            return Response("Error: User does not exist", HTTPStatus.BAD_REQUEST)
-        if not user.approved:
-            return Response("Error: User is not approved", HTTPStatus.BAD_REQUEST)
-
-        if user.is_signed_into(self):
-            active: Active = db.session.scalar(
-                select(Active).filter_by(user=user, event=self)
-            )
-            stamp = active.convert_to_stamp(None)
+    def scan(self, user: User) -> StampEvent:
+        active: Active | None = db.session.scalar(
+            select(Active).filter_by(user=user, event=self)
+        )
+        if active:
+            stamp = active.convert_to_stamp()
             # Elapsed needs to be taken after committing to the DB
             # otherwise it won't be populated
             sign = f"out after {stamp.elapsed}"
             return StampEvent(user.human_readable, sign)
         else:
-            active = Active(user=user, event=self)
-            db.session.add(active)
-            db.session.commit()
+            self.sign_in(user)
             return StampEvent(user.human_readable, "in")
+
+    def sign_in(self, user: User):
+        active = Active(user=user, event=self)
+        db.session.add(active)
+        db.session.commit()
 
     @staticmethod
     def create(
@@ -630,21 +622,13 @@ class Active(db.Model):
             user=self.user,
             event=self.event,
             start=self.start,
-            end=end,
         )
+        if end is not None:
+            stamp.end = end
         db.session.delete(self)
         db.session.add(stamp)
         db.session.commit()
         return stamp
-
-    @staticmethod
-    def get(event_code: str | Event | None = None) -> list[dict]:
-        stmt = select(Active)
-        if event_code:
-            if isinstance(event_code, str):
-                event_code = Event.get_from_code(event_code)
-            stmt = stmt.filter_by(event=event_code)
-        return [active.as_dict() for active in db.session.scalars(stmt)]
 
 
 class Stamps(db.Model):
@@ -662,64 +646,6 @@ class Stamps(db.Model):
     def elapsed(self) -> timedelta:
         "Elapsed time for a stamp"
         return self.end - self.start
-
-    def as_dict(self):
-        "Return a dictionary for sending to the web page"
-        return {
-            "user": self.user.human_readable,
-            "elapsed": str(self.elapsed),
-            "start": correct_time_from_storage(self.start),
-            "end": correct_time_from_storage(self.end),
-            "event": self.event.name,
-        }
-
-    def as_list(self):
-        "Return a list for sending to the web page"
-        return [
-            self.user.human_readable,
-            correct_time_from_storage(self.start),
-            correct_time_from_storage(self.end),
-            self.elapsed,
-            self.event.name,
-            self.event.type_.name,
-        ]
-
-    @staticmethod
-    def get(user: User | None = None, event_code=None):
-        "Get stamps matching a requirement"
-        stmt = select(Stamps)
-        if event_code:
-            stmt = stmt.where(Stamps.event.has(code=event_code))
-        if user:
-            stmt = stmt.where(Stamps.user == user)
-        return [s.as_dict() for s in db.session.scalars(stmt)]
-
-    @staticmethod
-    def export(
-        user: User | None = None,
-        start: datetime = None,
-        end: datetime = None,
-        type_: str = None,
-        subteam: Subteam = None,
-        headers=True,
-    ) -> list[list[str]]:
-        stmt = select(Stamps)
-        if user:
-            stmt = stmt.where(Stamps.user == user)
-        if start:
-            stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
-        if end:
-            stmt = stmt.where(Stamps.end > correct_time_for_storage(end))
-        if type_:
-            stmt = stmt.where(Stamps.event.has(type_=type_))
-        if subteam:
-            stmt.where(Stamps.user.subteam == subteam)
-        result = [stamp.as_list() for stamp in db.session.scalars(stmt)]
-        if headers:
-            result = [
-                ["Name", "Start", "End", "Elapsed", "Event", "Event Type"]
-            ] + result
-        return result
 
 
 class Role(db.Model):

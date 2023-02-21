@@ -1,3 +1,6 @@
+from datetime import datetime
+from http import HTTPStatus
+
 import flask_excel as excel
 from flask import (
     Blueprint,
@@ -14,13 +17,18 @@ from flask.templating import render_template
 from flask_login import current_user, login_required
 from sqlalchemy.future import select
 
-from .model import Active, Event, EventType, Stamps, User, db
+from .model import Active, Event, EventType, Stamps, Subteam, User, db
+from .util import correct_time_for_storage, correct_time_from_storage
 
 eventbp = Blueprint("event", __name__)
 
 
 @eventbp.route("/event")
+@login_required
 def event():
+    if not current_user.role.can_display:
+        flash("You don't have permissions to view the event scan page")
+        return redirect(url_for("index"))
     event_code = request.values.get("event_code")
     if not event_code or not Event.get_from_code(event_code):
         flash("Invalid event code")
@@ -28,22 +36,6 @@ def event():
     return render_template(
         "event.html.jinja2", url_base=request.host_url, event_code=event_code
     )
-
-
-@eventbp.route("/scan/self")
-def selfscan():
-    event_code = request.values.get("event_code")
-
-    if not event_code or not (ev := Event.get_from_code(event_code)):
-        flash("Invalid event code")
-        return redirect(url_for("index"))
-
-    if not ev.is_active:
-        flash("Event is not active")
-        return jsonify({"action": "redirect"})
-
-    ev.scan(current_user.code)
-    return redirect(url_for("event.event", event_code=event_code))
 
 
 @eventbp.route("/event/self")
@@ -60,41 +52,83 @@ def selfevent():
         return redirect(url_for("index"))
 
     if not current_user.is_signed_into(ev):
-        ev.scan(current_user.code)
+        ev.sign_in(current_user)
 
     return render_template("selfscan.html.jinja2", event=ev, event_code=ev.code)
 
 
+@eventbp.route("/event/self/out")
+@login_required
+def selfout():
+    event_code = request.values.get("event_code")
+
+    if not event_code or not (ev := Event.get_from_code(event_code)):
+        flash("Invalid event code")
+        return redirect(url_for("index"))
+
+    if not ev.is_active:
+        flash("Event is not active")
+        return redirect(url_for("index"))
+
+    if current_user.is_signed_into(ev):
+        active: Active = db.session.scalar(
+            select(Active).filter_by(user=current_user, event=ev)
+        )
+        active.convert_to_stamp()
+
+    return redirect(url_for("index"))
+
+
 @eventbp.route("/scan", methods=["POST"])
+@login_required
 def scan():
+    """This function returns a JSON object, not a web page."""
+
+    if not current_user.role.can_display:
+        return Response(
+            "Error: User does not have permission to view active stamps",
+            HTTPStatus.FORBIDDEN,
+        )
+
     event = request.values.get("event_code")
-    user_code = request.values.get("user_code")
 
-    ev: Event = db.session.scalar(select(Event).filter_by(code=event))
+    if not (user_code := request.values.get("user_code")):
+        return Response(
+            f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
+        )
+    if not (user := User.from_code(user_code)):
+        return Response("Error: User does not exist", HTTPStatus.NOT_FOUND)
 
-    if not ev:
+    if not user.approved:
+        return Response("Error: User is not approved", HTTPStatus.FORBIDDEN)
+
+    if not (ev := Event.get_from_code(event)):
         return Response("Error: Invalid event code")
 
     if not ev.is_active:
         return jsonify({"action": "redirect"})
 
-    stamp = ev.scan(user_code)
+    stamp = ev.scan(user)
 
-    if isinstance(stamp, Response):
-        print(stamp)
-        return stamp
-    else:
-        return jsonify(
-            {
-                "message": f"{stamp.name} signed {stamp.event}",
-                "users": Active.get(event),
-                "action": "update",
-            }
-        )
+    return jsonify(
+        {
+            "message": f"{stamp.name} signed {stamp.event}",
+            "users": [active.as_dict() for active in ev.active],
+            "action": "update",
+        }
+    )
 
 
 @eventbp.route("/autoevent")
 def autoevent():
+    """This function returns a JSON object, not a web page."""
+
+    if not current_user.role.can_display:
+        return Response(
+            "Error: User does not have permission to view active stamps",
+            HTTPStatus.FORBIDDEN,
+        )
+
     ev: Event = db.session.scalar(
         select(Event).filter_by(is_active=True).join(EventType).filter_by(autoload=True)
     )
@@ -103,8 +137,19 @@ def autoevent():
 
 
 @eventbp.route("/active")
+@login_required
 def active():
+    """This function returns a JSON object, not a web page."""
     event = request.values.get("event", None)
+
+    if not current_user.approved:
+        return Response("Error: User is not approved", HTTPStatus.FORBIDDEN)
+
+    if not current_user.role.can_display:
+        return Response(
+            "Error: User does not have permission to view active stamps",
+            HTTPStatus.FORBIDDEN,
+        )
 
     ev: Event = Event.get_from_code(event)
 
@@ -113,11 +158,48 @@ def active():
 
     return jsonify(
         {
-            "users": Active.get(event),
+            "users": [active.as_dict() for active in ev.active],
             "action": "update",
             "message": "Updated user data",
         }
     )
+
+
+def export_stamps(
+    user: User | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
+    type_: str | None = None,
+    subteam: Subteam | None = None,
+    headers=True,
+) -> list[list[str]]:
+    stmt = select(Stamps)
+    if user:
+        stmt = stmt.where(Stamps.user == user)
+    if start:
+        stmt = stmt.where(Stamps.start < correct_time_for_storage(start))
+    if end:
+        stmt = stmt.where(Stamps.end > correct_time_for_storage(end))
+    if type_:
+        stmt = stmt.where(Stamps.event.has(type_=type_))
+    if subteam:
+        stmt.where(Stamps.user.has(subteam=subteam))
+
+    result = [
+        [
+            stamp.user.human_readable,
+            correct_time_from_storage(stamp.start),
+            correct_time_from_storage(stamp.end),
+            stamp.elapsed,
+            stamp.event.name,
+            stamp.event.type_.name,
+        ]
+        for stamp in db.session.scalars(stmt)
+    ]
+
+    if headers:
+        result = [["Name", "Start", "End", "Elapsed", "Event", "Event Type"]] + result
+    return result
 
 
 @eventbp.route("/export")
@@ -131,7 +213,9 @@ def export():
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)
-    return excel.make_response_from_array(Stamps.export(user, start, end, type_), "csv")
+    return excel.make_response_from_array(
+        export_stamps(user=user, start=start, end=end, type_=type_), "csv"
+    )
 
 
 @eventbp.route("/export/subteam")
@@ -141,7 +225,7 @@ def export_subteam():
         return current_app.login_manager.unauthorized()
 
     subteam = current_user.subteam
-    return excel.make_response_from_array(Stamps.export(subteam=subteam), "csv")
+    return excel.make_response_from_array(export_stamps(subteam=subteam), "csv")
 
 
 def init_app(app: Flask):
