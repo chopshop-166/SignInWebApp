@@ -80,11 +80,19 @@ def selfout():
 
 
 @eventbp.route("/scan", methods=["POST"])
+@login_required
 def scan():
-    event = request.values.get("event_code")
-    user_code = request.values.get("user_code")
+    """This function returns a JSON object, not a web page."""
 
-    if not user_code:
+    if not current_user.role.can_display:
+        return Response(
+            "Error: User does not have permission to view active stamps",
+            HTTPStatus.FORBIDDEN,
+        )
+
+    event = request.values.get("event_code")
+
+    if not (user_code := request.values.get("user_code")):
         return Response(
             f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
         )
@@ -92,11 +100,9 @@ def scan():
         return Response("Error: User does not exist", HTTPStatus.NOT_FOUND)
 
     if not user.approved:
-        return Response("Error: User is not approved", HTTPStatus.UNAUTHORIZED)
+        return Response("Error: User is not approved", HTTPStatus.FORBIDDEN)
 
-    ev: Event = Event.get_from_code(event)
-
-    if not ev:
+    if not (ev := Event.get_from_code(event)):
         return Response("Error: Invalid event code")
 
     if not ev.is_active:
@@ -104,21 +110,25 @@ def scan():
 
     stamp = ev.scan(user)
 
-    if isinstance(stamp, Response):
-        print(stamp)
-        return stamp
-    else:
-        return jsonify(
-            {
-                "message": f"{stamp.name} signed {stamp.event}",
-                "users": [active.as_dict() for active in ev.active],
-                "action": "update",
-            }
-        )
+    return jsonify(
+        {
+            "message": f"{stamp.name} signed {stamp.event}",
+            "users": [active.as_dict() for active in ev.active],
+            "action": "update",
+        }
+    )
 
 
 @eventbp.route("/autoevent")
 def autoevent():
+    """This function returns a JSON object, not a web page."""
+
+    if not current_user.role.can_display:
+        return Response(
+            "Error: User does not have permission to view active stamps",
+            HTTPStatus.FORBIDDEN,
+        )
+
     ev: Event = db.session.scalar(
         select(Event).filter_by(is_active=True).join(EventType).filter_by(autoload=True)
     )
@@ -127,8 +137,19 @@ def autoevent():
 
 
 @eventbp.route("/active")
+@login_required
 def active():
+    """This function returns a JSON object, not a web page."""
     event = request.values.get("event", None)
+
+    if not current_user.approved:
+        return Response("Error: User is not approved", HTTPStatus.FORBIDDEN)
+
+    if not current_user.role.can_display:
+        return Response(
+            "Error: User does not have permission to view active stamps",
+            HTTPStatus.FORBIDDEN,
+        )
 
     ev: Event = Event.get_from_code(event)
 
