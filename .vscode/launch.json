@@ -82,7 +82,7 @@
             "jinja": true
         },
         {
-            "name": "Generate Migration",
+            "name": "Generate Migration Revision",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -93,8 +93,6 @@
             "args": [
                 "db",
                 "migrate",
-                "-m",
-                "Initial Migration"
             ],
             "jinja": true
         },

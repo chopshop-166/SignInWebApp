@@ -3,18 +3,19 @@ from __future__ import annotations
 import dataclasses
 import enum
 import locale
-import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
+from typing import Annotated
 
 from flask import Response, current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
-from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.future import select
+from sqlalchemy.orm import Mapped, mapped_column
 from werkzeug.security import generate_password_hash
 from wtforms import FieldList
 
@@ -28,6 +29,9 @@ from .util import (
 
 # this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy()
+
+intpk = Annotated[int, mapped_column(primary_key=True)]
+NonNullBool = Annotated[bool, mapped_column(default=False)]
 
 
 def gen_code():
@@ -65,14 +69,14 @@ class ShirtSizes(enum.Enum):
 class Badge(db.Model):
     'Represents an "achievement", accomplishment, or certification'
     __tablename__ = "badges"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    description = db.Column(db.String)
-    emoji = db.Column(db.String)
-    icon = db.Column(db.String)
-    color = db.Column(db.String, default="black")
+    id: Mapped[intpk]
+    name: Mapped[str]
+    description: Mapped[str | None]
+    emoji: Mapped[str | None]
+    icon: Mapped[str | None]
+    color: Mapped[str] = mapped_column(default="black")
 
-    awards: list[BadgeAward] = db.relationship("BadgeAward", back_populates="badge")
+    awards: Mapped[BadgeAward] = db.relationship(back_populates="badge")
 
     @staticmethod
     def from_name(name) -> Badge:
@@ -83,12 +87,12 @@ class Badge(db.Model):
 class BadgeAward(db.Model):
     "Represents a pairing of user to badge, with received date"
     __tablename__ = "badge_awards"
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"), primary_key=True)
-    received = db.Column(db.DateTime, server_default=func.now())
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), primary_key=True)
+    badge_id: Mapped[int] = mapped_column(db.ForeignKey("badges.id"), primary_key=True)
+    received: Mapped[datetime] = mapped_column(server_default=func.now())
 
-    owner: User = db.relationship("User", back_populates="awards", uselist=False)
-    badge: Badge = db.relationship("Badge")
+    owner: Mapped[User] = db.relationship(back_populates="awards", uselist=False)
+    badge: Mapped[Badge] = db.relationship()
 
     def __init__(self, badge=None, owner=None):
         self.owner = owner
@@ -105,47 +109,43 @@ parent_child_association_table = db.Table(
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True, nullable=False)
-    name = db.Column(db.String, nullable=False)
-    preferred_name = db.Column(db.String)
-    password = db.Column(db.String)
-    subteam_id = db.Column(db.Integer, db.ForeignKey("subteams.id"))
-    phone_number = db.Column(db.String)
-    email = db.Column(db.String)
-    address = db.Column(db.String)
-    tshirt_size = db.Column(db.Enum(ShirtSizes))
+    id: Mapped[intpk]
+    username: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str]
+    preferred_name: Mapped[str | None]
+    password: Mapped[str | None]
+    subteam_id: Mapped[int | None] = mapped_column(db.ForeignKey("subteams.id"))
+    phone_number: Mapped[str | None]
+    email: Mapped[str | None]
+    address: Mapped[str | None]
+    tshirt_size: Mapped[ShirtSizes | None]
 
-    code = db.Column(db.String, nullable=False, unique=True, default=gen_code)
-    role_id = db.Column(db.Integer, db.ForeignKey("account_types.id"))
-    approved = db.Column(db.Boolean, default=False)
+    code: Mapped[str] = mapped_column(unique=True, default=gen_code)
+    role_id: Mapped[int] = mapped_column(db.ForeignKey("account_types.id"))
+    approved: Mapped[NonNullBool]
 
-    stamps: list[Stamps] = db.relationship(
+    stamps: Mapped[list[Stamps]] = db.relationship(
         "Stamps",
         back_populates="user",
         cascade="all, delete, delete-orphan",
     )
-    role: Role = db.relationship("Role", back_populates="users")
-    subteam: Subteam = db.relationship("Subteam", back_populates="members")
+    role: Mapped[Role] = db.relationship(back_populates="users")
+    subteam: Mapped[Subteam] = db.relationship(back_populates="members")
 
-    awards: list[BadgeAward] = db.relationship(
-        "BadgeAward", back_populates="owner", cascade="all, delete-orphan"
+    awards: Mapped[list[BadgeAward]] = db.relationship(
+        back_populates="owner", cascade="all, delete-orphan"
     )
-    badges: list[Badge] = association_proxy("awards", "badge")
+    badges: AssociationProxy[list[Badge]] = association_proxy("awards", "badge")
 
     # Guardian specific data
-    guardian_user_data: Guardian = db.relationship(
-        "Guardian",
+    guardian_user_data: Mapped[Guardian | None] = db.relationship(
         back_populates="user",
-        uselist=False,
         cascade="all, delete, delete-orphan",
     )
 
     # Student specific data
-    student_user_data: Student = db.relationship(
-        "Student",
+    student_user_data: Mapped[Student | None] = db.relationship(
         back_populates="user",
-        uselist=False,
         cascade="all, delete, delete-orphan",
     )
 
@@ -301,16 +301,16 @@ class Guardian(db.Model):
     """
 
     __tablename__ = "guardians"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    contact_order = db.Column(db.Integer)
+    id: Mapped[intpk]
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
+    contact_order: Mapped[int]
 
     # One to One: Links User to row in Guardian table
-    user: User = db.relationship("User", back_populates="guardian_user_data")
+    user: Mapped[User] = db.relationship(back_populates="guardian_user_data")
 
     # Many to Many: Links Guardian to Children
-    students: list[Student] = db.relationship(
-        "Student", secondary=parent_child_association_table, back_populates="guardians"
+    students: Mapped[list[Student]] = db.relationship(
+        secondary=parent_child_association_table, back_populates="guardians"
     )
 
     @staticmethod
@@ -337,18 +337,18 @@ class Guardian(db.Model):
 
 class Student(db.Model):
     __tablename__ = "students"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    id: Mapped[intpk]
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
 
     # Extra student information
-    graduation_year = db.Column(db.Integer)
+    graduation_year: Mapped[int]
 
     # One to One: Links User to extra student information
-    user: User = db.relationship("User", back_populates="student_user_data")
+    user: Mapped[User] = db.relationship(back_populates="student_user_data")
 
     # Many to Many: Links Student to Guardian
-    guardians: list[Guardian] = db.relationship(
-        "Guardian", secondary=parent_child_association_table, back_populates="students"
+    guardians: Mapped[list[Guardian]] = db.relationship(
+        secondary=parent_child_association_table, back_populates="students"
     )
 
     def add_guardian(self, guardian: Guardian):
@@ -396,40 +396,40 @@ class Student(db.Model):
 
 class Event(db.Model):
     __tablename__ = "events"
-    id = db.Column(db.Integer, primary_key=True)
+    id: Mapped[intpk]
     # User-visible name
-    name = db.Column(db.String)
+    name: Mapped[str]
     # Description of the event
-    description = db.Column(db.String, default="")
+    description: Mapped[str] = mapped_column(default="")
     # Unique code for tracking
-    code = db.Column(db.String, unique=True, default=gen_code)
+    code: Mapped[str] = mapped_column(unique=True, default=gen_code)
     # Location the event takes place at
-    location = db.Column(db.String)
+    location: Mapped[str]
     # Start time
-    start = db.Column(db.DateTime, nullable=False)
+    start: Mapped[datetime]
     # End time
-    end = db.Column(db.DateTime, nullable=False)
+    end: Mapped[datetime]
     # Event type
-    type_id = db.Column(db.Integer, db.ForeignKey("event_types.id"))
+    type_id: Mapped[int] = mapped_column(db.ForeignKey("event_types.id"))
     # Whether users can register for the event
-    registration_open = db.Column(db.Boolean, default=False)
+    registration_open: Mapped[NonNullBool]
 
     # Total funds for event, in cents
-    funds = db.Column(db.Integer, default=0, nullable=False)
+    funds: Mapped[int] = mapped_column(default=0)
     # Total running cost for event, in cents
-    cost = db.Column(db.Integer, default=0, nullable=False)
+    cost: Mapped[int] = mapped_column(default=0)
     # Percentage of funds that go to the team
-    overhead = db.Column(db.Float, default=0.5, nullable=False)
+    overhead: Mapped[float] = mapped_column(default=0.3)
 
-    stamps: list[Stamps] = db.relationship(
-        "Stamps", back_populates="event", cascade="all, delete, delete-orphan"
+    stamps: Mapped[list[Stamps]] = db.relationship(
+        back_populates="event", cascade="all, delete, delete-orphan"
     )
-    active: list[Active] = db.relationship(
-        "Active", back_populates="event", cascade="all, delete, delete-orphan"
+    active: Mapped[list[Active]] = db.relationship(
+        back_populates="event", cascade="all, delete, delete-orphan"
     )
-    type_: EventType = db.relationship("EventType", back_populates="events")
-    blocks: list[EventBlock] = db.relationship(
-        "EventBlock", back_populates="event", cascade="all, delete, delete-orphan"
+    type_: Mapped[EventType] = db.relationship(back_populates="events")
+    blocks: Mapped[list[EventBlock]] = db.relationship(
+        back_populates="event", cascade="all, delete, delete-orphan"
     )
 
     @staticmethod
@@ -582,12 +582,12 @@ class Event(db.Model):
 
 class EventType(db.Model):
     __tablename__ = "event_types"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    description = db.Column(db.String)
-    autoload = db.Column(db.Boolean, nullable=False, default=False)
+    id: Mapped[intpk]
+    name: Mapped[str]
+    description: Mapped[str]
+    autoload: Mapped[NonNullBool]
 
-    events: list[Event] = db.relationship("Event", back_populates="type_")
+    events: Mapped[list[Event]] = db.relationship(back_populates="type_")
 
     @staticmethod
     def from_name(name: str) -> EventType:
@@ -596,13 +596,13 @@ class EventType(db.Model):
 
 class Active(db.Model):
     __tablename__ = "active"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
-    start = db.Column(db.DateTime, server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
+    event_id: Mapped[int] = mapped_column(db.ForeignKey("events.id"))
+    start: Mapped[datetime] = mapped_column(server_default=func.now())
 
-    user: User = db.relationship("User")
-    event: Event = db.relationship("Event")
+    user: Mapped[User] = db.relationship()
+    event: Mapped[Event] = db.relationship()
 
     @property
     def start_local(self) -> str:
@@ -633,14 +633,14 @@ class Active(db.Model):
 
 class Stamps(db.Model):
     __tablename__ = "stamps"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String, db.ForeignKey("users.id"))
-    event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
-    start = db.Column(db.DateTime)
-    end = db.Column(db.DateTime, server_default=func.now())
+    id: Mapped[intpk]
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
+    event_id: Mapped[int] = mapped_column(db.ForeignKey("events.id"))
+    start: Mapped[datetime]
+    end: Mapped[datetime] = mapped_column(server_default=func.now())
 
-    user: User = db.relationship("User", back_populates="stamps")
-    event: Event = db.relationship("Event", back_populates="stamps")
+    user: Mapped[User] = db.relationship(back_populates="stamps")
+    event: Mapped[Event] = db.relationship(back_populates="stamps")
 
     @hybrid_property
     def elapsed(self) -> timedelta:
@@ -650,20 +650,20 @@ class Stamps(db.Model):
 
 class Role(db.Model):
     __tablename__ = "account_types"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    id: Mapped[intpk]
+    name: Mapped[str]
 
-    admin = db.Column(db.Boolean, nullable=False, default=False)
-    mentor = db.Column(db.Boolean, nullable=False, default=False)
-    guardian = db.Column(db.Boolean, nullable=False, default=False)
-    can_display = db.Column(db.Boolean, nullable=False, default=False)
-    autoload = db.Column(db.Boolean, nullable=False, default=False)
-    can_see_subteam = db.Column(db.Boolean, nullable=False, default=False)
-    default_role = db.Column(db.Boolean, nullable=False, default=False)
-    visible = db.Column(db.Boolean, nullable=False, default=True)
-    receives_funds = db.Column(db.Boolean, nullable=False, default=False)
+    admin: Mapped[NonNullBool]
+    mentor: Mapped[NonNullBool]
+    guardian: Mapped[NonNullBool]
+    can_display: Mapped[NonNullBool]
+    autoload: Mapped[NonNullBool]
+    can_see_subteam: Mapped[NonNullBool]
+    default_role: Mapped[NonNullBool]
+    visible: Mapped[bool] = mapped_column(default=True)
+    receives_funds: Mapped[NonNullBool]
 
-    users: list[User] = db.relationship("User", back_populates="role")
+    users: Mapped[list[User]] = db.relationship(back_populates="role")
 
     @staticmethod
     def from_name(name) -> Role:
@@ -689,10 +689,10 @@ class Role(db.Model):
 
 class Subteam(db.Model):
     __tablename__ = "subteams"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    id: Mapped[intpk]
+    name: Mapped[str]
 
-    members: list[User] = db.relationship("User", back_populates="subteam")
+    members: Mapped[list[User]] = db.relationship(back_populates="subteam")
 
     @staticmethod
     def from_name(name) -> Subteam:
@@ -702,20 +702,18 @@ class Subteam(db.Model):
 
 class EventRegistration(db.Model):
     __tablename__ = "eventregistrations"
-    id = db.Column(db.Integer, primary_key=True)
+    id: Mapped[intpk]
 
     # Link to event block
-    event_block_id = db.Column(db.Integer, db.ForeignKey("eventblocks.id"))
-    event_block: EventBlock = db.relationship(
-        "EventBlock", back_populates="registrations"
-    )
+    event_block_id: Mapped[int] = mapped_column(db.ForeignKey("eventblocks.id"))
+    event_block: Mapped[EventBlock] = db.relationship(back_populates="registrations")
     # Link to user
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    user: User = db.relationship("User")
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
+    user: Mapped[User] = db.relationship()
     # User comment for event block
-    comment = db.Column(db.String)
+    comment: Mapped[str]
 
-    registered = db.Column(db.Boolean)
+    registered: Mapped[NonNullBool]
 
     @staticmethod
     def upsert(
@@ -744,16 +742,16 @@ class EventRegistration(db.Model):
 
 class EventBlock(db.Model):
     __tablename__ = "eventblocks"
-    id = db.Column(db.Integer, primary_key=True)
+    id: Mapped[intpk]
 
     # Start Time for block
-    start = db.Column(db.DateTime)
+    start: Mapped[datetime]
     # End time for block
-    end = db.Column(db.DateTime)
+    end: Mapped[datetime]
     # Link to Event
-    event_id = db.Column(db.Integer, db.ForeignKey("events.id"))
-    event: Event = db.relationship("Event", back_populates="blocks")
+    event_id: Mapped[int] = mapped_column(db.ForeignKey("events.id"))
+    event: Mapped[Event] = db.relationship(back_populates="blocks")
 
-    registrations: EventRegistration = db.relationship(
-        "EventRegistration", back_populates="event_block"
+    registrations: Mapped[EventRegistration] = db.relationship(
+        back_populates="event_block"
     )
