@@ -55,12 +55,9 @@ function updateUserData() {
         .then(handleResponse)
 }
 
-const onScanSuccess = (decodedText, decodedResult) => {
+const onScanSuccess = (decodedText) => {
+
     console.log(decodedText)
-    if (html5QrCode.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
-        html5QrCode.pause();
-        setTimeout(function () { html5QrCode.resume() }, 2000);
-    }
 
     let formData = new FormData();
     formData.append('user_code', decodedText);
@@ -79,16 +76,39 @@ const onScanSuccess = (decodedText, decodedResult) => {
         .then(handleResponse)
 }
 
-const html5QrCode = new Html5Qrcode("reader");
-const config = { fps: 10, rememberLastUsedCamera: true };
-
-// If you want to prefer front camera
-html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
 setInterval(updateUserData, 300000)
 setInterval(updateTime, 1000)
 updateUserData()
 
-{
-    var element = document.getElementById('reader')
-    element.style.removeProperty('border')
-}
+window.addEventListener('load', function () {
+    let selectedDeviceId;
+    const codeReader = new ZXing.BrowserQRCodeReader()
+    console.log('ZXing code reader initialized')
+
+    codeReader.getVideoInputDevices()
+      .then((videoInputDevices) => {
+        selectedDeviceId = videoInputDevices[0].deviceId
+        
+        codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
+            if (result) {
+                // properly decoded qr code
+                onScanSuccess(result)
+            }
+    
+            if (err) {
+                if (err instanceof ZXing.ChecksumException) {
+                    console.log('A code was found, but its read value was not valid.')
+                }
+    
+                if (err instanceof ZXing.FormatException) {
+                    console.log('A code was found, but it was in a invalid format.')
+                }
+            }
+        })
+        
+        console.log(`Started decode from camera with id ${selectedDeviceId}`)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  })
