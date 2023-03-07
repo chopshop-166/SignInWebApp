@@ -25,7 +25,7 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, EqualTo, NumberRange
+from wtforms.validators import DataRequired, EqualTo, NumberRange, ValidationError
 
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
 from .util import correct_time_for_storage, correct_time_from_storage, mentor_required
@@ -54,33 +54,27 @@ class EventForm(FlaskForm):
     name = StringField(validators=[DataRequired()])
     description = StringField()
     location = StringField()
-    code = StringField(validators=[DataRequired()])
+    code = StringField(validators=[DataRequired()], default=gen_code)
     start = DateTimeLocalField(format=DATE_FORMATS)
     end = DateTimeLocalField(format=DATE_FORMATS)
     type_id = SelectField(label="Type", choices=lambda: get_form_ids(EventType))
     registration_open = BooleanField(
         default=False, description="Whether this event shows up for users to register"
     )
-    funds = DecimalField(label="Funds Received")
-    cost = DecimalField(label="Event Cost")
+    funds = DecimalField(label="Funds Received", default=0)
+    cost = DecimalField(label="Event Cost", default=0)
     overhead = DecimalField(
         label="Overhead Portion",
         validators=[
             NumberRange(min=0.0, max=1.0, message="Must be between 0.0 and 1.0")
         ],
+        default=1.0,
     )
     submit = SubmitField()
 
-    def validate(self):
-        rv = FlaskForm.validate(self)
-        if not rv:
-            return False
-
-        if self.start.data >= self.end.data:
-            self.end.errors.append("End time must not be before start time")
-            return False
-
-        return True
+    def validate_end(self, field):
+        if self.start.data >= field.data:
+            raise ValidationError("End time must not be before start time")
 
 
 class BulkEventForm(FlaskForm):
@@ -96,20 +90,13 @@ class BulkEventForm(FlaskForm):
     # No funds or cost field because we don't know this amount up front
     submit = SubmitField()
 
-    def validate(self):
-        rv = FlaskForm.validate(self)
-        if not rv:
-            return False
+    def validate_end_time(self, field):
+        if self.start_time.data >= field.data:
+            raise ValidationError("End time must not be before start time")
 
-        if self.start_time.data >= self.end_time.data:
-            self.end_time.errors.append("End time must not be before start time")
-            rv = False
-
-        if self.start_day.data >= self.end_day.data:
-            self.end_day.errors.append("End day must not be before start day")
-            rv = False
-
-        return rv
+    def validate_end_day(self, field):
+        if self.start_day.data >= field.data:
+            raise ValidationError("End day must not be before start day")
 
 
 class EventSearchForm(FlaskForm):
@@ -297,7 +284,6 @@ def new():
 
         return redirect(url_for("events.list"))
 
-    form.code.process_data(gen_code())
     return render_template("form.html.jinja2", form=form, title="New Event")
 
 
