@@ -752,6 +752,6 @@ class EventBlock(db.Model):
     event_id: Mapped[int] = mapped_column(db.ForeignKey("events.id"))
     event: Mapped[Event] = db.relationship(back_populates="blocks")
 
-    registrations: Mapped[EventRegistration] = db.relationship(
-        back_populates="event_block"
+    registrations: Mapped[list[EventRegistration]] = db.relationship(
+        back_populates="event_block", cascade="all, delete, delete-orphan"
     )
