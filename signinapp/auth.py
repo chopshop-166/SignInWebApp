@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, flash, redirect, url_for
+from flask import Blueprint, Flask, flash, redirect, request, url_for
 from flask.templating import render_template
 from flask_login import (
     LoginManager,
@@ -16,6 +16,11 @@ from .forms import UserForm
 from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db
 
 login_manager = LoginManager()
+
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect(url_for("auth.login", next=request.full_path))
 
 
 @login_manager.user_loader
@@ -195,7 +200,7 @@ def login():
 
         login_user(user, remember=remember)
 
-        return redirect("/")
+        return redirect(request.args.get("next") or url_for("index"))
     return render_template("auth/login.html.jinja2", form=form)
 
 
