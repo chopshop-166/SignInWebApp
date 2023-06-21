@@ -19,7 +19,7 @@
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
-            {%- if current_user.is_authenticated and current_user.role.admin -%}
+            {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
               <th scope="col">Edit</th>
             {%- endif -%}
           </tr>
@@ -43,17 +43,17 @@
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
-              {%- if current_user.is_authenticated and current_user.role.admin -%}
+              {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
                 <td>
                   <div class="btn-group" role="group" aria-label="User Actions">
                     <a class="btn btn-sm btn-secondary"
                        href="{{ url_for('admin.edit_user', user_id=user.id)}}"
                        role="button">Edit</a>
-                    {%- if user.student_user_data -%}
+                  {%- if user.has_role("student") -%}
                       <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
                          action="submit">Edit Student</a>
-                    {%- elif user.role.guardian -%}
+                  {%- elif user.has_role("guardian") -%}
                       <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
                          action="submit">Edit Guardian</a>

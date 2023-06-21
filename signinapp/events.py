@@ -27,8 +27,9 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, EqualTo, NumberRange, ValidationError
 
+from .roles import rbac
 from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
-from .util import correct_time_for_storage, correct_time_from_storage, mentor_required
+from .util import correct_time_for_storage, correct_time_from_storage
 
 bp = Blueprint("events", __name__, url_prefix="/events")
 
@@ -133,14 +134,14 @@ class DeleteEventForm(FlaskForm):
 
 
 @bp.route("/", endpoint="list")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def list_events():
     events: list[Event] = db.session.scalars(select(Event).order_by(Event.start))
     return render_template("events.html.jinja2", events=events)
 
 
 @bp.route("/previous")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def previous():
     events: list[Event] = db.session.scalars(
         select(Event).order_by(Event.start).where(Event.end <= func.now())
@@ -149,7 +150,7 @@ def previous():
 
 
 @bp.route("/active")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def active():
     events: list[Event] = db.session.scalars(
         select(Event).order_by(Event.start).where(Event.is_active)
@@ -158,7 +159,7 @@ def active():
 
 
 @bp.route("/today")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def todays():
     events: list[Event] = db.session.scalars(
         select(Event)
@@ -172,7 +173,7 @@ def todays():
 
 
 @bp.route("/upcoming")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def upcoming():
     events: list[Event] = db.session.scalars(
         select(Event).order_by(Event.start).where(Event.start > func.now())
@@ -193,7 +194,7 @@ def list_open():
 
 
 @bp.route("/stats")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def stats():
     event: Event = db.session.get(Event, request.args["event_id"])
     users = defaultdict(timedelta)
@@ -237,7 +238,7 @@ def stats():
 
 
 @bp.route("/bulk", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def bulk():
     form = BulkEventForm()
 
@@ -264,7 +265,7 @@ def bulk():
 
 
 @bp.route("/new", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def new():
     form = EventForm()
     if form.validate_on_submit():
@@ -288,7 +289,7 @@ def new():
 
 
 @bp.route("/edit", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def edit():
     event: Event = db.session.get(Event, request.args["event_id"])
     if not event:
@@ -322,7 +323,7 @@ def edit():
 
 
 @bp.route("/search", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def search():
     form = EventSearchForm()
 
@@ -383,7 +384,7 @@ def register():
 
 
 @bp.route("/delete", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def delete():
     ev = db.session.get(Event, request.args["event_id"])
     if not ev:

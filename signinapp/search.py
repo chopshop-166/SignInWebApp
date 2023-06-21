@@ -4,7 +4,8 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, SelectField, SubmitField
 
 from .model import Badge, EventType, Role, Subteam, User, db, get_form_ids
-from .util import MultiCheckboxField, mentor_required
+from .roles import rbac
+from .util import MultiCheckboxField
 
 search = Blueprint("search", __name__)
 
@@ -16,10 +17,10 @@ class HoursForm(FlaskForm):
 
 
 @search.route("/search/hours", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def hours():
     form = HoursForm()
-    form.role.choices = [r.name for r in Role.get_visible()]
+    form.role.choices = [r.name for r in Role.get_all()]
 
     if form.validate_on_submit():
         users = User.get_visible_users()

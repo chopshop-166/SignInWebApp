@@ -1,16 +1,14 @@
-import locale
-
 from flask import Blueprint, Flask, render_template
 from sqlalchemy.future import select
 
 from .model import Event, Role, User, db
-from .util import admin_required
+from .roles import rbac
 
 finance = Blueprint("finance", __name__)
 
 
 @finance.route("/finance")
-@admin_required
+@rbac.allow(["admin"], methods=["GET"])
 def overview():
     all_events: list[Event] = db.session.scalars(select(Event))
     all_users: list[User] = db.session.scalars(

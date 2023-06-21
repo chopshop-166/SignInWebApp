@@ -8,7 +8,8 @@ from wtforms.validators import DataRequired
 from wtforms.widgets import ColorInput
 
 from .model import Badge, BadgeAward, Subteam, User, db, get_form_ids
-from .util import MultiCheckboxField, admin_required, mentor_required
+from .roles import rbac
+from .util import MultiCheckboxField
 
 bp = Blueprint("badge", __name__, url_prefix="/badge")
 
@@ -48,14 +49,14 @@ def view():
 
 
 @bp.route("/", endpoint="all")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def all_badges():
     badges = db.session.scalars(select(Badge))
     return render_template("badges.html.jinja2", badges=badges)
 
 
 @bp.route("/award", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def award():
     people: list[User] = User.get_visible_users()
     badge = db.session.get(Badge, request.args["badge_id"])
@@ -86,7 +87,7 @@ def award():
 
 
 @bp.route("/new", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def new():
     form = BadgeForm()
     if form.validate_on_submit():
@@ -100,7 +101,7 @@ def new():
 
 
 @bp.route("/edit", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def edit():
     badge_id = request.args["badge_id"]
     badge = db.session.get(Badge, badge_id)
@@ -124,7 +125,7 @@ def edit():
 
 
 @bp.route("/search", methods=["GET", "POST"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET", "POST"])
 def badges():
     form = BadgeSearchForm()
 

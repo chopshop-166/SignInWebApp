@@ -17,7 +17,15 @@ from wtforms.validators import DataRequired, Email, Optional, Regexp
 
 from signinapp.util import normalize_phone_number_for_storage
 
-from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
+from .model import (
+    Role,
+    ShirtSizes,
+    Subteam,
+    User,
+    generate_grade_choices,
+    get_form_ids,
+    db,
+)
 
 NAME_RE = regex.compile(r"^(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*$")
 ADDRESS_RE = regex.compile(r"[A-Za-z0-9'\.\-\s\,]+")
@@ -33,9 +41,8 @@ class GuardianDataForm(Form):
     student = FieldList(
         SelectField(
             "Student",
-            choices=lambda: get_form_ids(
-                User, add_null_id=True, filters=(User.role.has(name="student"),)
-            ),
+            choices=lambda: [(0, "None")]
+            + [(u.id, u.name) for u in User.get_by_role("student")],
         )
     )
 

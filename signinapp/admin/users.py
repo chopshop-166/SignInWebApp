@@ -7,7 +7,7 @@ from wtforms.validators import DataRequired, EqualTo
 
 from ..forms import GuardianDataForm, StudentDataForm, UserForm
 from ..model import Role, ShirtSizes, User, db
-from ..util import admin_required
+from ..roles import rbac
 from .util import admin
 
 
@@ -31,7 +31,7 @@ class DeleteUserForm(FlaskForm):
 
 
 @admin.route("/admin/users/approve", methods=["POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["POST"])
 def user_approve():
     user_id = request.args.get("user_id", None)
     user = db.session.get(User, user_id)
@@ -44,7 +44,7 @@ def user_approve():
 
 
 @admin.route("/admin/guardian/promote", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def user_promote():
     user: User = db.session.get(User, request.args["user_id"])
     if not user:
@@ -87,7 +87,7 @@ def user_promote():
 
 
 @admin.route("/admin/users/edit", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def edit_user():
     user: User = db.session.get(User, request.args["user_id"])
     if not user:
@@ -134,7 +134,7 @@ def edit_user():
 
 
 @admin.route("/admin/users/edit/student", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def edit_student_data():
     user: User = db.session.get(User, request.args["user_id"])
     if not user:
@@ -165,10 +165,10 @@ def edit_student_data():
 
 
 @admin.route("/admin/users/edit/guardian", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def edit_guardian_data():
     user: User = db.session.get(User, request.args["user_id"])
-    if not user or not user.role.guardian:
+    if not (user and user.has_role("guardian")):
         flash("Invalid guardian user ID")
         return redirect(url_for("team.list_guardians"))
 
@@ -199,7 +199,7 @@ def edit_guardian_data():
 
 
 @admin.route("/admin/users/delete", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def delete_user():
     user = db.session.get(User, request.args["user_id"])
     if not user:

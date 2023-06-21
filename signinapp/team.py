@@ -7,13 +7,13 @@ from sqlalchemy import or_
 from sqlalchemy.future import select
 
 from .model import Role, ShirtSizes, Subteam, User, db
-from .util import mentor_required
+from .roles import rbac
 
 team = Blueprint("team", __name__)
 
 
 @team.route("/users")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def users():
     users = User.get_visible_users()
     roles = db.session.scalars(select(Role))
@@ -21,7 +21,7 @@ def users():
 
 
 @team.route("/shirts")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def shirts():
     shirts = defaultdict(lambda: defaultdict(lambda: 0))
     for size in ShirtSizes:
@@ -41,27 +41,23 @@ def subteam():
 
 
 @team.route("/users/students")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def list_students():
-    users = db.session.scalars(
-        select(User).where(
-            or_(User.role.has(name="student"), User.role.has(name="lead"))
-        )
-    )
+    users = User.get_by_role("student")
     return render_template("user_list.html.jinja2", role="Student", users=users)
 
 
 @team.route("/users/guardians")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def list_guardians():
-    users = db.session.scalars(select(User).where(User.role.has(guardian=True)))
+    users = User.get_by_role("guardian_limited")
     return render_template("user_list.html.jinja2", role="Guardian", users=users)
 
 
 @team.route("/users/mentors")
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def list_mentors():
-    users = db.session.scalars(select(User).where(User.role.has(mentor=True)))
+    users = User.get_by_role("mentor")
     return render_template("user_list.html.jinja2", role="Mentor", users=users)
 
 

@@ -6,7 +6,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from ..model import Subteam, db
-from ..util import admin_required
+from ..roles import rbac
 from .util import admin
 
 
@@ -16,14 +16,14 @@ class SubteamForm(FlaskForm):
 
 
 @admin.route("/admin/subteams", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def subteams():
     subteams = db.session.scalars(select(Subteam))
     return render_template("admin/subteams.html.jinja2", subteams=subteams)
 
 
 @admin.route("/admin/subteams/new", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def new_subteam():
     form = SubteamForm()
     if form.validate_on_submit():
@@ -36,7 +36,7 @@ def new_subteam():
 
 
 @admin.route("/admin/subteams/edit", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def edit_subteam():
     st = db.session.get(Subteam, request.args["st_id"])
     if not st:

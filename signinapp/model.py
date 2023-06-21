@@ -10,6 +10,7 @@ from typing import Annotated
 
 from flask import Response, current_app
 from flask_login import UserMixin
+from flask_rbac import RoleMixin, UserMixin as RBUserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
@@ -19,6 +20,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from werkzeug.security import generate_password_hash
 from wtforms import FieldList
 
+from .roles import rbac
 from .util import (
     correct_time_for_storage,
     correct_time_from_storage,
@@ -107,7 +109,15 @@ parent_child_association_table = db.Table(
 )
 
 
-class User(UserMixin, db.Model):
+users_roles = db.Table(
+    "users_roles",
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
+    db.Column("role_id", db.Integer, db.ForeignKey("role.id")),
+)
+
+
+@rbac.as_user_model
+class User(db.Model, UserMixin, RBUserMixin):
     __tablename__ = "users"
     id: Mapped[intpk]
     username: Mapped[str] = mapped_column(unique=True)
@@ -121,7 +131,7 @@ class User(UserMixin, db.Model):
     tshirt_size: Mapped[ShirtSizes | None]
 
     code: Mapped[str] = mapped_column(unique=True, default=gen_code)
-    role_id: Mapped[int] = mapped_column(db.ForeignKey("account_types.id"))
+    role_id: Mapped[int] = mapped_column(db.ForeignKey("role.id"))
     approved: Mapped[NonNullBool]
 
     stamps: Mapped[list[Stamps]] = db.relationship(
@@ -148,6 +158,24 @@ class User(UserMixin, db.Model):
         back_populates="user",
         cascade="all, delete, delete-orphan",
     )
+
+    roles: Mapped[list[Role]] = db.relationship(
+        secondary=users_roles, backref=db.backref("roles", lazy="dynamic")
+    )
+
+    def add_role(self, role: Role):
+        self.roles.append(role)
+
+    def add_roles(self, roles: list[Role]):
+        for role in roles:
+            self.add_role(role)
+
+    def get_roles(self):
+        for role in self.roles:
+            yield role
+
+    def has_role(self, role: str) -> bool:
+        return any(r.matches(role) for r in self.roles)
 
     @hybrid_property
     def is_active(self) -> bool:
@@ -190,8 +218,8 @@ class User(UserMixin, db.Model):
     def can_view(self, user: User):
         "Whether the user in question can view this user"
         return (
-            self.role.mentor
-            or self.role.admin
+            Role.from_name("mentor") in self.roles
+            or Role.from_name("admin") in self.roles
             or (self == user)
             or (
                 self.guardian_user_data
@@ -203,7 +231,7 @@ class User(UserMixin, db.Model):
     @property
     def human_readable(self) -> str:
         "Human readable string for display on a web page"
-        return f"{'*' if self.role.mentor else ''}{self.display_name}"
+        return f"{'*' if self.has_role('mentor') else ''}{self.display_name}"
 
     @property
     def display_name(self) -> str:
@@ -228,7 +256,7 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def get_visible_users() -> list[User]:
-        return db.session.scalars(select(User).where(User.role.has(visible=True)))
+        return [u for u in db.session.scalars(select(User)) if u.has_role("visible")]
 
     @staticmethod
     def make(
@@ -291,6 +319,10 @@ class User(UserMixin, db.Model):
     def from_code(user_code: str) -> User | None:
         "Look up user by secret code"
         return db.session.scalar(select(User).filter_by(code=user_code))
+
+    @staticmethod
+    def get_by_role(role: str) -> list[User]:
+        return [u for u in db.session.scalars(select(User)) if u.has_role(role)]
 
 
 class Guardian(db.Model):
@@ -507,12 +539,12 @@ class Event(db.Model):
 
     def raw_funds_for(self, user: User) -> float:
         "Calculate funds from an event for the given user"
-        if not user.role.receives_funds:
+        if not user.has_role("funds"):
             return 0.0
         user_stamps = user.stamps_for_event(self)
         user_hours = sum((stamp.elapsed for stamp in user_stamps), start=timedelta())
         total_hours = sum(
-            (stamp.elapsed for stamp in self.stamps if stamp.user.role.receives_funds),
+            (stamp.elapsed for stamp in self.stamps if stamp.user.has_role("funds")),
             start=timedelta(),
         )
         user_proportion = (user_hours / total_hours) if total_hours else 0.0
@@ -648,25 +680,56 @@ class Stamps(db.Model):
         return self.end - self.start
 
 
-class Role(db.Model):
-    __tablename__ = "account_types"
+roles_parents = db.Table(
+    "roles_parents",
+    db.Column("role_id", db.Integer, db.ForeignKey("role.id")),
+    db.Column("parent_id", db.Integer, db.ForeignKey("role.id")),
+)
+
+
+@rbac.as_role_model
+class Role(db.Model, RoleMixin):
+    __tablename__ = "role"
     id: Mapped[intpk]
     name: Mapped[str]
 
-    admin: Mapped[NonNullBool]
-    mentor: Mapped[NonNullBool]
-    guardian: Mapped[NonNullBool]
-    can_display: Mapped[NonNullBool]
-    autoload: Mapped[NonNullBool]
-    can_see_subteam: Mapped[NonNullBool]
     default_role: Mapped[NonNullBool]
-    visible: Mapped[bool] = mapped_column(default=True)
-    receives_funds: Mapped[NonNullBool]
 
     users: Mapped[list[User]] = db.relationship(back_populates="role")
 
+    parents: Mapped[list[Role]] = db.relationship(
+        secondary=roles_parents,
+        primaryjoin=(id == roles_parents.c.role_id),
+        secondaryjoin=(id == roles_parents.c.parent_id),
+        backref=db.backref("children", lazy="dynamic"),
+    )
+
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name=name, **kwargs)
+        RoleMixin.__init__(self, name=name)
+
+    def add_parent(self, parent):
+        # You don't need to add this role to parent's children set,
+        # relationship between roles would do this work automatically
+        if parent not in self.parents:
+            self.parents.append(parent)
+
+    def add_parents(self, *parents):
+        for parent in parents:
+            self.add_parent(parent)
+
+    def get_name(self) -> str:
+        return self.name
+
+    def matches(self, name):
+        return self.name == name or any(r.matches(name) for r in self.parents)
+
     @staticmethod
-    def from_name(name) -> Role:
+    def get_by_name(name: str) -> Role:
+        return Role.from_name(name)
+
+    @staticmethod
+    def from_name(name: str) -> Role:
         "Get a role by name"
         return db.session.scalar(select(Role).filter_by(name=name))
 
@@ -675,16 +738,16 @@ class Role(db.Model):
         "Get the default role"
         return db.session.scalar(select(Role).filter_by(default_role=True))
 
-    @staticmethod
-    def set_default(def_role):
+    def set_default(self):
         "Set the default role"
         for role in db.session.scalar(select(Role)):
-            role.default_role = role == def_role
+            role.default_role = role == self
         db.session.commit()
 
-    @staticmethod
-    def get_visible() -> list[Role]:
-        return db.session.scalars(select(Role).filter_by(visible=True))
+    @classmethod
+    def get_all(cls) -> list[Role]:
+        """Return all existing roles"""
+        return db.session.scalars(select(cls))
 
 
 class Subteam(db.Model):

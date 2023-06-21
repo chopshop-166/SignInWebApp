@@ -22,7 +22,7 @@
           {% if user.student_user_data %}
             <h2 class="fw-light text-light d-flex justify-content-center pb-3">{{ user.student_user_data.display_grade }}</h2>
           {% endif %}
-          {%- if current_user.is_authenticated and current_user.role.admin -%}
+          {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
             <div class="btn-group d-flex justify-content-center pb-3"
                  role="group"
                  aria-label="User Actions">
@@ -41,7 +41,7 @@
         </div>
       </div>
       <div class="col-xl-8 px-4">
-        {%- if current_user.role.mentor -%}
+        {%- if current_user.has_role("mentor") -%}
           {%- if user.role -%}
             <div class="row pb-3">
               <div class="bg-primary rounded-3 py-3">

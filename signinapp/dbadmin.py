@@ -19,7 +19,7 @@ from .model import (
 
 class AuthModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated and current_user.role.admin
+        return current_user.is_authenticated and current_user.has_role("admin")
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
@@ -28,13 +28,13 @@ class AuthModelView(ModelView):
 
 class AdminView(AdminIndexView):
     def is_accessible(self):
-        return current_user.is_authenticated and current_user.role.admin
+        return current_user.is_authenticated and current_user.has_role("admin")
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login", next=request.url))
-        elif not current_user.role.admin:
+        elif not current_user.has_role("admin"):
             return abort(401)
 
 

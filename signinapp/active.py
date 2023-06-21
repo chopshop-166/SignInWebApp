@@ -4,20 +4,20 @@ from sqlalchemy import delete
 from sqlalchemy.future import select
 
 from .model import Active, Stamps, db
-from .util import admin_required, mentor_required
+from .roles import rbac
 
 bp = Blueprint("active", __name__, url_prefix="/active")
 
 
 @bp.route("/", methods=["GET"])
-@mentor_required
+@rbac.allow(["mentor"], methods=["GET"])
 def get():
     actives = db.session.scalars(select(Active))
     return render_template("active.html.jinja2", active=actives)
 
 
 @bp.route("/", methods=["DELETE"], endpoint="delete")
-@mentor_required
+@rbac.allow(["mentor"], methods=["DELETE"])
 def delete_one():
     # TODO: Check permissions
     active_event = db.session.get(Active, request.form["active_id"])
@@ -27,7 +27,7 @@ def delete_one():
 
 
 @bp.route("/delete_expired")
-@mentor_required
+@rbac.allow(["mentor"], methods=["DELETE"])
 def delete_expired():
     db.session.execute(
         delete(Active)
@@ -40,7 +40,7 @@ def delete_expired():
 
 
 @bp.route("/delete_all")
-@admin_required
+@rbac.allow(["admin"], methods=["GET"])
 def delete_all():
     db.session.execute(delete(Active))
     db.session.commit()

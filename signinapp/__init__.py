@@ -10,6 +10,7 @@ import yaml
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from flask_bootstrap import Bootstrap5
+from flask_login import current_user
 from flask_migrate import Migrate
 from sqlalchemy.future import select
 
@@ -41,6 +42,7 @@ from .model import (
     User,
     db,
 )
+from .roles import rbac
 
 locale.setlocale(locale.LC_ALL, "")
 
@@ -122,6 +124,10 @@ migrate = Migrate(app, db)
 scheduler.init_app(app)
 scheduler.start()
 
+rbac.init_app(app)
+rbac.set_user_loader(lambda: current_user)
+
+# Blueprints
 active.init_app(app)
 admin.init_app(app)
 auth.init_app(app)
@@ -182,19 +188,36 @@ def internal_server_error_ex(e: Exception):
 
 
 def create_if_not_exists(cls, name, **kwargs):
-    if not cls.from_name(name):
-        item = cls(name=name, **kwargs)
-        db.session.add(item)
+    if item := cls.from_name(name):
+        return item
+    item = cls(name=name, **kwargs)
+    db.session.add(item)
+    return item
 
 
 def init_default_db():
-    create_if_not_exists(Role, name="admin", mentor=True, can_display=True, admin=True)
-    create_if_not_exists(Role, name="mentor", mentor=True, can_display=True)
-    create_if_not_exists(Role, name="display", can_display=True, autoload=True)
-    create_if_not_exists(Role, name="lead", can_see_subteam=True, receives_funds=True)
-    create_if_not_exists(Role, name="student", default_role=True, receives_funds=True)
-    create_if_not_exists(Role, name="guardian_limited", guardian=True, visible=False)
-    create_if_not_exists(Role, name="guardian", guardian=True)
+    # Roles
+    ADMIN = create_if_not_exists(Role, name="admin")
+    MENTOR = create_if_not_exists(Role, name="mentor")
+    DISPLAY = create_if_not_exists(Role, name="display")
+    LEAD = create_if_not_exists(Role, name="lead")
+    STUDENT = create_if_not_exists(Role, name="student", default_role=True)
+    GUARDIAN_LIMITED = create_if_not_exists(Role, name="guardian_limited")
+    GUARDIAN = create_if_not_exists(Role, name="guardian")
+
+    AUTOLOAD = create_if_not_exists(Role, name="autoload")
+    FUNDS = create_if_not_exists(Role, name="funds")
+    VISIBLE = create_if_not_exists(Role, name="visible")
+
+    # Role permissions
+    ADMIN.add_parents(MENTOR)
+    DISPLAY.add_parents(AUTOLOAD)
+    MENTOR.add_parents(VISIBLE, DISPLAY)
+    LEAD.add_parents(STUDENT)
+    STUDENT.add_parents(FUNDS, VISIBLE)
+    GUARDIAN.add_parents(GUARDIAN_LIMITED, VISIBLE)
+
+    # Event types
 
     create_if_not_exists(
         EventType, name="Training", description="Training Session", autoload=True
@@ -214,9 +237,13 @@ def init_default_db():
     db.session.commit()
 
     if not User.from_username("admin"):
-        User.make("admin", "admin", password="1234", role="admin", approved=True)
+        u = User.make("admin", "admin", password="1234", role="admin", approved=True)
+        u.add_role(ADMIN)
     if not User.from_username("display"):
-        User.make("display", "display", password="1234", role="display", approved=True)
+        u = User.make(
+            "display", "display", password="1234", role="display", approved=True
+        )
+        u.add_role(DISPLAY)
     db.session.commit()
 
 

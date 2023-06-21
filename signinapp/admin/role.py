@@ -6,7 +6,7 @@ from wtforms import BooleanField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from ..model import Role, db
-from ..util import admin_required
+from ..roles import rbac
 from .util import admin
 
 
@@ -23,21 +23,21 @@ class RoleForm(FlaskForm):
 
 
 @admin.route("/admin/roles", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def roles():
     roles = db.session.scalars(select(Role))
     return render_template("admin/roles.html.jinja2", roles=roles)
 
 
 @admin.route("/admin/roles/new", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def new_role():
     form = RoleForm()
     if form.validate_on_submit():
         r = Role()
         form.populate_obj(r)
         if form.default_role.data:
-            Role.set_default(r)
+            r.set_default()
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin.subteams"))
@@ -46,7 +46,7 @@ def new_role():
 
 
 @admin.route("/admin/roles/edit", methods=["GET", "POST"])
-@admin_required
+@rbac.allow(["admin"], methods=["GET", "POST"])
 def edit_role():
     r = db.session.get(Role, request.args["role_id"])
     if not r:
@@ -57,7 +57,7 @@ def edit_role():
     if form.validate_on_submit():
         form.populate_obj(r)
         if form.default_role.data:
-            Role.set_default(r)
+            r.set_default()
         db.session.commit()
         return redirect(url_for("admin.subteams"))
 
