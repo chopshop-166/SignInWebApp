@@ -755,3 +755,13 @@ class EventBlock(db.Model):
     registrations: Mapped[list[EventRegistration]] = db.relationship(
         back_populates="event_block", cascade="all, delete, delete-orphan"
     )
+
+    @property
+    def start_local(self) -> str:
+        "Start time in local time zone"
+        return correct_time_from_storage(self.start).strftime("%c")
+
+    @property
+    def end_local(self) -> str:
+        "End time in local time zone"
+        return correct_time_from_storage(self.end).strftime("%c")
