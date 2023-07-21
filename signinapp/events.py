@@ -5,7 +5,7 @@ from urllib import parse
 from dateutil.rrule import WEEKLY, rrule
 from flask import Blueprint, Flask, flash, redirect, request, url_for
 from flask.templating import render_template
-from flask_login import current_user
+from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from sqlalchemy import func
 from sqlalchemy.future import select
@@ -335,6 +335,7 @@ def search():
 
 
 @bp.route("/register", methods=["GET", "POST"])
+@login_required
 def register():
     event: list[Event] = db.session.get(Event, request.args["event_id"])
     if not event:
