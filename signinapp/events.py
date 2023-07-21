@@ -344,7 +344,7 @@ def register():
     data = {"blocks": []}
     for block in event.blocks:
         registration = db.session.scalar(
-            select(EventRegistration).filter_by(user=current_user, event_block=block)
+            select(EventRegistration).filter_by(user_id=current_user.id, event_block=block)
         )
         # If no registration exists for this block, or they've chosen not to register for this event block
         registered = registration and registration.registered
