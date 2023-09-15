@@ -6,7 +6,7 @@ from wtforms import FormField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 
 from ..forms import GuardianDataForm, StudentDataForm, UserForm
-from ..model import Role, ShirtSizes, User, db
+from ..model import Pronoun, Role, ShirtSizes, User, db
 from ..util import admin_required
 from .util import admin
 
@@ -113,6 +113,7 @@ def edit_user():
         user.phone_number = form.phone_number.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
+        user.pronouns = Pronoun[form.pronouns.data]
         db.session.commit()
         return redirect(url_for("team.users"))
 

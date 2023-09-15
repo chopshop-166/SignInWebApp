@@ -19,6 +19,7 @@
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
+            <th scope="col">Pronouns</th>
             {%- if current_user.is_authenticated and current_user.role.admin -%}
               <th scope="col">Edit</th>
             {%- endif -%}
@@ -43,6 +44,7 @@
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
+              <td>{{ user.pronouns.value }}</td>
               {%- if current_user.is_authenticated and current_user.role.admin -%}
                 <td>
                   <div class="btn-group" role="group" aria-label="User Actions">

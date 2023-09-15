@@ -77,6 +77,18 @@ class ShirtSizes(enum.Enum):
         return [(size.name, size.value) for size in cls]
 
 
+class Pronoun(enum.Enum):
+    He_Him = "He/Him"
+    She_Her = "She/Her"
+    They_Them = "They/Them"
+    He_They = "He/They"
+    She_They = "She/They"
+
+    @classmethod
+    def get_pronoun_options(cls):
+        return [(p.name, p.value) for p in cls]
+
+
 class Badge(db.Model):
     'Represents an "achievement", accomplishment, or certification'
     __tablename__ = "badges"
@@ -129,6 +141,7 @@ class User(UserMixin, db.Model):
     phone_number: Mapped[str | None]
     address: Mapped[str | None]
     tshirt_size: Mapped[ShirtSizes | None]
+    pronouns: Mapped[Pronoun | None]
 
     code: Mapped[str] = mapped_column(unique=True, default=gen_code)
     role_id: Mapped[int] = mapped_column(db.ForeignKey("account_types.id"))

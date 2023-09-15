@@ -23,6 +23,7 @@
         <thead>
           <tr>
             <th scope="col">User</th>
+            <th scope="col">Pronouns</th>
             <th scope="col">Subteam</th>
             <th scope="col">Total Time</th>
             <th scope="col">Phone Number</th>
@@ -50,6 +51,7 @@
                      href="{{ url_for('user.profile', email=user.email)}}">Profile</a>
                 </div>
               </th>
+              <td>{{ user.pronouns.value }}</td>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
               <td>{{ user.formatted_phone_number }}</td>
