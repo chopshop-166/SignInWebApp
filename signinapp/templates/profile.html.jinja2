@@ -106,7 +106,7 @@
               {% if user.badges %}
                 {% for b in user.badges|sort(attribute="name") %}
                   <li>
-                    <a class="link-light" href="{{ url_for('user.badge', badge_id=b.id)}}">{{ show_badge(b)}}</a>
+                    <a class="link-light" href="{{ url_for('badge.view', badge_id=b.id)}}">{{ show_badge(b)}}</a>
                   </li>
                 {% endfor %}
               {% else %}
