@@ -36,7 +36,7 @@
             {% elif role == "Guardian" %}
               <th scope="col">Students</th>
             {% endif %}
-            {%- if current_user.is_authenticated and current_user.role.admin -%}
+            {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
               <th scope="col">Edit</th>
             {%- endif -%}
           </tr>
@@ -82,7 +82,7 @@
                   </ul>
                 </td>
               {% endif %}
-              {%- if current_user.is_authenticated and current_user.role.admin -%}
+              {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
                 <td>
                   <div class="btn-group" role="group" aria-label="User Actions">
                     <a class="btn btn-sm btn-secondary"
@@ -98,7 +98,7 @@
                          href="{{ url_for('admin.edit_guardian_data', user_id=user.id) }}"
                          role="button"
                          action="submit">Edit Guardian</a>
-                      {%- if user.role.name == "guardian_limited" -%}
+                      {%- if user.has_role("guardian") and not user.has_role("visible") -%}
                         <a class="btn btn-sm btn-warning"
                            href="{{ url_for('admin.user_promote', user_id=user.id) }}"
                            action="submit">Create User</a>

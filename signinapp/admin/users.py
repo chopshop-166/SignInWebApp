@@ -106,7 +106,10 @@ def edit_user():
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
-        user.role_id = form.admin_data.role.data
+
+        user.roles = [
+            Role.from_name(r) for r in form.admin_data.data["roles"] if r and r != "0"
+        ]
         user.subteam_id = form.subteam.data or None
         user.approved = form.admin_data.approved.data
         user.preferred_name = form.preferred_name.data
@@ -118,8 +121,7 @@ def edit_user():
         return redirect(url_for("team.users"))
 
     form.phone_number.process_data(user.formatted_phone_number)
-
-    form.admin_data.role.process_data(user.role_id)
+    form.admin_data.roles.process_data([role.id for role in user.roles])
     form.admin_data.approved.process_data(user.approved)
     form.subteam.process_data(user.subteam_id)
     form.tshirt_size.process_data(
@@ -167,7 +169,7 @@ def edit_student_data():
 @admin_required
 def edit_guardian_data():
     user: User = db.session.get(User, request.args["user_id"])
-    if not user or not user.role.guardian:
+    if not user or not user.has_role("guardian"):
         flash("Invalid guardian user ID")
         return redirect(url_for("team.list_guardians"))
 

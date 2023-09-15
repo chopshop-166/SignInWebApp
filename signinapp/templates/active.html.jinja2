@@ -10,7 +10,7 @@
         <a class="btn btn-danger me-1"
             href="{{ url_for('active.delete_expired')}}"
             role="button">Delete Expired Stamps</a>
-        {%- if current_user.is_authenticated and current_user.role.admin -%}
+        {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
         <a class="btn btn-danger"
             href="{{ url_for('active.delete_all')}}"
             role="button">Delete All Stamps</a>

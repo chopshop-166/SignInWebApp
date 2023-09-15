@@ -13,14 +13,14 @@
         <thead>
           <tr>
             <th scope="col">User</th>
+            <th scope="col">Pronouns</th>
             <th scope="col">Subteam</th>
             <th scope="col">Total Time</th>
             <th scope="col">Phone Number</th>
             <th scope="col">email</th>
             <th scope="col">Address</th>
             <th scope="col">T-Shirt Size</th>
-            <th scope="col">Pronouns</th>
-            {%- if current_user.is_authenticated and current_user.role.admin -%}
+            {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
               <th scope="col">Edit</th>
             {%- endif -%}
           </tr>
@@ -38,14 +38,14 @@
                   </a>
                 </div>
               </th>
+              <td>{{ user.pronouns.value }}</td>
               <td>{{ user.subteam.name }}</td>
               <td>{{ user.total_time }}</td>
               <td>{{ user.formatted_phone_number }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.address }}</td>
               <td>{{ user.tshirt_size.value }}</td>
-              <td>{{ user.pronouns.value }}</td>
-              {%- if current_user.is_authenticated and current_user.role.admin -%}
+              {%- if current_user.is_authenticated and current_user.has_role("admin") -%}
                 <td>
                   <div class="btn-group" role="group" aria-label="User Actions">
                     <a class="btn btn-sm btn-secondary"
@@ -55,7 +55,7 @@
                       <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_student_data', user_id=user.id)}}"
                          action="submit">Edit Student</a>
-                    {%- elif user.role.guardian -%}
+                    {%- elif user.has_role("guardian") -%}
                       <a class="btn btn-sm btn-info"
                          href="{{ url_for('admin.edit_guardian_data', user_id=user.id)}}"
                          action="submit">Edit Guardian</a>

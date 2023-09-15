@@ -26,6 +26,7 @@ from .model import (
     generate_grade_choices,
     get_form_ids,
 )
+from .util import MultiCheckboxField
 
 NAME_RE = regex.compile(r"^(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*$")
 ADDRESS_RE = regex.compile(r"[A-Za-z0-9'\.\-\s\,]+")
@@ -75,7 +76,7 @@ class StudentDataForm(Form):
 
 
 class AdminUserForm(Form):
-    role = SelectField(choices=lambda: get_form_ids(Role))
+    roles = MultiCheckboxField(choices=lambda: get_form_ids(Role))
     approved = BooleanField()
 
 

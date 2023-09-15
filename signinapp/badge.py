@@ -41,7 +41,7 @@ def view():
         bid = int(bid)
         badge: Badge = db.session.get(Badge, bid)
         awards: list[BadgeAward] = sorted(
-            [a for a in badge.awards], key=lambda u: u.owner.name
+            [u for u in badge.awards], key=lambda u: u.owner.name
         )
         return render_template("badge.html.jinja2", badge=badge, awards=awards)
     return redirect(url_for("mentor.all_badges", badge_id=badge.id))
