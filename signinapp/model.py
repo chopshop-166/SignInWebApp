@@ -11,7 +11,7 @@ from typing import Annotated
 from flask import Response, current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, MetaData
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.future import select
@@ -27,8 +27,19 @@ from .util import (
     normalize_phone_number_from_storage,
 )
 
+
+convention = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+
+metadata = MetaData(naming_convention=convention)
+
 # this variable, db, will be used for all SQLAlchemy commands
-db = SQLAlchemy()
+db = SQLAlchemy(metadata=metadata)
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 NonNullBool = Annotated[bool, mapped_column(default=False)]
