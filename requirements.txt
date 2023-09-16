@@ -22,6 +22,7 @@ python-dateutil~=2.8.2
 pytz~=2023.3
 PyYAML~=6.0
 regex~=2023.5.5
+psycopg2-binary~=2.9.7
 six~=1.16.0
 SQLAlchemy~=2.0.0
 toml~=0.10.2
