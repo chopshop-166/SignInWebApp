@@ -32,7 +32,7 @@
                   <p class="m-0">{{ user.full_name }}</p>
                   <a class="btn btn-sm btn-secondary"
                      role="button"
-                     href="{{ url_for('user.profile', username=user.username)}}">
+                     href="{{ url_for('user.profile', email=user.email)}}">
                     Profile
                   </a>
                 </div>

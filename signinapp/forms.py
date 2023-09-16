@@ -72,8 +72,10 @@ class AdminUserForm(Form):
 
 
 class UserForm(FlaskForm):
-    username = StringField(
-        "Username", validators=[DataRequired(), Regexp(r"\w+")], filters=[strip]
+    email = EmailField(
+        "Email Address",
+        validators=[DataRequired(), Email()],
+        description="Preferably a non-school address",
     )
     password = PasswordField("Password")
 
@@ -101,11 +103,6 @@ class UserForm(FlaskForm):
         filters=[normalize_phone_number_for_storage],
         validators=[Regexp(PHONE_RE)],
         render_kw={"placeholder": "555-555-5555"},
-    )
-    email = EmailField(
-        "Email Address",
-        validators=[DataRequired(), Email()],
-        description="Preferably a non-school address",
     )
     address = StringField(
         "Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)]

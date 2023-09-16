@@ -36,7 +36,7 @@ auth = Blueprint("auth", __name__)
 
 
 class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     remember = BooleanField("Remember Me")
     submit = SubmitField("Login")
@@ -63,8 +63,8 @@ def register():
 
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
-        username = form.username.data
-        user = User.from_username(username)
+        email = form.email.data
+        user = User.from_email(email)
 
         # if a user is found, we want to redirect back to signup page
         # so the user can try again
@@ -75,13 +75,12 @@ def register():
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
         student = Student.make(
-            username=username,
+            email=email,
             name=form.name.data,
             password=form.password.data,
             graduation_year=form.student_data.graduation_year.data,
             preferred_name=form.preferred_name.data,
             phone_number=form.phone_number.data,
-            email=form.email.data,
             address=form.address.data,
             tshirt_size=ShirtSizes[form.tshirt_size.data],
             subteam=db.session.get(Subteam, form.subteam.data),
@@ -111,8 +110,8 @@ def register_mentor():
 
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
-        username = form.username.data
-        user = User.from_username(username)
+        email = form.email.data
+        user = User.from_email(email)
 
         # if a user is found, we want to redirect back to signup page
         # so the user can try again
@@ -123,13 +122,12 @@ def register_mentor():
         # Create a new user with the form data.
         # Hash the password so the plaintext version isn't saved.
         user = User.make(
-            username=username,
+            email=email,
             name=form.name.data,
             password=form.password.data,
             role=Role.from_name("mentor"),
             preferred_name=form.preferred_name.data,
             phone_number=form.phone_number.data,
-            email=form.email.data,
             address=form.address.data,
             tshirt_size=ShirtSizes[form.tshirt_size.data],
             subteam=db.session.get(Subteam, form.subteam.data),
@@ -158,14 +156,12 @@ def register_guardian():
         user = Guardian.get_from(
             form.name.data, form.phone_number.data, form.email.data, 0
         ).user
-        user.username = form.username.data
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
         user.role = Role.from_name("guardian")
         user.preferred_name = form.preferred_name.data
         user.phone_number = form.phone_number.data
-        user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
         db.session.commit()
@@ -183,12 +179,12 @@ def register_guardian():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        username = form.username.data
+        email = form.email.data
         password = form.password.data
         remember = form.remember.data
 
         # if this returns a user, then the email already exists in database
-        user = User.from_username(username)
+        user = User.from_email(email)
 
         if not user or not check_password_hash(user.password, password):
             flash("Please check your login details and try again.")
@@ -221,7 +217,7 @@ def password():
 
         current_user.password = generate_password_hash(form.new_password.data)
         db.session.commit()
-        return redirect(url_for("user.profile", username=current_user.username))
+        return redirect(url_for("user.profile", email=current_user.email))
 
     return render_template("auth/password.html.jinja2", form=form)
 

@@ -213,10 +213,12 @@ def init_default_db():
 
     db.session.commit()
 
-    if not User.from_username("admin"):
-        User.make("admin", "admin", password="1234", role="admin", approved=True)
-    if not User.from_username("display"):
-        User.make("display", "display", password="1234", role="display", approved=True)
+    if not User.from_email("admin@signin"):
+        User.make("admin@signin", "admin", password="1234", role="admin", approved=True)
+    if not User.from_email("display@signin"):
+        User.make(
+            "display@signin", "display", password="1234", role="display", approved=True
+        )
     db.session.commit()
 
 
@@ -258,12 +260,11 @@ if app.config["DEBUG"]:
         db.session.commit()
 
         mentor_user = User.make(
-            "msoucy",
+            "msoucy@signin",
             "Matt Soucy",
             preferred_name="Matt",
             code="code-msoucy",
             phone_number="603 555-5555",
-            email="first@test.com",
             address="123 First Street",
             tshirt_size="Large",
             password="1234",
@@ -271,7 +272,7 @@ if app.config["DEBUG"]:
             approved=True,
         )
         student_user = Student.make(
-            "jburke",
+            "jburke@signin",
             "Jeff Burke",
             preferred_name="Jeff",
             code="code-jburke",
@@ -285,7 +286,7 @@ if app.config["DEBUG"]:
             guardian=Guardian.get_from(
                 name="Parent Burke",
                 phone_number="(603)555-5555",
-                email="test@email.com",
+                email="pburke@signin",
                 contact_order=1,
             )
         )

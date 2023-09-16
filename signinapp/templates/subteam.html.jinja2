@@ -12,7 +12,7 @@
           <ul>
             {%- for member in subteam.members -%}
               <li>
-                <a href="{{ url_for('user.profile', username=member.username)}}">{{ member.name }}</a>
+                <a href="{{ url_for('user.profile', email=member.email)}}">{{ member.name }}</a>
               </li>
             {%- endfor -%}
           </ul>

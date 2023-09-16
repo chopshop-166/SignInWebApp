@@ -47,7 +47,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                   {{ user.full_name }}
                   <a class="btn btn-sm btn-secondary"
-                     href="{{ url_for('user.profile', username=user.username)}}">Profile</a>
+                     href="{{ url_for('user.profile', email=user.email)}}">Profile</a>
                 </div>
               </th>
               <td>{{ user.subteam.name }}</td>
@@ -63,7 +63,7 @@
                     {% for guardian in user.student_user_data.guardians %}
                       <li>
                         <a class="link-light"
-                           href="{{ url_for('user.profile', username=guardian.user.username)}}">{{ guardian.user.name }}</a>
+                           href="{{ url_for('user.profile', email=guardian.user.email)}}">{{ guardian.user.name }}</a>
                       </li>
                     {% endfor %}
                   </ul>
@@ -74,7 +74,7 @@
                     {% for student in user.guardian_user_data.students %}
                       <li>
                         <a class="link-light"
-                           href="{{ url_for('user.profile', username=student.user.username)}}">{{ student.user.name }}</a>
+                           href="{{ url_for('user.profile', email=student.user.email)}}">{{ student.user.name }}</a>
                       </li>
                     {% endfor %}
                   </ul>
