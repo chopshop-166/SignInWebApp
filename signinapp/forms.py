@@ -17,7 +17,15 @@ from wtforms.validators import DataRequired, Email, Optional, Regexp
 
 from signinapp.util import normalize_phone_number_for_storage
 
-from .model import Role, ShirtSizes, Subteam, User, generate_grade_choices, get_form_ids
+from .model import (
+    Pronoun,
+    Role,
+    ShirtSizes,
+    Subteam,
+    User,
+    generate_grade_choices,
+    get_form_ids,
+)
 
 NAME_RE = regex.compile(r"^(\p{L}+(['\-]\p{L}+)*)( \p{L}+(['\-]\p{L}+)*)*$")
 ADDRESS_RE = regex.compile(r"[A-Za-z0-9'\.\-\s\,]+")
@@ -109,6 +117,9 @@ class UserForm(FlaskForm):
     )
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
+    )
+    pronouns = SelectField(
+        "Pronouns", choices=Pronoun.get_pronoun_options(), validators=[DataRequired()]
     )
     subteam = SelectField(
         "Subteam",

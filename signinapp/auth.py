@@ -13,7 +13,7 @@ from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 
 from .forms import UserForm
-from .model import Guardian, Role, ShirtSizes, Student, Subteam, User, db
+from .model import Guardian, Pronoun, Role, ShirtSizes, Student, Subteam, User, db
 
 login_manager = LoginManager()
 
@@ -84,6 +84,7 @@ def register():
             address=form.address.data,
             tshirt_size=ShirtSizes[form.tshirt_size.data],
             subteam=db.session.get(Subteam, form.subteam.data),
+            pronouns=Pronoun[form.pronouns.data],
         )
         student.student_user_data.update_guardians(form.student_data.guardian)
 
@@ -131,6 +132,7 @@ def register_mentor():
             address=form.address.data,
             tshirt_size=ShirtSizes[form.tshirt_size.data],
             subteam=db.session.get(Subteam, form.subteam.data),
+            pronouns=Pronoun[form.pronouns.data],
         )
 
         db.session.commit()
@@ -164,6 +166,7 @@ def register_guardian():
         user.phone_number = form.phone_number.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
+        user.pronouns = Pronoun[form.pronouns.data]
         db.session.commit()
         return redirect(url_for("index"))
 
