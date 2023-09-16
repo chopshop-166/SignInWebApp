@@ -209,7 +209,7 @@ def export():
         name = request.values.get("name", None)
     else:
         name = current_user.name
-    user = User.from_username(name)
+    user = User.from_email(name)
     start = request.args.get("start", None)
     end = request.args.get("end", None)
     type_ = request.args.get("type", None)

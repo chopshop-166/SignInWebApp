@@ -75,7 +75,7 @@
                   {%- for student in user.guardian_user_data.students -%}
                     <li>
                       <a class="text-light"
-                         href="{{ url_for('user.profile', username=student.user.username)}}">{{
+                         href="{{ url_for('user.profile', email=student.user.email)}}">{{
                       student.user.name }}</a>
                     </li>
                   {%- endfor -%}

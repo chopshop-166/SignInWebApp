@@ -24,7 +24,7 @@
               <tr>
                 <td>
                   <a class="link-light"
-                     href="{{ url_for('user.profile', username=award.owner.username)}}">{{ award.owner.name }}</a>
+                     href="{{ url_for('user.profile', email=award.owner.email)}}">{{ award.owner.name }}</a>
                 </td>
                 <td>{{ award.owner.subteam.name }}</td>
                 <td>{{ award.received }}</td>

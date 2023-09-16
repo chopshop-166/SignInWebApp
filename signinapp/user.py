@@ -11,13 +11,13 @@ user = Blueprint("user", __name__)
 @user.route("/profile/")
 @login_required
 def profile_self():
-    return redirect(url_for("user.profile", username=current_user.username))
+    return redirect(url_for("user.profile", email=current_user.email))
 
 
-@user.route("/profile/<username>")
+@user.route("/profile/<email>")
 @login_required
-def profile(username):
-    user = db.session.scalar(select(User).filter_by(username=username))
+def profile(email):
+    user = User.from_email(email)
     if not user:
         flash("Invalid user for profile")
         return redirect(url_for("index"))

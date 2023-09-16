@@ -11,7 +11,7 @@ from typing import Annotated
 from flask import Response, current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, MetaData
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.future import select
@@ -27,8 +27,19 @@ from .util import (
     normalize_phone_number_from_storage,
 )
 
+
+convention = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+
+metadata = MetaData(naming_convention=convention)
+
 # this variable, db, will be used for all SQLAlchemy commands
-db = SQLAlchemy()
+db = SQLAlchemy(metadata=metadata)
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 NonNullBool = Annotated[bool, mapped_column(default=False)]
@@ -110,13 +121,12 @@ parent_child_association_table = db.Table(
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id: Mapped[intpk]
-    username: Mapped[str] = mapped_column(unique=True)
+    email: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str]
     preferred_name: Mapped[str | None]
     password: Mapped[str | None]
     subteam_id: Mapped[int | None] = mapped_column(db.ForeignKey("subteams.id"))
     phone_number: Mapped[str | None]
-    email: Mapped[str | None]
     address: Mapped[str | None]
     tshirt_size: Mapped[ShirtSizes | None]
 
@@ -232,7 +242,7 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def make(
-        username: str,
+        email: str,
         name: str,
         password: str,
         role: Role | str,
@@ -253,7 +263,7 @@ class User(UserMixin, db.Model):
             subteam = Subteam.from_name(subteam)
 
         user = User(
-            username=username,
+            email=email,
             name=name,
             password=generate_password_hash(password),
             role_id=role.id,
@@ -269,23 +279,20 @@ class User(UserMixin, db.Model):
     def make_guardian(name: str, phone_number: str, email: str):
         role = Role.from_name("guardian_limited")
         pn = normalize_phone_number_for_storage(phone_number)
-        # Generate a username that *should* be unique.
-        username = f"{name}_{pn}"
         guardian = User(
             name=name,
-            username=username,
+            email=email,
             role_id=role.id,
             phone_number=pn,
-            email=email,
         )
         db.session.add(guardian)
         db.session.flush()
         return guardian
 
     @staticmethod
-    def from_username(username) -> User | None:
-        "Look up user by username"
-        return db.session.scalar(select(User).filter_by(username=username))
+    def from_email(email) -> User | None:
+        "Look up user by email"
+        return db.session.scalar(select(User).filter_by(email=email))
 
     @staticmethod
     def from_code(user_code: str) -> User | None:
@@ -381,11 +388,11 @@ class Student(db.Model):
 
     @staticmethod
     def make(
-        username: str, name: str, password: str, graduation_year: int, **kwargs
+        email: str, name: str, password: str, graduation_year: int, **kwargs
     ) -> User:
         role = Role.from_name("student")
         student = User.make(
-            name=name, username=username, password=password, role=role, **kwargs
+            name=name, email=email, password=password, role=role, **kwargs
         )
         student_user_data = Student(user_id=student.id, graduation_year=graduation_year)
 

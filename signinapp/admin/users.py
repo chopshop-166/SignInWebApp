@@ -58,21 +58,20 @@ def user_promote():
     del form.subteam
 
     if form.validate_on_submit():
-        if User.from_username(form.username.data) not in (None, user):
-            flash(f"Username {form.username.data} already exists")
+        if User.from_email(form.email.data) not in (None, user):
+            flash(f"Username {form.email.data} already exists")
             return redirect(
                 url_for("admin.user_promote", user_id=request.args["user_id"])
             )
 
         # Cannot use form.populate_data because of the password
-        user.username = form.username.data
+        user.email = form.email.data
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
         user.role = Role.from_name("guardian")
         user.preferred_name = form.preferred_name.data
         user.phone_number = form.phone_number.data
-        user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
         user.approved = True
@@ -98,12 +97,12 @@ def edit_user():
     del form.student_data
 
     if form.validate_on_submit():
-        if User.from_username(form.username.data) not in (None, user):
-            flash(f"Username {form.username.data} already exists")
+        if User.from_email(form.email.data) not in (None, user):
+            flash(f"Username {form.email.data} already exists")
             return redirect(url_for("admin.edit_user", user_id=request.args["user_id"]))
 
         # Cannot use form.populate_data because of the password
-        user.username = form.username.data
+        user.email = form.email.data
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
@@ -112,7 +111,6 @@ def edit_user():
         user.approved = form.admin_data.approved.data
         user.preferred_name = form.preferred_name.data
         user.phone_number = form.phone_number.data
-        user.email = form.email.data
         user.address = form.address.data
         user.tshirt_size = ShirtSizes[form.tshirt_size.data]
         db.session.commit()
