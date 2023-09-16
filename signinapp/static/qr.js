@@ -80,10 +80,16 @@ setInterval(updateUserData, 300000)
 setInterval(updateTime, 1000)
 updateUserData()
 
-window.addEventListener('load', function () {
+function initCamera() {
     let selectedDeviceId;
     const codeReader = new ZXing.BrowserQRCodeReader()
     console.log('ZXing code reader initialized')
+    var reader = document.getElementById('reader')
+    reader.children.namedItem("launchButton").remove()
+    var video = document.createElement("video")
+    video.style = "border: 1px solid gray"
+    video.id = "video"
+    reader.appendChild(video)
 
     codeReader.getVideoInputDevices()
       .then((videoInputDevices) => {
@@ -111,4 +117,4 @@ window.addEventListener('load', function () {
       .catch((err) => {
         console.error(err)
       })
-  })
+}

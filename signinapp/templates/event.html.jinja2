@@ -48,7 +48,7 @@
       <div class="bg-secondary rounded-3 py-3 content-primary float-start">
         {# justify-content-between to get QR take up only the space it needs #}
         <div class="d-inline-flex justify-content-center m-auto hidesmall width-100" id="reader">
-          <video id="video" style="border: 1px solid gray"></video>
+          <button id="launchButton" onclick="initCamera()">Start Scanning</button>
         </div>
         <div class="d-flex justify-content-center pt-3">
           <div id="qrPlaceholder"></div>
