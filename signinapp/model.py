@@ -152,6 +152,7 @@ class User(UserMixin, db.Model):
     pronouns: Mapped[Pronoun | None]
 
     code: Mapped[str] = mapped_column(unique=True, default=gen_code)
+    role_id: Mapped[int] = mapped_column(db.ForeignKey("account_types.id"))
     approved: Mapped[NonNullBool]
 
     stamps: Mapped[list[Stamps]] = db.relationship(
@@ -721,6 +722,11 @@ class AccountType(db.Model):
     receives_funds: Mapped[NonNullBool]
 
     users: Mapped[list[User]] = db.relationship(back_populates="role")
+
+    @classmethod
+    def from_name(cls, name) -> Role:
+        "Get a role by name"
+        return db.session.scalar(select(cls).filter_by(name=name))
 
 
 class Role(db.Model):
