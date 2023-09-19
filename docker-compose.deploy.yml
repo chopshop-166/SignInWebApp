@@ -17,6 +17,8 @@ services:
   chopshop_signin:
     container_name: chopshop_signin
     image: 166first/signinwebapp:latest
+    depends_on:
+      - postgres
     ports:
       - "8100:8100/tcp"
     # Volumes store your data between container upgrades
@@ -27,3 +29,14 @@ services:
       - FLASK_SECRET_KEY
       - CSSIGNIN_CONFIG=/appdata/cssignin.yaml
       - LANG=en_US.UTF-8
+
+  postgres:
+    container_name: chopshop_db
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./appdata/db:/var/lib/postgresql/data

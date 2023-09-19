@@ -160,14 +160,19 @@ def active():
 @bp.route("/today")
 @mentor_required
 def todays():
-    events: list[Event] = db.session.scalars(
-        select(Event)
-        .order_by(Event.start)
-        .where(
+    query = select(Event).order_by(Event.start)
+    if db.get_engine().name == "postgresql":
+        query = query.where(
+            Event.start
+            < func.date_trunc("day", func.now()) + func.make_interval(0, 0, 0, 1),
+            Event.end > func.date_trunc("day", func.now()),
+        )
+    elif db.get_engine().name == "sqlite":
+        query = query.where(
             Event.start < func.datetime("now", "+1 day", "start of day"),
             Event.end > func.datetime("now", "start of day"),
         )
-    )
+    events: list[Event] = db.session.scalars(query)
     return render_template("events.html.jinja2", prefix="Today's ", events=events)
 
 

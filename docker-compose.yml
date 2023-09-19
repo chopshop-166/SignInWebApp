@@ -3,6 +3,8 @@ version: "3"
 services:
   chopshop_signin:
     container_name: chopshop_signin
+    depends_on:
+      - postgres
     build:
       context: .
       network: host
@@ -16,3 +18,13 @@ services:
       - FLASK_SECRET_KEY
       - CSSIGNIN_CONFIG=/appdata/cssignin.yaml
       - LANG=en_US.UTF-8
+  postgres:
+    container_name: chopshop_db
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./appdata/db:/var/lib/postgresql/data

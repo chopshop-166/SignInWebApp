@@ -280,7 +280,7 @@ class User(UserMixin, db.Model):
             name=name,
             password=generate_password_hash(password),
             role_id=role.id,
-            subteam_id=subteam.id if subteam else 0,
+            subteam_id=subteam.id if subteam else None,
             approved=approved,
             **kwargs,
         )
@@ -505,21 +505,40 @@ class Event(db.Model):
     @is_active.expression
     def is_active(cls):
         "Usable in queries"
-        return and_(
-            (
-                func.datetime(
-                    cls.start,
-                    f"-{current_app.config['PRE_EVENT_ACTIVE_TIME']} minutes",
-                )
-                < func.now()
-            ),
-            (
-                func.now()
-                < func.datetime(
-                    cls.end, f"+{current_app.config['POST_EVENT_ACTIVE_TIME']} minutes"
-                )
-            ),
-        ).label("is_active")
+        if db.get_engine().name == "postgresql":
+            return and_(
+                (
+                    cls.start
+                    - func.make_interval(
+                        0, 0, 0, 0, 0, current_app.config["PRE_EVENT_ACTIVE_TIME"]
+                    )
+                    < func.now()
+                ),
+                (
+                    cls.start
+                    + func.make_interval(
+                        0, 0, 0, 0, 0, current_app.config["POST_EVENT_ACTIVE_TIME"]
+                    )
+                    > func.now()
+                ),
+            )
+        elif db.get_engine().name == "sqlite":
+            return and_(
+                (
+                    func.datetime(
+                        cls.start,
+                        f"-{current_app.config['PRE_EVENT_ACTIVE_TIME']} minutes",
+                    )
+                    < func.now()
+                ),
+                (
+                    func.now()
+                    < func.datetime(
+                        cls.end,
+                        f"+{current_app.config['POST_EVENT_ACTIVE_TIME']} minutes",
+                    )
+                ),
+            ).label("is_active")
 
     @property
     def total_time(self) -> timedelta:
