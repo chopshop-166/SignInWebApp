@@ -125,7 +125,7 @@ def edit():
 
 @bp.route("/search", methods=["GET", "POST"])
 @mentor_required
-def badges():
+def search():
     form = BadgeSearchForm()
 
     if form.validate_on_submit():
