@@ -9,21 +9,34 @@ from .util import admin_required, mentor_required
 bp = Blueprint("active", __name__, url_prefix="/active")
 
 
-@bp.route("/", methods=["GET"])
+@bp.get("/")
 @mentor_required
-def get():
+def view():
     actives = db.session.scalars(select(Active))
     return render_template("active.html.jinja2", active=actives)
 
 
-@bp.route("/", methods=["DELETE"], endpoint="delete")
+@bp.post("/")
+@mentor_required
+def post():
+    active_event = db.session.get(Active, request.form["active_id"])
+    stamp = Stamps(
+        user=active_event.user, event=active_event.event, start=active_event.start
+    )
+    db.session.delete(active_event)
+    db.session.add(stamp)
+    db.session.commit()
+    return redirect(url_for("active.view"))
+
+
+@bp.delete("/", endpoint="delete")
 @mentor_required
 def delete_one():
     # TODO: Check permissions
     active_event = db.session.get(Active, request.form["active_id"])
     db.session.delete(active_event)
     db.session.commit()
-    return redirect(url_for("active.get"))
+    return redirect(url_for("active.view"))
 
 
 @bp.route("/delete_expired")
@@ -36,7 +49,7 @@ def delete_expired():
     )
     db.session.commit()
     flash("Deleted all expired stamps")
-    return redirect(url_for("active.get"))
+    return redirect(url_for("active.view"))
 
 
 @bp.route("/delete_all")
@@ -44,7 +57,7 @@ def delete_expired():
 def delete_all():
     db.session.execute(delete(Active))
     db.session.commit()
-    return redirect(url_for("active.get"))
+    return redirect(url_for("active.view"))
 
 
 def init_app(app: Flask):
