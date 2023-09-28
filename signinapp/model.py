@@ -337,13 +337,7 @@ class Guardian(db.Model):
     def get_from(
         name: str, phone_number: str, email: str, contact_order: int
     ) -> Guardian:
-        guardian_user = db.session.scalar(
-            select(User).where(
-                User.name == name,
-                User.phone_number == phone_number,
-                User.email == email,
-            )
-        )
+        guardian_user = db.session.scalar(select(User).where(User.email == email))
         if guardian_user:
             # If we found the guardian user, then return the extra guardian data (This object/table)
             return guardian_user.guardian_user_data
