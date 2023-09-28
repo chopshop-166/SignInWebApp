@@ -35,7 +35,8 @@
               <td>{{ ac.event.name }}</td>
               <td>{{ ac.start_local }}</td>
               <td>
-                <form class="inlineform" id="signout{{ ac.id }}" method="post">
+                <form action="{{ url_for('active.post') }}"
+                      class="inlineform" id="signout{{ ac.id }}" method="post">
                   <input type="hidden" value="{{ ac.id }}" name="active_id"/>
                   <button class="btn btn-sm btn-secondary" type="submit">Sign Out</button>
                 </form>

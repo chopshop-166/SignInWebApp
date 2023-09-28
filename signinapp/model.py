@@ -303,9 +303,10 @@ class User(UserMixin, db.Model):
         return guardian
 
     @staticmethod
-    def from_email(email) -> User | None:
+    def from_email(email: str) -> User | None:
         "Look up user by email"
-        return db.session.scalar(select(User).filter_by(email=email))
+        email = email.lower()
+        return db.session.scalar(select(User).filter(func.lower(User.email) == email))
 
     @staticmethod
     def from_code(user_code: str) -> User | None:
