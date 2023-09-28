@@ -272,7 +272,7 @@ if app.config["DEBUG"]:
             approved=True,
         )
         student_user = Student.make(
-            "jburke@signin",
+            "Jburke@signin",
             "Jeff Burke",
             preferred_name="Jeff",
             code="code-jburke",
