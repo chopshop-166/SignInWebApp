@@ -188,13 +188,15 @@ def create_if_not_exists(cls, name, **kwargs):
 
 
 def init_default_db():
-    create_if_not_exists(Role, name="admin", mentor=True, can_display=True, admin=True)
-    create_if_not_exists(Role, name="mentor", mentor=True, can_display=True)
-    create_if_not_exists(Role, name="display", can_display=True, autoload=True)
-    create_if_not_exists(Role, name="lead", can_see_subteam=True, receives_funds=True)
-    create_if_not_exists(Role, name="student", default_role=True, receives_funds=True)
-    create_if_not_exists(Role, name="guardian_limited", guardian=True, visible=False)
-    create_if_not_exists(Role, name="guardian", guardian=True)
+    create_if_not_exists(Role, name="admin")
+    create_if_not_exists(Role, name="mentor")
+    create_if_not_exists(Role, name="display")
+    create_if_not_exists(Role, name="lead")
+    create_if_not_exists(Role, name="student")
+    create_if_not_exists(Role, name="guardian")
+    create_if_not_exists(Role, name="funds")
+    create_if_not_exists(Role, name="autoload")
+    create_if_not_exists(Role, name="visible")
 
     create_if_not_exists(
         EventType, name="Training", description="Training Session", autoload=True
@@ -214,10 +216,20 @@ def init_default_db():
     db.session.commit()
 
     if not User.from_email("admin@signin"):
-        User.make("admin@signin", "admin", password="1234", role="admin", approved=True)
+        User.make(
+            "admin@signin",
+            "admin",
+            password="1234",
+            roles=["admin", "mentor", "visible", "display"],
+            approved=True,
+        )
     if not User.from_email("display@signin"):
         User.make(
-            "display@signin", "display", password="1234", role="display", approved=True
+            "display@signin",
+            "display",
+            password="1234",
+            roles=["display", "autoload"],
+            approved=True,
         )
     db.session.commit()
 
@@ -268,7 +280,7 @@ if app.config["DEBUG"]:
             address="123 First Street",
             tshirt_size="Large",
             password="1234",
-            role="mentor",
+            roles=["mentor", "display"],
             approved=True,
         )
         student_user = Student.make(

@@ -26,7 +26,7 @@ eventbp = Blueprint("event", __name__)
 @eventbp.route("/event")
 @login_required
 def event():
-    if not current_user.role.can_display:
+    if not current_user.has_role("display"):
         flash("You don't have permissions to view the event scan page")
         return redirect(url_for("index"))
     event_code = request.values.get("event_code")
@@ -84,7 +84,7 @@ def selfout():
 def scan():
     """This function returns a JSON object, not a web page."""
 
-    if not current_user.role.can_display:
+    if not current_user.has_role("display"):
         return Response(
             "Error: User does not have permission to view active stamps",
             HTTPStatus.FORBIDDEN,
@@ -123,7 +123,7 @@ def scan():
 def autoevent():
     """This function returns a JSON object, not a web page."""
 
-    if not current_user.role.can_display:
+    if not current_user.has_role("display"):
         return Response(
             "Error: User does not have permission to view active stamps",
             HTTPStatus.FORBIDDEN,
@@ -145,7 +145,7 @@ def active():
     if not current_user.approved:
         return Response("Error: User is not approved", HTTPStatus.FORBIDDEN)
 
-    if not current_user.role.can_display:
+    if not current_user.has_role("display"):
         return Response(
             "Error: User does not have permission to view active stamps",
             HTTPStatus.FORBIDDEN,
@@ -205,7 +205,7 @@ def export_stamps(
 @eventbp.route("/export")
 @login_required
 def export():
-    if current_user.role.admin:
+    if current_user.has_role("admin"):
         name = request.values.get("name", None)
     else:
         name = current_user.name
@@ -221,7 +221,10 @@ def export():
 @eventbp.route("/export/subteam")
 @login_required
 def export_subteam():
-    if not current_user.can_see_subteam or not current_user.subteam_id:
+    if (
+        not (current_user.has_role("lead") or current_user.has_role("mentor"))
+        or not current_user.subteam_id
+    ):
         return current_app.login_manager.unauthorized()
 
     subteam = current_user.subteam

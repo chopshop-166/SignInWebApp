@@ -52,7 +52,7 @@
                 <a class="nav-link btn btn-primary"
                    href="{{ url_for('events.open') }}">Event Registration</a>
               </li>
-              {%- if current_user.role.admin -%}
+              {%- if current_user.has_role("admin") -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
                      href="#"
@@ -68,15 +68,12 @@
                       <a class="dropdown-item" href="{{ url_for('finance.overview')}}">Finances</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="{{ url_for('admin.roles')}}">Roles</a>
-                    </li>
-                    <li>
                       <a class="dropdown-item" href="{{ url_for('admin.subteams')}}">Subteams</a>
                     </li>
                   </ul>
                 </li>
               {%- endif -%}
-              {%- if current_user.role.mentor -%}
+              {%- if current_user.has_role("mentor") -%}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle btn btn-primary"
                      href="#"

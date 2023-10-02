@@ -3,7 +3,7 @@ from flask.templating import render_template
 from sqlalchemy import delete
 
 from ..util import admin_required
-from . import role, subteam, users  # noqa
+from . import subteam, users  # noqa
 from .util import admin
 
 

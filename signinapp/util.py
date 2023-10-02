@@ -37,8 +37,8 @@ def permission_required(perm):
     return wrapper
 
 
-admin_required = permission_required(lambda u: u.role.admin)
-mentor_required = permission_required(lambda u: u.role.mentor)
+admin_required = permission_required(lambda u: u.has_role("admin"))
+mentor_required = permission_required(lambda u: u.has_role("mentor"))
 
 
 def correct_time_for_storage(time: datetime) -> datetime:

@@ -62,10 +62,26 @@ def trim_stamps_command():
     db.session.commit()
 
 
+@click.command("debug-sql")
+@with_appcontext
+def debug_sql_command():
+    from .model import AccountType, User
+    from sqlalchemy import update
+
+    stmt = select(AccountType.id).where(AccountType.admin == True)
+    # print(stmt)
+    admin_stmt = (
+        select(AccountType.id).where(AccountType.name == "admin").scalar_subquery()
+    )
+    stmt = update(User).where(User.role.has(name="admin")).values(role_id=admin_stmt)
+    print(stmt)
+
+
 app.cli.add_command(init_db_command)
 app.cli.add_command(gen_codes_command)
 app.cli.add_command(generate_secret_command)
 app.cli.add_command(trim_stamps_command)
+app.cli.add_command(debug_sql_command)
 
 if __name__ == "__main__":
     app.run()

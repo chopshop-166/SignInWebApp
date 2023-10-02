@@ -45,6 +45,22 @@ intpk = Annotated[int, mapped_column(primary_key=True)]
 NonNullBool = Annotated[bool, mapped_column(default=False)]
 
 
+parent_child_association_table = db.Table(
+    "parent_child_association",
+    db.metadata,
+    db.Column("guardians", db.ForeignKey("guardians.id"), primary_key=True),
+    db.Column("user_id", db.ForeignKey("students.id"), primary_key=True),
+)
+
+
+user_role_association_table = db.Table(
+    "user_role_association",
+    db.metadata,
+    db.Column("user_id", db.ForeignKey("users.id"), primary_key=True),
+    db.Column("role_id", db.ForeignKey("roles.id"), primary_key=True),
+)
+
+
 def gen_code():
     "Generate an event code"
     return secrets.token_urlsafe(16)
@@ -99,7 +115,7 @@ class Badge(db.Model):
     icon: Mapped[str | None]
     color: Mapped[str] = mapped_column(default="black")
 
-    awards: Mapped[BadgeAward] = db.relationship(back_populates="badge")
+    awards: Mapped[list[BadgeAward]] = db.relationship(back_populates="badge")
 
     @staticmethod
     def from_name(name) -> Badge:
@@ -120,14 +136,6 @@ class BadgeAward(db.Model):
     def __init__(self, badge=None, owner=None):
         self.owner = owner
         self.badge = badge
-
-
-parent_child_association_table = db.Table(
-    "parent_child_association",
-    db.metadata,
-    db.Column("guardians", db.ForeignKey("guardians.id"), primary_key=True),
-    db.Column("user_id", db.ForeignKey("students.id"), primary_key=True),
-)
 
 
 class User(UserMixin, db.Model):
@@ -152,7 +160,7 @@ class User(UserMixin, db.Model):
         back_populates="user",
         cascade="all, delete, delete-orphan",
     )
-    role: Mapped[Role] = db.relationship(back_populates="users")
+    role: Mapped[AccountType] = db.relationship(back_populates="users")
     subteam: Mapped[Subteam] = db.relationship(back_populates="members")
 
     awards: Mapped[list[BadgeAward]] = db.relationship(
@@ -171,6 +179,17 @@ class User(UserMixin, db.Model):
         back_populates="user",
         cascade="all, delete, delete-orphan",
     )
+
+    # Many to Many: roles
+    roles: Mapped[list[Role]] = db.relationship(
+        secondary=user_role_association_table, back_populates="users"
+    )
+    # Wrapper to access roles via name
+    role_names: AssociationProxy[list[Role]] = association_proxy("roles", "name")
+
+    def has_role(self, role_name) -> bool:
+        "Test for whether the user as the given role"
+        return role_name in self.role_names
 
     @hybrid_property
     def is_active(self) -> bool:
@@ -213,8 +232,8 @@ class User(UserMixin, db.Model):
     def can_view(self, user: User):
         "Whether the user in question can view this user"
         return (
-            self.role.mentor
-            or self.role.admin
+            self.has_role("mentor")
+            or self.has_role("admin")
             or (self == user)
             or (
                 self.guardian_user_data
@@ -226,7 +245,7 @@ class User(UserMixin, db.Model):
     @property
     def human_readable(self) -> str:
         "Human readable string for display on a web page"
-        return f"{'*' if self.role.mentor else ''}{self.display_name}"
+        return f"{'*' if self.has_role('mentor') else ''}{self.display_name}"
 
     @property
     def display_name(self) -> str:
@@ -251,16 +270,16 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def get_visible_users() -> list[User]:
-        return db.session.scalars(select(User).where(User.role.has(visible=True)))
+        return db.session.scalars(select(User).where(User.role_names == "visible"))
 
     @staticmethod
     def make(
         email: str,
         name: str,
         password: str,
-        role: Role | str,
         approved=False,
         subteam: Subteam | str = None,
+        roles: list[Role | str] = [],
         **kwargs,
     ) -> User:
         "Make a user, with password and hash"
@@ -269,9 +288,6 @@ class User(UserMixin, db.Model):
                 kwargs["phone_number"]
             )
 
-        if isinstance(role, str):
-            role = Role.from_name(role)
-
         if isinstance(subteam, str):
             subteam = Subteam.from_name(subteam)
 
@@ -279,25 +295,31 @@ class User(UserMixin, db.Model):
             email=email,
             name=name,
             password=generate_password_hash(password),
-            role_id=role.id,
             subteam_id=subteam.id if subteam else None,
             approved=approved,
             **kwargs,
         )
+
         db.session.add(user)
+        db.session.flush()
+
+        for role in roles:
+            if isinstance(role, str):
+                role = Role.from_name(role)
+            user.roles.append(role)
+
         db.session.flush()
         return user
 
     @staticmethod
     def make_guardian(name: str, phone_number: str, email: str):
-        role = Role.from_name("guardian_limited")
         pn = normalize_phone_number_for_storage(phone_number)
         guardian = User(
             name=name,
             email=email,
-            role_id=role.id,
             phone_number=pn,
         )
+        guardian.roles.append(Role.from_name("guardian"))
         db.session.add(guardian)
         db.session.flush()
         return guardian
@@ -377,14 +399,13 @@ class Student(db.Model):
         for guard in (guard.data for guard in gs):
             if guard["name"] and guard["phone_number"] and guard["email"]:
                 i += 1
-                self.add_guardian(
-                    guardian=Guardian.get_from(
-                        name=guard["name"],
-                        phone_number=guard["phone_number"],
-                        email=guard["email"],
-                        contact_order=i,
-                    )
+                guardian = Guardian.get_from(
+                    name=guard["name"],
+                    phone_number=guard["phone_number"],
+                    email=guard["email"],
+                    contact_order=i,
                 )
+                self.add_guardian(guardian=guardian)
 
     @property
     def display_grade(self):
@@ -398,9 +419,12 @@ class Student(db.Model):
     def make(
         email: str, name: str, password: str, graduation_year: int, **kwargs
     ) -> User:
-        role = Role.from_name("student")
         student = User.make(
-            name=name, email=email, password=password, role=role, **kwargs
+            name=name,
+            email=email,
+            password=password,
+            roles=["student", "funds"] + kwargs.get("roles", []),
+            **kwargs,
         )
         student_user_data = Student(user_id=student.id, graduation_year=graduation_year)
 
@@ -541,12 +565,12 @@ class Event(db.Model):
 
     def raw_funds_for(self, user: User) -> float:
         "Calculate funds from an event for the given user"
-        if not user.role.receives_funds:
+        if not user.has_role("funds"):
             return 0.0
         user_stamps = user.stamps_for_event(self)
         user_hours = sum((stamp.elapsed for stamp in user_stamps), start=timedelta())
         total_hours = sum(
-            (stamp.elapsed for stamp in self.stamps if stamp.user.role.receives_funds),
+            (stamp.elapsed for stamp in self.stamps if stamp.user.has_role("funds")),
             start=timedelta(),
         )
         user_proportion = (user_hours / total_hours) if total_hours else 0.0
@@ -682,7 +706,7 @@ class Stamps(db.Model):
         return self.end - self.start
 
 
-class Role(db.Model):
+class AccountType(db.Model):
     __tablename__ = "account_types"
     id: Mapped[intpk]
     name: Mapped[str]
@@ -699,22 +723,25 @@ class Role(db.Model):
 
     users: Mapped[list[User]] = db.relationship(back_populates="role")
 
+    @classmethod
+    def from_name(cls, name) -> Role:
+        "Get a role by name"
+        return db.session.scalar(select(cls).filter_by(name=name))
+
+
+class Role(db.Model):
+    __tablename__ = "roles"
+    id: Mapped[intpk]
+    name: Mapped[str]
+
+    users: Mapped[list[User]] = db.relationship(
+        secondary=user_role_association_table, back_populates="roles"
+    )
+
     @staticmethod
     def from_name(name) -> Role:
         "Get a role by name"
         return db.session.scalar(select(Role).filter_by(name=name))
-
-    @staticmethod
-    def get_default() -> Role:
-        "Get the default role"
-        return db.session.scalar(select(Role).filter_by(default_role=True))
-
-    @staticmethod
-    def set_default(def_role):
-        "Set the default role"
-        for role in db.session.scalar(select(Role)):
-            role.default_role = role == def_role
-        db.session.commit()
 
     @staticmethod
     def get_visible() -> list[Role]:
