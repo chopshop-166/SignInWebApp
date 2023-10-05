@@ -192,7 +192,7 @@ def init_default_db():
     create_if_not_exists(Role, name="mentor", mentor=True, can_display=True)
     create_if_not_exists(Role, name="display", can_display=True, autoload=True)
     create_if_not_exists(Role, name="lead", can_see_subteam=True, receives_funds=True)
-    create_if_not_exists(Role, name="student", default_role=True, receives_funds=True)
+    create_if_not_exists(Role, name="student", receives_funds=True)
     create_if_not_exists(Role, name="guardian_limited", guardian=True, visible=False)
     create_if_not_exists(Role, name="guardian", guardian=True)
 

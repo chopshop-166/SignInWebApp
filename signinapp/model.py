@@ -693,7 +693,6 @@ class Role(db.Model):
     can_display: Mapped[NonNullBool]
     autoload: Mapped[NonNullBool]
     can_see_subteam: Mapped[NonNullBool]
-    default_role: Mapped[NonNullBool]
     visible: Mapped[bool] = mapped_column(default=True)
     receives_funds: Mapped[NonNullBool]
 
@@ -703,18 +702,6 @@ class Role(db.Model):
     def from_name(name) -> Role:
         "Get a role by name"
         return db.session.scalar(select(Role).filter_by(name=name))
-
-    @staticmethod
-    def get_default() -> Role:
-        "Get the default role"
-        return db.session.scalar(select(Role).filter_by(default_role=True))
-
-    @staticmethod
-    def set_default(def_role):
-        "Set the default role"
-        for role in db.session.scalar(select(Role)):
-            role.default_role = role == def_role
-        db.session.commit()
 
     @staticmethod
     def get_visible() -> list[Role]:
