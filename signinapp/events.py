@@ -180,7 +180,7 @@ def todays():
 @mentor_required
 def upcoming():
     events: list[Event] = db.session.scalars(
-        select(Event).order_by(Event.start).where(Event.start > func.now())
+        select(Event).order_by(Event.start.desc()).where(Event.start > func.now())
     )
     return render_template("events.html.jinja2", prefix="Upcoming ", events=events)
 
