@@ -510,13 +510,13 @@ class Event(db.Model):
                     < func.now()
                 ),
                 (
-                    cls.start
+                    cls.end
                     + func.make_interval(
                         0, 0, 0, 0, 0, current_app.config["POST_EVENT_ACTIVE_TIME"]
                     )
                     > func.now()
                 ),
-            )
+            ).label("is_active")
         elif db.get_engine().name == "sqlite":
             return and_(
                 (
