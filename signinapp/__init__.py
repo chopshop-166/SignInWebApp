@@ -21,6 +21,7 @@ from . import (
     dbadmin,
     event,
     events,
+    proxy,
     qr,
     search,
     team,
@@ -58,6 +59,7 @@ Our mission is to build teamwork and a great robot, along with fostering a love 
     PRE_EVENT_ACTIVE_TIME = 30
     POST_EVENT_ACTIVE_TIME = 120
     AUTO_SIGNOUT_BEHAVIOR = "None"  # Valid Options (Credit, Discard, None)
+    PROXY_URL = "http://localhost:8080/kanboard/"
 
 
 class DebugConfig(Config):
@@ -130,6 +132,7 @@ dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
 finance.init_app(app)
+proxy.init_app(app)
 qr.init_app(app)
 search.init_app(app)
 team.init_app(app)
@@ -213,11 +216,21 @@ def init_default_db():
 
     db.session.commit()
 
-    if not User.from_email("admin@signin"):
-        User.make("admin@signin", "admin", password="1234", role="admin", approved=True)
-    if not User.from_email("display@signin"):
+    if not User.from_email("admin@signin.chopshoplib.info"):
         User.make(
-            "display@signin", "display", password="1234", role="display", approved=True
+            "admin@signin.chopshoplib.info",
+            "admin",
+            password="1234",
+            role="admin",
+            approved=True,
+        )
+    if not User.from_email("display@signin.chopshoplib.info"):
+        User.make(
+            "display@signin.chopshoplib.info",
+            "display",
+            password="1234",
+            role="display",
+            approved=True,
         )
     db.session.commit()
 
