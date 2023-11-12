@@ -125,6 +125,7 @@ def edit_user():
     form.tshirt_size.process_data(
         user.tshirt_size.value if user.tshirt_size else "Large"
     )
+    form.pronouns.process_data(user.pronouns.value if user.pronouns else "He/Him")
     return render_template(
         "form.html.jinja2",
         form=form,
