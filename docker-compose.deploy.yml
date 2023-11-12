@@ -40,3 +40,19 @@ services:
       - "5432:5432"
     volumes:
       - ./appdata/db:/var/lib/postgresql/data
+
+  kanboard:
+    depends_on:
+    - postgres
+    build:
+      dockerfile: ./kanboard-Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./appdata/kanboard/data:/var/www/app/data
+      - ./appdata/kanboard/plugins:/var/www/app/plugins
+      - ./appdata/config.php:/var/www/app/data/config.php
+    environment:
+      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres/kanboard
+      - LOG_DRIVER=stdout
+      - DEBUG=true
