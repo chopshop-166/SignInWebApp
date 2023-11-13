@@ -45,6 +45,7 @@ services:
     depends_on:
     - postgres
     build:
+      context: ./kanboard
       dockerfile: ./kanboard-Dockerfile
     ports:
       - "8080:80"
