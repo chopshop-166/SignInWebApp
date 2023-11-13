@@ -5,12 +5,22 @@ import requests
 bp = Blueprint("kanboard", __name__, url_prefix="/kanboard")
 
 
-def get_user_headers():
-    return {
-        "REMOTE-USER": current_user.email,
-        "REMOTE-EMAIL": current_user.email,
-        "REMOTE-NAME": current_user.preferred_name,
-    }
+def calculate_headers(headers: dict):
+    new_headers = dict()
+    for header_name in [
+        "cookie",
+        "X-Requested-With",
+    ]:
+        if header_name in headers:
+            new_headers[header_name] = headers[header_name]
+    new_headers.update(
+        {
+            "REMOTE-USER": current_user.email,
+            "REMOTE-EMAIL": current_user.email,
+            "REMOTE-NAME": current_user.preferred_name,
+        }
+    )
+    return new_headers
 
 
 @bp.route("/<path:path>", methods=["GET", "POST"])
@@ -18,14 +28,16 @@ def get_user_headers():
 @login_required
 def index(path=""):
     url = current_app.config.get("PROXY_URL") + path
+    headers = calculate_headers(request.headers)
 
     if request.method == "GET":
-        resp = requests.get(url, headers=get_user_headers())
+        resp = requests.get(url, headers=headers)
     elif request.method == "POST":
         resp = requests.post(
             url,
             data=request.form,
-            headers=get_user_headers(),
+            params=dict(request.args),
+            headers=headers,
         )
     excluded_headers = [
         "content-encoding",

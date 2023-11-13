@@ -37,13 +37,14 @@ services:
     depends_on:
     - postgres
     build:
+      context: ./kanboard
       dockerfile: ./kanboard-Dockerfile
     ports:
       - "8080:80"
     volumes:
       - kanboard_data:/var/www/app/data
       - kanboard_plugins:/var/www/app/plugins
-      - .appdata/config.php:/var/www/app/data/config.php
+      - ./appdata/config.php:/var/www/app/data/config.php
     environment:
       - DATABASE_URL=postgres://postgres:mysecretpassword@postgres/kanboard
       - LOG_DRIVER=stdout
