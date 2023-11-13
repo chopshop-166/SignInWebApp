@@ -31,7 +31,7 @@ def index(path=""):
     headers = calculate_headers(request.headers)
 
     if request.method == "GET":
-        resp = requests.get(url, headers=headers)
+        resp = requests.get(url, params=dict(request.args), headers=headers)
     elif request.method == "POST":
         resp = requests.post(
             url,
