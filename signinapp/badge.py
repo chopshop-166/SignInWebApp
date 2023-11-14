@@ -40,11 +40,9 @@ def view():
     if bid := request.args.get("badge_id"):
         bid = int(bid)
         badge: Badge = db.session.get(Badge, bid)
-        awards: list[BadgeAward] = sorted(
-            [a for a in badge.awards], key=lambda u: u.owner.name
-        )
+        awards: list[BadgeAward] = sorted(badge.awards, key=lambda u: u.owner.name)
         return render_template("badge.html.jinja2", badge=badge, awards=awards)
-    return redirect(url_for("mentor.all_badges", badge_id=badge.id))
+    return redirect(url_for("badge.all", badge_id=badge.id))
 
 
 @bp.route("/", endpoint="all")
@@ -57,12 +55,12 @@ def all_badges():
 @bp.route("/award", methods=["GET", "POST"])
 @mentor_required
 def award():
-    people: list[User] = User.get_visible_users()
+    people = User.get_visible_users()
     badge = db.session.get(Badge, request.args["badge_id"])
 
     if not badge:
         flash("Badge does not exist")
-        return redirect(url_for("mentor.all_badges"))
+        return redirect(url_for("badge.all"))
 
     form = BadgeAwardForm()
     form.users.choices = [p.name for p in people]
@@ -74,7 +72,7 @@ def award():
             else:
                 user.remove_badge(badge)
         db.session.commit()
-        return redirect(url_for("mentor.all_badges"))
+        return redirect(url_for("badge.all"))
 
     form.users.process_data([p.name for p in people if badge in p.badges])
 
@@ -94,7 +92,7 @@ def new():
         form.populate_obj(badge)
         db.session.add(badge)
         db.session.commit()
-        return redirect(url_for("mentor.all_badges"))
+        return redirect(url_for("badge.all"))
 
     return render_template("form.html.jinja2", form=form, title="New Badge")
 
@@ -107,14 +105,14 @@ def edit():
 
     if not badge:
         flash("Badge does not exist")
-        return redirect(url_for("mentor.all_badges"))
+        return redirect(url_for("badge.all"))
 
     form = BadgeForm(obj=badge)
 
     if form.validate_on_submit():
         form.populate_obj(badge)
         db.session.commit()
-        return redirect(url_for("mentor.all_badges"))
+        return redirect(url_for("badge.all"))
 
     return render_template(
         "form.html.jinja2",

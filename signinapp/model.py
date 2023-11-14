@@ -251,7 +251,7 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def get_visible_users() -> list[User]:
-        return db.session.scalars(select(User).where(User.role.has(visible=True)))
+        return list(db.session.scalars(select(User).where(User.role.has(visible=True))))
 
     @staticmethod
     def make(
