@@ -33,9 +33,17 @@ def index(path=""):
     if request.method == "GET":
         resp = requests.get(url, params=dict(request.args), headers=headers)
     elif request.method == "POST":
+        # If the content type isn't form-data then copy from data
+        # Need to use find here since the content type looks like:
+        # 'multipart/form-data; boundary=---------------------------5113784293436132453515092771'
+        if not request.content_type.startswith("multipart/form-data"):
+            data = request.data
+            headers["Content-Type"] = request.content_type
+        else:
+            data = request.form
         resp = requests.post(
             url,
-            data=request.form,
+            data=data,
             params=dict(request.args),
             headers=headers,
         )
