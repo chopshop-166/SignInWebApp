@@ -99,7 +99,7 @@ class Badge(db.Model):
     icon: Mapped[str | None]
     color: Mapped[str] = mapped_column(default="black")
 
-    awards: Mapped[BadgeAward] = db.relationship(back_populates="badge")
+    awards: Mapped[list[BadgeAward]] = db.relationship(back_populates="badge")
 
     @staticmethod
     def from_name(name) -> Badge:
