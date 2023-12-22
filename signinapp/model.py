@@ -4,7 +4,7 @@ import dataclasses
 import enum
 import locale
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
 from typing import Annotated
 
@@ -43,6 +43,13 @@ db = SQLAlchemy(metadata=metadata)
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 NonNullBool = Annotated[bool, mapped_column(default=False)]
+
+
+def school_year_for_date(d: date):
+    year = d.year
+    if d.month < 6:
+        year -= 1
+    return year
 
 
 def gen_code():
@@ -247,6 +254,20 @@ class User(UserMixin, db.Model):
     def total_funds(self) -> str:
         all_funds = [ev.raw_funds_for(self) for ev in db.session.scalars(select(Event))]
         money = sum(all_funds, start=0.0)
+        return locale.currency(money)
+
+    def yearly_funds(self, year=None) -> str:
+        if year is None:
+            year = school_year_for_date(date.today())
+        event_funds = [
+            ev.raw_funds_for(self)
+            for ev in db.session.scalars(
+                select(Event).where(
+                    Event.school_year == school_year_for_date(date.today())
+                )
+            )
+        ]
+        money = sum(event_funds, start=0.0)
         return locale.currency(money)
 
     @staticmethod
@@ -501,39 +522,35 @@ class Event(db.Model):
     def is_active(cls):
         "Usable in queries"
         if db.get_engine().name == "postgresql":
-            return and_(
-                (
-                    cls.start
-                    - func.make_interval(
-                        0, 0, 0, 0, 0, current_app.config["PRE_EVENT_ACTIVE_TIME"]
-                    )
-                    < func.now()
-                ),
-                (
-                    cls.end
-                    + func.make_interval(
-                        0, 0, 0, 0, 0, current_app.config["POST_EVENT_ACTIVE_TIME"]
-                    )
-                    > func.now()
-                ),
-            ).label("is_active")
+            pre_adj = cls.start - func.make_interval(
+                0, 0, 0, 0, 0, current_app.config["PRE_EVENT_ACTIVE_TIME"]
+            )
+            post_adj = cls.end + func.make_interval(
+                0, 0, 0, 0, 0, current_app.config["POST_EVENT_ACTIVE_TIME"]
+            )
         elif db.get_engine().name == "sqlite":
-            return and_(
-                (
-                    func.datetime(
-                        cls.start,
-                        f"-{current_app.config['PRE_EVENT_ACTIVE_TIME']} minutes",
-                    )
-                    < func.now()
-                ),
-                (
-                    func.now()
-                    < func.datetime(
-                        cls.end,
-                        f"+{current_app.config['POST_EVENT_ACTIVE_TIME']} minutes",
-                    )
-                ),
-            ).label("is_active")
+            pre_adj = func.datetime(
+                cls.start,
+                f"-{current_app.config['PRE_EVENT_ACTIVE_TIME']} minutes",
+            )
+            post_adj = func.datetime(
+                cls.end,
+                f"+{current_app.config['POST_EVENT_ACTIVE_TIME']} minutes",
+            )
+        return and_((pre_adj < func.now()), (post_adj > func.now())).label("is_active")
+
+    @hybrid_property
+    def school_year(self) -> int:
+        return school_year_for_date(self.adjusted_start.date())
+
+    @school_year.expression
+    def school_year(cls):
+        "Usable in queries"
+        if db.get_engine().name == "postgresql":
+            adj_date = cls.start - func.make_interval(0, 5)
+        elif db.get_engine().name == "sqlite":
+            adj_date = func.datetime(cls.start, "-5 months")
+        return func.date_trunc("year", adj_date).label("school_year")
 
     @property
     def total_time(self) -> timedelta:
