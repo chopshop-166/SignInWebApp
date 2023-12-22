@@ -47,8 +47,8 @@ NonNullBool = Annotated[bool, mapped_column(default=False)]
 
 def school_year_for_date(d: date):
     year = d.year
-    if d.month < 6:
-        year -= 1
+    if d.month > 5:
+        year += 1
     return year
 
 
@@ -558,9 +558,9 @@ class Event(db.Model):
     def school_year(cls):
         "Usable in queries"
         if db.get_engine().name == "postgresql":
-            adj_date = func.date_trunc("year", cls.start - func.make_interval(0, 5))
+            adj_date = func.date_trunc("year", cls.start + func.make_interval(0, 7))
         elif db.get_engine().name == "sqlite":
-            adj_date = func.datetime(cls.start, "-5 months", "year")
+            adj_date = func.datetime(cls.start, "+7 months", "year")
         return adj_date.label("school_year")
 
     @property
