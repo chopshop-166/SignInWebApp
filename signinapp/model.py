@@ -187,7 +187,15 @@ class User(UserMixin, db.Model):
     @property
     def total_time(self) -> timedelta:
         "Total time for all stamps"
-        return sum((s.elapsed for s in self.stamps), start=timedelta())
+        return self.yearly_time()
+
+    def yearly_time(self, year: int | None = None) -> timedelta:
+        "Total time for all stamps in a year"
+        year = year or school_year_for_date(date.today().year)
+        return sum(
+            (s.elapsed for s in self.stamps if s.event.school_year == year),
+            start=timedelta(),
+        )
 
     @property
     def formatted_phone_number(self) -> str:
@@ -205,13 +213,21 @@ class User(UserMixin, db.Model):
             self.badges.remove(badge)
             db.session.commit()
 
-    def stamps_for(self, type_: EventType):
+    def stamps_for(self, type_: EventType, year: int | None = None):
         "Get all stamps for an event type"
-        return [s for s in self.stamps if s.event.type_ == type_]
+        year = year or school_year_for_date(date.today().year)
+        return [
+            s
+            for s in self.stamps
+            if s.event.type_ == type_ and s.event.school_year == year
+        ]
 
-    def total_stamps_for(self, type_: EventType) -> timedelta:
+    def total_stamps_for(self, type_: EventType, year: int | None = None) -> timedelta:
         "Total time for an event type"
-        return sum((s.elapsed for s in self.stamps_for(type_)), start=timedelta())
+        return sum(
+            (s.elapsed for s in self.stamps_for(type_, year)),
+            start=timedelta(),
+        )
 
     def stamps_for_event(self, event: Event) -> list[Stamps]:
         "Get all stamps for an event"
@@ -256,16 +272,11 @@ class User(UserMixin, db.Model):
         money = sum(all_funds, start=0.0)
         return locale.currency(money)
 
-    def yearly_funds(self, year=None) -> str:
-        if year is None:
-            year = school_year_for_date(date.today())
+    def yearly_funds(self, year: int | None = None) -> str:
+        year = year or school_year_for_date(date.today().year)
         event_funds = [
             ev.raw_funds_for(self)
-            for ev in db.session.scalars(
-                select(Event).where(
-                    Event.school_year == school_year_for_date(date.today())
-                )
-            )
+            for ev in db.session.scalars(select(Event).where(school_year=year))
         ]
         money = sum(event_funds, start=0.0)
         return locale.currency(money)
@@ -547,10 +558,10 @@ class Event(db.Model):
     def school_year(cls):
         "Usable in queries"
         if db.get_engine().name == "postgresql":
-            adj_date = cls.start - func.make_interval(0, 5)
+            adj_date = func.date_trunc("year", cls.start - func.make_interval(0, 5))
         elif db.get_engine().name == "sqlite":
-            adj_date = func.datetime(cls.start, "-5 months")
-        return func.date_trunc("year", adj_date).label("school_year")
+            adj_date = func.datetime(cls.start, "-5 months", "year")
+        return adj_date.label("school_year")
 
     @property
     def total_time(self) -> timedelta:
