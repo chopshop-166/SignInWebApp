@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from urllib import parse
 
 from dateutil.rrule import WEEKLY, rrule
@@ -27,7 +27,15 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, EqualTo, NumberRange, ValidationError
 
-from .model import Event, EventRegistration, EventType, db, gen_code, get_form_ids
+from .model import (
+    Event,
+    EventRegistration,
+    EventType,
+    db,
+    gen_code,
+    get_form_ids,
+    school_year_for_date,
+)
 from .util import correct_time_for_storage, correct_time_from_storage, mentor_required
 
 bp = Blueprint("events", __name__, url_prefix="/events")
@@ -135,15 +143,23 @@ class DeleteEventForm(FlaskForm):
 @bp.route("/", endpoint="list")
 @mentor_required
 def list_events():
-    events: list[Event] = db.session.scalars(select(Event).order_by(Event.start))
+    events: list[Event] = list(
+        db.session.scalars(
+            select(Event)
+            .where(Event.school_year == school_year_for_date(date.today()))
+            .order_by(Event.start)
+        )
+    )
     return render_template("events.html.jinja2", events=events)
 
 
 @bp.route("/previous")
 @mentor_required
 def previous():
-    events: list[Event] = db.session.scalars(
-        select(Event).order_by(Event.start).where(Event.end <= func.now())
+    events: list[Event] = list(
+        db.session.scalars(
+            select(Event).order_by(Event.start).where(Event.end <= func.now())
+        )
     )
     return render_template("events.html.jinja2", prefix="Previous ", events=events)
 
@@ -151,8 +167,8 @@ def previous():
 @bp.route("/active")
 @mentor_required
 def active():
-    events: list[Event] = db.session.scalars(
-        select(Event).order_by(Event.start).where(Event.is_active)
+    events: list[Event] = list(
+        db.session.scalars(select(Event).order_by(Event.start).where(Event.is_active))
     )
     return render_template("events.html.jinja2", prefix="Active ", events=events)
 
@@ -172,28 +188,31 @@ def todays():
             Event.start < func.datetime("now", "+1 day", "start of day"),
             Event.end > func.datetime("now", "start of day"),
         )
-    events: list[Event] = db.session.scalars(query)
+    events: list[Event] = list(db.session.scalars(query))
     return render_template("events.html.jinja2", prefix="Today's ", events=events)
 
 
 @bp.route("/upcoming")
 @mentor_required
 def upcoming():
-    events: list[Event] = db.session.scalars(
-        select(Event).order_by(Event.start.desc()).where(Event.start > func.now())
+    events: list[Event] = list(
+        db.session.scalars(
+            select(Event).order_by(Event.start.desc()).where(Event.start > func.now())
+        )
     )
     return render_template("events.html.jinja2", prefix="Upcoming ", events=events)
 
 
 @bp.route("/open", endpoint="open")
 def list_open():
-    events: list[Event] = db.session.scalars(
-        select(Event)
-        .filter_by(registration_open=True)
-        .order_by(Event.start.desc(), Event.end.desc())
-        .where(Event.end > func.now())
+    events: list[Event] = list(
+        db.session.scalars(
+            select(Event)
+            .filter_by(registration_open=True)
+            .order_by(Event.start.desc(), Event.end.desc())
+            .where(Event.end > func.now())
+        )
     )
-
     return render_template("open_events.html.jinja2", events=events)
 
 
