@@ -226,7 +226,7 @@ class User(UserMixin, db.Model):
     @property
     def human_readable(self) -> str:
         "Human readable string for display on a web page"
-        return f"{'*' if self.role.mentor else ''}{self.display_name}"
+        return f"{'*' if self.role.mentor else ''}{self.name}"
 
     @property
     def display_name(self) -> str:
