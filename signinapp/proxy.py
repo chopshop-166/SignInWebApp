@@ -17,7 +17,7 @@ def calculate_headers(headers: dict):
         {
             "REMOTE-USER": current_user.email,
             "REMOTE-EMAIL": current_user.email,
-            "REMOTE-NAME": current_user.preferred_name,
+            "REMOTE-NAME": current_user.display_name,
         }
     )
     return new_headers
