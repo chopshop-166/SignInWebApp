@@ -14,8 +14,8 @@
 {% block content %}
   <script type="text/javascript">const event_code = "{{ event_code }}"</script>
   <div class="container pt-3">
-    <div class="custom-row">
-      <div class="content-secondary">
+    <div class="d-flex flex-column flex-md-row flex-wrap">
+      <div class="flex-fill">
         <div class="d-inline-flex justify-content-center m-auto container bg-secondary rounded-3 display-1"
              id="dateTimeBlock">
         </div>
@@ -45,7 +45,7 @@
           </div>
         {%- endif -%}
       </div>
-      <div class="bg-secondary rounded-3 py-3 content-primary float-start">
+      <div class="bg-secondary rounded-3 py-3 content-primary flex-fill float-start">
         {# justify-content-between to get QR take up only the space it needs #}
         <div class="d-inline-flex justify-content-center m-auto hidesmall width-100" id="reader">
           <button id="launchButton" onclick="initCamera()">Start Scanning</button>
