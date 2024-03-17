@@ -58,47 +58,15 @@ $border-widths: (
     @extend .link-light;
 }
 
-.custom-row {
-    @include make-row();
-}
-
 .content-primary {
-    @include make-col-ready();
-
-    @include media-breakpoint-up(sm) {
-        @include make-col(6);
-
-        .hidesmall {
-            visibility: hidden !important;
-        }
-    }
-
-    @include media-breakpoint-up(xs) {
-        @include make-col(6);
-
-        .hidesmall {
-            visibility: hidden !important;
-        }
+    .hidesmall {
+        visibility: hidden !important;
     }
 
     @include media-breakpoint-up(lg) {
         .hidesmall {
             visibility: visible !important;
         }
-
-        @include make-col(6);
-    }
-}
-
-.content-secondary {
-    @include make-col-ready();
-
-    @include media-breakpoint-up(sm) {
-        @include make-col(6);
-    }
-
-    @include media-breakpoint-up(lg) {
-        @include make-col(6);
     }
 }
 
@@ -141,5 +109,6 @@ table {
 }
 
 div #qrPlaceholder {
-    @extend .border, .border-white, .border-5
+    @extend .border, .border-white, .border-5;
+    background-color: white;
 }
