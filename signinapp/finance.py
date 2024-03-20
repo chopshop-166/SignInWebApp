@@ -19,7 +19,7 @@ def overview():
     total_overhead = (
         sum(((ev.funds - ev.cost) * ev.overhead) for ev in all_events) / 100.0
     )
-    user_funds = sorted([(u.display_name, u.total_funds) for u in all_users])
+    user_funds = sorted([(u.display_name, u.yearly_funds()) for u in all_users])
     return render_template(
         "finance.html.jinja2", total_overhead=total_overhead, user_funds=user_funds
     )
