@@ -273,7 +273,7 @@ if app.config["DEBUG"]:
         db.session.commit()
 
         mentor_user = User.make(
-            "msoucy@signin",
+            "msoucy@signin.chopshoplib.info",
             "Matt Soucy",
             preferred_name="Matt",
             code="code-msoucy",
@@ -285,7 +285,7 @@ if app.config["DEBUG"]:
             approved=True,
         )
         student_user = Student.make(
-            "Jburke@signin",
+            "Jburke@signin.chopshoplib.info",
             "Jeff Burke",
             preferred_name="Jeff",
             code="code-jburke",
@@ -299,7 +299,7 @@ if app.config["DEBUG"]:
             guardian=Guardian.get_from(
                 name="Parent Burke",
                 phone_number="(603)555-5555",
-                email="pburke@signin",
+                email="pburke@signin.chopshoplib.info",
                 contact_order=1,
             )
         )
