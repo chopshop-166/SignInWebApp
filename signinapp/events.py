@@ -264,7 +264,7 @@ def bulk():
             )
         db.session.commit()
 
-        return redirect(url_for("events.list"))
+        return redirect(url_for("events.upcoming"))
     return render_template("form.html.jinja2", form=form, title="Bulk Event Add")
 
 
@@ -287,7 +287,7 @@ def new():
         ev.funds = int(form.funds.data * 100)
         db.session.commit()
 
-        return redirect(url_for("events.list"))
+        return redirect(url_for("events.upcoming"))
 
     return render_template("form.html.jinja2", form=form, title="New Event")
 
