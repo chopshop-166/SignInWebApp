@@ -191,7 +191,7 @@ class User(UserMixin, db.Model):
 
     def yearly_time(self, year: int | None = None) -> timedelta:
         "Total time for all stamps in a year"
-        year = year or school_year_for_date(date.today().year)
+        year = year or school_year_for_date(date.today())
         return sum(
             (s.elapsed for s in self.stamps if s.event.school_year == year),
             start=timedelta(),
@@ -215,7 +215,7 @@ class User(UserMixin, db.Model):
 
     def stamps_for(self, type_: EventType, year: int | None = None):
         "Get all stamps for an event type"
-        year = year or school_year_for_date(date.today().year)
+        year = year or school_year_for_date(date.today())
         return [
             s
             for s in self.stamps
@@ -273,10 +273,10 @@ class User(UserMixin, db.Model):
         return locale.currency(money)
 
     def yearly_funds(self, year: int | None = None) -> str:
-        year = year or school_year_for_date(date.today().year)
+        year = year or school_year_for_date(date.today())
         event_funds = [
             ev.raw_funds_for(self)
-            for ev in db.session.scalars(select(Event).where(school_year=year))
+            for ev in db.session.scalars(select(Event).where(Event.school_year == year))
         ]
         money = sum(event_funds, start=0.0)
         return locale.currency(money)
