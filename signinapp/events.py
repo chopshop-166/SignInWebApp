@@ -304,6 +304,7 @@ def new():
         )
         ev.cost = int(form.cost.data * 100)
         ev.funds = int(form.funds.data * 100)
+        ev.overhead = int(form.overhead.data * 100)
         db.session.commit()
 
         return redirect(url_for("events.upcoming"))
@@ -331,11 +332,13 @@ def edit():
         form.populate_obj(event)
         event.cost = int(form.cost.data * 100)
         event.funds = int(form.funds.data * 100)
+        event.overhead = int(form.overhead.data * 100)
         db.session.commit()
         return redirect(url_for("events.list"))
 
     form.cost.process_data(form.cost.data / 100)
     form.funds.process_data(form.funds.data / 100)
+    form.overhead.process_data(form.overhead.data / 100)
 
     form.type_id.process_data(event.type_id)
     return render_template(
