@@ -33,9 +33,7 @@ def event():
     if not event_code or not Event.get_from_code(event_code):
         flash("Invalid event code")
         return redirect(url_for("index"))
-    return render_template(
-        "event.html.jinja2", url_base=request.host_url, event_code=event_code
-    )
+    return render_template("event.html.jinja2", url_base=request.host_url, event_code=event_code)
 
 
 @eventbp.route("/event/self")
@@ -71,9 +69,7 @@ def selfout():
         return redirect(url_for("index"))
 
     if current_user.is_signed_into(ev):
-        active: Active = db.session.scalar(
-            select(Active).filter_by(user=current_user, event=ev)
-        )
+        active: Active = db.session.scalar(select(Active).filter_by(user=current_user, event=ev))
         active.convert_to_stamp()
 
     return redirect(url_for("index"))
@@ -93,9 +89,7 @@ def scan():
     event = request.values.get("event_code")
 
     if not (user_code := request.values.get("user_code")):
-        return Response(
-            f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
-        )
+        return Response(f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST)
     if not (user := User.from_code(user_code)):
         return Response("Error: User does not exist", HTTPStatus.NOT_FOUND)
 

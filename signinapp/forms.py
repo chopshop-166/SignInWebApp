@@ -112,9 +112,7 @@ class UserForm(FlaskForm):
         validators=[Regexp(PHONE_RE)],
         render_kw={"placeholder": "555-555-5555"},
     )
-    address = StringField(
-        "Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)]
-    )
+    address = StringField("Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)])
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
     )

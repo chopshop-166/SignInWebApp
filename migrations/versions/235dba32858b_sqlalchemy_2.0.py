@@ -5,9 +5,9 @@ Revises: 7a297468f586
 Create Date: 2023-01-26 23:01:44.635683
 
 """
-from alembic import op
-import sqlalchemy as sa
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "235dba32858b"
@@ -58,9 +58,7 @@ def upgrade():
 
     with op.batch_alter_table("guardians", schema=None) as batch_op:
         batch_op.alter_column("user_id", existing_type=sa.INTEGER(), nullable=False)
-        batch_op.alter_column(
-            "contact_order", existing_type=sa.INTEGER(), nullable=False
-        )
+        batch_op.alter_column("contact_order", existing_type=sa.INTEGER(), nullable=False)
 
     with op.batch_alter_table("stamps", schema=None) as batch_op:
         batch_op.alter_column(
@@ -77,9 +75,7 @@ def upgrade():
 
     with op.batch_alter_table("students", schema=None) as batch_op:
         batch_op.alter_column("user_id", existing_type=sa.INTEGER(), nullable=False)
-        batch_op.alter_column(
-            "graduation_year", existing_type=sa.INTEGER(), nullable=False
-        )
+        batch_op.alter_column("graduation_year", existing_type=sa.INTEGER(), nullable=False)
 
     with op.batch_alter_table("users", schema=None) as batch_op:
         batch_op.alter_column("role_id", existing_type=sa.INTEGER(), nullable=False)
@@ -95,9 +91,7 @@ def downgrade():
         batch_op.alter_column("role_id", existing_type=sa.INTEGER(), nullable=True)
 
     with op.batch_alter_table("students", schema=None) as batch_op:
-        batch_op.alter_column(
-            "graduation_year", existing_type=sa.INTEGER(), nullable=True
-        )
+        batch_op.alter_column("graduation_year", existing_type=sa.INTEGER(), nullable=True)
         batch_op.alter_column("user_id", existing_type=sa.INTEGER(), nullable=True)
 
     with op.batch_alter_table("stamps", schema=None) as batch_op:
@@ -114,9 +108,7 @@ def downgrade():
         )
 
     with op.batch_alter_table("guardians", schema=None) as batch_op:
-        batch_op.alter_column(
-            "contact_order", existing_type=sa.INTEGER(), nullable=True
-        )
+        batch_op.alter_column("contact_order", existing_type=sa.INTEGER(), nullable=True)
         batch_op.alter_column("user_id", existing_type=sa.INTEGER(), nullable=True)
 
     with op.batch_alter_table("events", schema=None) as batch_op:

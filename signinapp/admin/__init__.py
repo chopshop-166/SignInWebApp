@@ -1,6 +1,5 @@
-from flask import Flask, redirect, url_for
+from flask import Flask
 from flask.templating import render_template
-from sqlalchemy import delete
 
 from ..util import admin_required
 from . import role, subteam, users  # noqa

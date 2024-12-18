@@ -1,6 +1,6 @@
-from datetime import datetime, timezone, date
-from functools import wraps
 import string
+from datetime import UTC, date, datetime
+from functools import wraps
 from zoneinfo import ZoneInfo
 
 from flask import current_app, redirect, request, url_for
@@ -18,9 +18,7 @@ def permission_required(perm):
     def wrapper(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
-            if request.method in EXEMPT_METHODS or current_app.config.get(
-                "LOGIN_DISABLED"
-            ):
+            if request.method in EXEMPT_METHODS or current_app.config.get("LOGIN_DISABLED"):
                 pass
             elif not current_user.is_authenticated:
                 return current_app.login_manager.unauthorized()
@@ -46,14 +44,14 @@ def correct_time_for_storage(time: datetime) -> datetime:
     if time.tzinfo is None:
         # If not, set TZ to ET
         time = time.replace(tzinfo=ZoneInfo(current_app.config["TIME_ZONE"]))
-    return time.astimezone(timezone.utc)
+    return time.astimezone(UTC)
 
 
 def correct_time_from_storage(time: datetime) -> datetime:
     # Check if datetime has a tz already:
     if time.tzinfo is None:
         # If not, set TZ to ET
-        time = time.replace(tzinfo=timezone.utc)
+        time = time.replace(tzinfo=UTC)
     return time.astimezone(ZoneInfo(current_app.config["TIME_ZONE"]))
 
 

@@ -1,4 +1,4 @@
-from flask import redirect, request, url_for, abort
+from flask import abort, redirect, request, url_for
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user

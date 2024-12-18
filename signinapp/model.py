@@ -4,14 +4,13 @@ import dataclasses
 import enum
 import locale
 import secrets
-from datetime import date, datetime, timedelta, timezone
-from http import HTTPStatus
+from datetime import UTC, date, datetime, timedelta
 from typing import Annotated
 
-from flask import Response, current_app
+from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, func, MetaData
+from sqlalchemy import MetaData, and_, func
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.future import select
@@ -26,7 +25,6 @@ from .util import (
     normalize_phone_number_for_storage,
     normalize_phone_number_from_storage,
 )
-
 
 convention = {
     "ix": "ix_%(column_0_label)s",
@@ -98,6 +96,7 @@ class Pronoun(enum.Enum):
 
 class Badge(db.Model):
     'Represents an "achievement", accomplishment, or certification'
+
     __tablename__ = "badges"
     id: Mapped[intpk]
     name: Mapped[str]
@@ -116,6 +115,7 @@ class Badge(db.Model):
 
 class BadgeAward(db.Model):
     "Represents a pairing of user to badge, with received date"
+
     __tablename__ = "badge_awards"
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), primary_key=True)
     badge_id: Mapped[int] = mapped_column(db.ForeignKey("badges.id"), primary_key=True)
@@ -216,11 +216,7 @@ class User(UserMixin, db.Model):
     def stamps_for(self, type_: EventType, year: int | None = None):
         "Get all stamps for an event type"
         year = year or school_year_for_date(date.today())
-        return [
-            s
-            for s in self.stamps
-            if s.event.type_ == type_ and s.event.school_year == year
-        ]
+        return [s for s in self.stamps if s.event.type_ == type_ and s.event.school_year == year]
 
     def total_stamps_for(self, type_: EventType, year: int | None = None) -> timedelta:
         "Total time for an event type"
@@ -297,9 +293,7 @@ class User(UserMixin, db.Model):
     ) -> User:
         "Make a user, with password and hash"
         if "phone_number" in kwargs:
-            kwargs["phone_number"] = normalize_phone_number_for_storage(
-                kwargs["phone_number"]
-            )
+            kwargs["phone_number"] = normalize_phone_number_for_storage(kwargs["phone_number"])
 
         if isinstance(role, str):
             role = Role.from_name(role)
@@ -367,9 +361,7 @@ class Guardian(db.Model):
     )
 
     @staticmethod
-    def get_from(
-        name: str, phone_number: str, email: str, contact_order: int
-    ) -> Guardian:
+    def get_from(name: str, phone_number: str, email: str, contact_order: int) -> Guardian:
         guardian_user = db.session.scalar(select(User).where(User.email == email))
         if guardian_user:
             # If we found the guardian user, then return the extra guardian data (This object/table)
@@ -427,13 +419,9 @@ class Student(db.Model):
             return f"Alumni (Graduated: {self.graduation_year})"
 
     @staticmethod
-    def make(
-        email: str, name: str, password: str, graduation_year: int, **kwargs
-    ) -> User:
+    def make(email: str, name: str, password: str, graduation_year: int, **kwargs) -> User:
         role = Role.from_name("student")
-        student = User.make(
-            name=name, email=email, password=password, role=role, **kwargs
-        )
+        student = User.make(name=name, email=email, password=password, role=role, **kwargs)
         student_user_data = Student(user_id=student.id, graduation_year=graduation_year)
 
         student.student_user_data = student_user_data
@@ -526,7 +514,7 @@ class Event(db.Model):
     @hybrid_property
     def is_active(self) -> bool:
         "Test for if the event is currently active"
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         return (self.adjusted_start < now) & (now < self.adjusted_end)
 
     @is_active.expression
@@ -588,9 +576,7 @@ class Event(db.Model):
         return locale.currency(self.net_funds * self.overhead / 100.0)
 
     def scan(self, user: User) -> StampEvent:
-        active: Active | None = db.session.scalar(
-            select(Active).filter_by(user=user, event=self)
-        )
+        active: Active | None = db.session.scalar(select(Active).filter_by(user=user, event=self))
         if active:
             stamp = active.convert_to_stamp()
             # Elapsed needs to be taken after committing to the DB
@@ -772,9 +758,7 @@ class EventRegistration(db.Model):
         registered: bool,
     ):
         existing_registration = db.session.scalar(
-            select(EventRegistration).filter_by(
-                user=user, event_block_id=event_block_id
-            )
+            select(EventRegistration).filter_by(user=user, event_block_id=event_block_id)
         )
         if existing_registration:
             existing_registration.registered = registered
