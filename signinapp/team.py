@@ -6,8 +6,8 @@ from flask_login import login_required
 from sqlalchemy import or_
 from sqlalchemy.future import select
 
-from .model import Role, ShirtSizes, Subteam, User, db
-from .util import mentor_required
+from .model import Role, ShirtSizes, Student, Subteam, User, db
+from .util import get_current_graduation_years, mentor_required
 
 team = Blueprint("team", __name__)
 
@@ -43,25 +43,42 @@ def subteam():
 @team.route("/users/students")
 @mentor_required
 def list_students():
-    users = db.session.scalars(
-        select(User)
-        .where(or_(User.role.has(name="student"), User.role.has(name="lead")))
-        .order_by(User.name)
-    )
+    include_all = request.args.get("include_all", False) == "true"
+    select_stmt = select(User).where(or_(User.role.has(name="student"), User.role.has(name="lead")))
+    if not include_all:
+        select_stmt = select_stmt.join(Student).where(
+            Student.graduation_year.in_(get_current_graduation_years())
+        )
+    users = db.session.scalars(select_stmt.order_by(User.name)).all()
     return render_template("user_list.html.jinja2", role="Student", users=users)
 
 
 @team.route("/users/guardians")
 @mentor_required
 def list_guardians():
-    users = db.session.scalars(select(User).where(User.role.has(guardian=True)).order_by(User.name))
+    include_all = request.args.get("include_all", False) == "true"
+    users = db.session.scalars(
+        select(User).where(User.role.has(guardian=True)).order_by(User.name)
+    ).all()
+    if not include_all:
+        users = [
+            guardian
+            for guardian in users
+            if any(
+                student
+                for student in guardian.guardian_user_data.students
+                if student.graduation_year in get_current_graduation_years()
+            )
+        ]
     return render_template("user_list.html.jinja2", role="Guardian", users=users)
 
 
 @team.route("/users/mentors")
 @mentor_required
 def list_mentors():
-    users = db.session.scalars(select(User).where(User.role.has(mentor=True)).order_by(User.name))
+    users = db.session.scalars(
+        select(User).where(User.role.has(mentor=True)).order_by(User.name)
+    ).all()
     return render_template("user_list.html.jinja2", role="Mentor", users=users)
 
 
