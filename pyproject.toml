@@ -1,0 +1,126 @@
+[tool.poetry]
+authors = ["Matt Soucy <first@msoucy.me>", "Ben Beauregard <bot190@gmail.com>"]
+description = "A tool to track your team's hours during the season, using QR codes that can be quickly scanned as team members come and go."
+license = "MIT"
+name = "signinapp"
+packages = [
+	{ include = "signinapp" }
+]
+readme = "README.md"
+repository = "https://github.com/chopshop-166/SignInWebApp"
+version = "1.5.5"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+bootstrap-flask = ">=2.4.0,<2.5.0"
+cssmin = ">=0.2.0,<0.3.0"
+email-validator = ">=2.1.0,<2.2.0"
+flask = ">=3.0.0,<3.1.0"
+flask-admin = ">=1.6.1,<1.7.0"
+flask-apscheduler = ">=1.13.0,<1.14.0"
+flask-assets = ">=2.0,<3.0"
+flask-excel = ">=0.0.7,<0.1.0"
+flask-login = ">=0.6.2,<0.7.0"
+flask-migrate = ">=4.0.0,<4.1.0"
+flask-sqlalchemy = ">=3.1.1,<3.2.0"
+flask-wtf = ">=1.2.0,<1.3.0"
+get-docker-secret = ">=2.0.0,<2.1.0"
+gunicorn = ">=22.0.0,<22.1.0"
+libsass = ">=0.21,<1.0"
+markupsafe = ">=2.1.1,<2.2.0"
+pysass = ">=0.1.0,<0.2.0"
+python-dateutil = ">=2.9.0,<2.10.0"
+pytz = ">=2024.1,<2025.0"
+pyyaml = ">=6.0,<7.0"
+regex = ">=2024.5.15,<2024.6.0"
+psycopg2-binary = ">=2.9.7,<2.10.0"
+requests = ">=2.32.3,<2.33.0"
+six = ">=1.16.0,<1.17.0"
+sqlalchemy = ">=2.0.0,<2.1.0"
+toml = ">=0.10.2,<0.11.0"
+tomli = ">=2.0.1,<2.1.0"
+tzdata = ">=2024.1,<2025.0"
+tzlocal = ">=5.2.0,<5.3.0"
+webassets = ">=2.0,<3.0"
+wtforms = ">=3.1.1,<3.2.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# Same as Black.
+line-length = 100
+indent-width = 4
+
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # isort
+  "I",
+  # pyupgrade
+  "UP",
+  # bugbear
+  "B",
+  # Enable detection of banned imports
+  "TID251",
+]
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+# enabled.
+docstring-code-line-length = "dynamic"
