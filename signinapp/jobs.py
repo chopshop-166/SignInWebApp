@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 from zoneinfo import ZoneInfo
 
 from flask import current_app
@@ -20,7 +19,7 @@ def EventEndJob():
     """
     with scheduler.app.app_context():
         time = datetime.now(tz=ZoneInfo(current_app.config["TIME_ZONE"]))
-        active_entries: List[Active] = db.session.scalars(select(Active))
+        active_entries: list[Active] = db.session.scalars(select(Active))
 
         for active in active_entries:
             if active.event.adjusted_end < time:

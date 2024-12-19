@@ -1,6 +1,6 @@
-from flask import Blueprint, Flask, current_app, request, Response
-from flask_login import current_user, login_required
 import requests
+from flask import Blueprint, Flask, Response, current_app, request
+from flask_login import current_user, login_required
 
 bp = Blueprint("kanboard", __name__, url_prefix="/kanboard")
 

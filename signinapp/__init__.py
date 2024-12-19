@@ -21,12 +21,12 @@ from . import (
     dbadmin,
     event,
     events,
+    finance,
     proxy,
     qr,
     search,
     team,
     user,
-    finance,
 )
 from .auth import login_manager
 from .jobs import scheduler
@@ -48,11 +48,13 @@ locale.setlocale(locale.LC_ALL, "")
 app = Flask(__name__)
 
 
-class Config(object):
+class Config:
     TITLE = "Chop Shop Sign In"
     BLURB = """
-We are Merrimack High School FIRST Robotics Competition Team 166, Chop Shop, from Merrimack, New Hampshire.
-Our mission is to build teamwork and a great robot, along with fostering a love for Science, Technology, Engineering, and Mathematics.""".strip()
+We are Merrimack High School FIRST Robotics Competition Team 166, Chop Shop, \
+    from Merrimack, New Hampshire.
+Our mission is to build teamwork and a great robot, along with fostering a love for \
+    Science, Technology, Engineering, and Mathematics.""".strip()
     DB_NAME = "signin.db"
     TIME_ZONE = "America/New_York"
     SECRET_KEY = "1234"
@@ -84,12 +86,8 @@ assert app.config["TITLE"], "Invalid title given in config"
 assert (
     app.config["TIME_ZONE"] in zoneinfo.available_timezones()
 ), "Invalid time zone given in config"
-assert (
-    app.config["PRE_EVENT_ACTIVE_TIME"] >= 0
-), "Invalid pre active time given in config"
-assert (
-    app.config["POST_EVENT_ACTIVE_TIME"] >= 0
-), "Invalid post active time given in config"
+assert app.config["PRE_EVENT_ACTIVE_TIME"] >= 0, "Invalid pre active time given in config"
+assert app.config["POST_EVENT_ACTIVE_TIME"] >= 0, "Invalid post active time given in config"
 assert app.config["AUTO_SIGNOUT_BEHAVIOR"] in (
     "Credit",
     "Discard",
@@ -149,9 +147,7 @@ def index():
 @app.errorhandler(404)
 def page_not_found(e):
     return (
-        render_template(
-            "error.html.jinja2", error_headline="Page Not Found", error_msg=e
-        ),
+        render_template("error.html.jinja2", error_headline="Page Not Found", error_msg=e),
         404,
     )
 
@@ -159,9 +155,7 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e: int):
     return (
-        render_template(
-            "error.html.jinja2", error_headline="Internal Error", error_msg=e
-        ),
+        render_template("error.html.jinja2", error_headline="Internal Error", error_msg=e),
         500,
     )
 
@@ -199,12 +193,8 @@ def init_default_db():
     create_if_not_exists(Role, name="guardian_limited", guardian=True, visible=False)
     create_if_not_exists(Role, name="guardian", guardian=True)
 
-    create_if_not_exists(
-        EventType, name="Training", description="Training Session", autoload=True
-    )
-    create_if_not_exists(
-        EventType, name="Build", description="Build Season", autoload=True
-    )
+    create_if_not_exists(EventType, name="Training", description="Training Session", autoload=True)
+    create_if_not_exists(EventType, name="Build", description="Build Season", autoload=True)
     create_if_not_exists(EventType, name="Fundraiser", description="Fundraiser")
     create_if_not_exists(EventType, name="Competition", description="Competition")
 
@@ -239,7 +229,7 @@ if app.config["DEBUG"]:
     with app.app_context():
         init_default_db()
 
-        now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0)
+        now = datetime.datetime.now(tz=datetime.UTC).replace(microsecond=0)
         offset = datetime.timedelta(hours=3)
         training = Event.create(
             name="Training",
@@ -266,8 +256,7 @@ if app.config["DEBUG"]:
             location="D124",
             code="8765",
             start=now - offset,
-            end=now
-            - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
+            end=now - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
             event_type="Build",
         )
         db.session.commit()

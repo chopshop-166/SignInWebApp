@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from urllib import parse
 
 from dateutil.rrule import WEEKLY, rrule
@@ -73,9 +73,7 @@ class EventForm(FlaskForm):
     cost = DecimalField(label="Event Cost", default=0)
     overhead = DecimalField(
         label="Overhead Portion",
-        validators=[
-            NumberRange(min=0.0, max=1.0, message="Must be between 0.0 and 1.0")
-        ],
+        validators=[NumberRange(min=0.0, max=1.0, message="Must be between 0.0 and 1.0")],
         default=1.0,
     )
     submit = SubmitField()
@@ -157,9 +155,7 @@ def list_events():
 @mentor_required
 def previous():
     events: list[Event] = list(
-        db.session.scalars(
-            select(Event).order_by(Event.start).where(Event.end <= func.now())
-        )
+        db.session.scalars(select(Event).order_by(Event.start).where(Event.end <= func.now()))
     )
     return render_template("events.html.jinja2", prefix="Previous ", events=events)
 
@@ -179,8 +175,7 @@ def todays():
     query = select(Event).order_by(Event.start)
     if db.get_engine().name == "postgresql":
         query = query.where(
-            Event.start
-            < func.date_trunc("day", func.now()) + func.make_interval(0, 0, 0, 1),
+            Event.start < func.date_trunc("day", func.now()) + func.make_interval(0, 0, 0, 1),
             Event.end > func.date_trunc("day", func.now()),
         )
     elif db.get_engine().name == "sqlite":
@@ -226,7 +221,7 @@ def stats():
     for stamp in event.stamps:
         users[stamp.user] += stamp.elapsed
         subteams[stamp.user.subteam] += stamp.elapsed
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     for active in event.active:
         users[active.user] += now - correct_time_from_storage(active.start)
         subteams[active.user.subteam] += now - correct_time_from_storage(active.start)
@@ -268,9 +263,9 @@ def bulk():
     if form.validate_on_submit():
         start_time = datetime.combine(form.start_day.data, form.start_time.data)
         end_time = datetime.combine(form.end_day.data, form.end_time.data)
-        days = rrule(
-            WEEKLY, byweekday=[WEEKDAYS.index(d) for d in form.days.data]
-        ).between(start_time, end_time, inc=True)
+        days = rrule(WEEKLY, byweekday=[WEEKDAYS.index(d) for d in form.days.data]).between(
+            start_time, end_time, inc=True
+        )
         event_type = db.session.get(EventType, form.type_id.data)
         for d in [d.date() for d in days]:
             Event.create(
@@ -372,11 +367,8 @@ def register():
     data = {"blocks": []}
     for block in event.blocks:
         registration = db.session.scalar(
-            select(EventRegistration).filter_by(
-                user_id=current_user.id, event_block=block
-            )
+            select(EventRegistration).filter_by(user_id=current_user.id, event_block=block)
         )
-        # If no registration exists for this block, or they've chosen not to register for this event block
         registered = registration and registration.registered
         comment = registration.comment if registration else ""
         data["blocks"].append(

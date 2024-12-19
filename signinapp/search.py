@@ -1,9 +1,9 @@
 from flask import Blueprint, Flask
 from flask.templating import render_template
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, SelectField, SubmitField
+from wtforms import SelectField, SubmitField
 
-from .model import Badge, EventType, Role, Subteam, User, db, get_form_ids
+from .model import EventType, Role, User, db, get_form_ids
 from .util import MultiCheckboxField, mentor_required
 
 search = Blueprint("search", __name__)
