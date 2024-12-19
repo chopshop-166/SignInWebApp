@@ -200,9 +200,9 @@ def export_stamps(
 @login_required
 def export():
     if current_user.role.admin:
-        name = request.values.get("name", None)
+        name = request.values.get("name", current_user.email)
     else:
-        name = current_user.name
+        name = current_user.email
     user = User.from_email(name)
     start = request.args.get("start", None)
     end = request.args.get("end", None)

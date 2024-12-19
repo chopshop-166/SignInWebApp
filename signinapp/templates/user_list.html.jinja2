@@ -7,6 +7,20 @@
   <div id="userListContainer" class="container pt-3">
     <div class="d-flex flex-row align-items-center justify-content-between">
       <h1>{{ role }} List</h1>
+      <div>
+      {{ users|length }} {{ role }}s
+      {% if role == "Student" or role == "Guardian" %}
+      {% if request.args.get('include_all',"false") == 'true' -%}
+        <a class="btn btn-secondary btn-sm"
+           href="{{ url_for(request.endpoint) }}"
+           role="button">Show Active</a>
+      {% else %}
+        <a class="btn btn-secondary btn-sm"
+           href="{{ url_for(request.endpoint, include_all='true') }}"
+           role="button">Show All</a>
+      {% endif %}
+      {% endif %}
+    </div>
       {% if role == "Student" %}
         <a class="btn btn-primary"
            href="{{ url_for('auth.register')}}"

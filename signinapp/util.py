@@ -78,3 +78,12 @@ def generate_grade_choices():
         this_grad_year + 1: f"Junior ({this_grad_year+1})",
         this_grad_year: f"Senior ({this_grad_year})",
     }
+
+
+def get_current_graduation_years() -> list[int]:
+    today = date.today()
+    this_grad_year = today.year
+    # If it's past June then graduation is a year from now
+    if today.month > 6:
+        this_grad_year += 1
+    return [this_grad_year + 3, this_grad_year + 2, this_grad_year + 1, this_grad_year]
