@@ -114,6 +114,13 @@
                 </tr>
               {%- endfor -%}
             </tbody>
+            <tfoot>
+                <tr>
+                  <td>TOTAL</td>
+                  <td>{{ total_time }}</td>
+                  <td>{{ event.funds_human }}</td>
+                </tr>
+            </tfoot>
           </table>
         </div>
         <div class="table-responsive">
