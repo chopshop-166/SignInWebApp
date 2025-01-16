@@ -218,9 +218,11 @@ def stats():
     users = defaultdict(timedelta)
     subteams = defaultdict(timedelta)
     blocks = defaultdict(list)
+    total_time = timedelta()
     for stamp in event.stamps:
         users[stamp.user] += stamp.elapsed
         subteams[stamp.user.subteam] += stamp.elapsed
+        total_time += stamp.elapsed
     now = datetime.now(tz=UTC)
     for active in event.active:
         users[active.user] += now - correct_time_from_storage(active.start)
@@ -252,6 +254,7 @@ def stats():
         subteams=subteams,
         blocks=blocks,
         registration_url=registration_url,
+        total_time=total_time,
     )
 
 
