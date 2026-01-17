@@ -39,10 +39,11 @@ class BadgeSearchForm(FlaskForm):
 def view():
     if bid := request.args.get("badge_id"):
         bid = int(bid)
-        badge: Badge = db.session.get(Badge, bid)
-        awards: list[BadgeAward] = sorted(badge.awards, key=lambda u: u.owner.name)
-        return render_template("badge.html.jinja2", badge=badge, awards=awards)
-    return redirect(url_for("badge.all", badge_id=badge.id))
+        badge = db.session.get(Badge, bid)
+        if badge:
+            awards: list[BadgeAward] = sorted(badge.awards, key=lambda u: u.owner.name)
+        return render_template("badge.html.jinja2", badge=badge, awards=awards or [])
+    return redirect(url_for("badge.all"))
 
 
 @bp.route("/", endpoint="all")

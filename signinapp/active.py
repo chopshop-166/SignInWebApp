@@ -20,10 +20,13 @@ def view():
 @mentor_required
 def post():
     active_event = db.session.get(Active, request.form["active_id"])
-    stamp = Stamps(user=active_event.user, event=active_event.event, start=active_event.start)
-    db.session.delete(active_event)
-    db.session.add(stamp)
-    db.session.commit()
+    if active_event:
+        stamp = Stamps(
+            user=active_event.user, event=active_event.event, start=active_event.start
+        )
+        db.session.delete(active_event)
+        db.session.add(stamp)
+        db.session.commit()
     return redirect(url_for("active.view"))
 
 
