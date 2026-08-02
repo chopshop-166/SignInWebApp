@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -17,16 +18,17 @@ def EventEndJob():
     This monitor checks all of the entries in the active table
         For each entry check if the adjusted end time has passed
     """
-    with scheduler.app.app_context():
-        time = datetime.now(tz=ZoneInfo(current_app.config["TIME_ZONE"]))
-        active_entries: list[Active] = db.session.scalars(select(Active))
+    if scheduler.app:
+        with scheduler.app.app_context():
+            time = datetime.now(tz=ZoneInfo(current_app.config["TIME_ZONE"]))
+            active_entries: Sequence[Active] = db.session.scalars(select(Active)).all()
 
-        for active in active_entries:
-            if active.event.adjusted_end < time:
-                if current_app.config["AUTO_SIGNOUT_BEHAVIOR"] == "Credit":
-                    # Expire the active session
-                    active.convert_to_stamp(active.event.end)
-                elif current_app.config["AUTO_SIGNOUT_BEHAVIOR"] == "Discard":
-                    # Delete active entry without crediting the user
-                    db.session.delete(active)
-        db.session.commit()
+            for active in active_entries:
+                if active.event.adjusted_end < time:
+                    if current_app.config["AUTO_SIGNOUT_BEHAVIOR"] == "Credit":
+                        # Expire the active session
+                        active.convert_to_stamp(active.event.end)
+                    elif current_app.config["AUTO_SIGNOUT_BEHAVIOR"] == "Discard":
+                        # Delete active entry without crediting the user
+                        db.session.delete(active)
+            db.session.commit()

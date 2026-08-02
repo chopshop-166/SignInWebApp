@@ -33,6 +33,7 @@ from .jobs import scheduler
 from .model import (
     Active,
     Badge,
+    Base,
     Event,
     EventType,
     Guardian,
@@ -86,8 +87,12 @@ assert app.config["TITLE"], "Invalid title given in config"
 assert (
     app.config["TIME_ZONE"] in zoneinfo.available_timezones()
 ), "Invalid time zone given in config"
-assert app.config["PRE_EVENT_ACTIVE_TIME"] >= 0, "Invalid pre active time given in config"
-assert app.config["POST_EVENT_ACTIVE_TIME"] >= 0, "Invalid post active time given in config"
+assert (
+    app.config["PRE_EVENT_ACTIVE_TIME"] >= 0
+), "Invalid pre active time given in config"
+assert (
+    app.config["POST_EVENT_ACTIVE_TIME"] >= 0
+), "Invalid post active time given in config"
 assert app.config["AUTO_SIGNOUT_BEHAVIOR"] in (
     "Credit",
     "Discard",
@@ -115,7 +120,7 @@ login_manager.init_app(app)
 
 db.init_app(app)
 with app.app_context():
-    db.create_all()
+    Base.metadata.create_all(db.get_engine())
 
 migrate = Migrate(app, db)
 
@@ -147,7 +152,9 @@ def index():
 @app.errorhandler(404)
 def page_not_found(e):
     return (
-        render_template("error.html.jinja2", error_headline="Page Not Found", error_msg=e),
+        render_template(
+            "error.html.jinja2", error_headline="Page Not Found", error_msg=e
+        ),
         404,
     )
 
@@ -155,7 +162,9 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e: int):
     return (
-        render_template("error.html.jinja2", error_headline="Internal Error", error_msg=e),
+        render_template(
+            "error.html.jinja2", error_headline="Internal Error", error_msg=e
+        ),
         500,
     )
 
@@ -193,8 +202,12 @@ def init_default_db():
     create_if_not_exists(Role, name="guardian_limited", guardian=True, visible=False)
     create_if_not_exists(Role, name="guardian", guardian=True)
 
-    create_if_not_exists(EventType, name="Training", description="Training Session", autoload=True)
-    create_if_not_exists(EventType, name="Build", description="Build Season", autoload=True)
+    create_if_not_exists(
+        EventType, name="Training", description="Training Session", autoload=True
+    )
+    create_if_not_exists(
+        EventType, name="Build", description="Build Season", autoload=True
+    )
     create_if_not_exists(EventType, name="Fundraiser", description="Fundraiser")
     create_if_not_exists(EventType, name="Competition", description="Competition")
 
@@ -256,7 +269,8 @@ if app.config["DEBUG"]:
             location="D124",
             code="8765",
             start=now - offset,
-            end=now - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
+            end=now
+            - datetime.timedelta(minutes=app.config["POST_EVENT_ACTIVE_TIME"] - 5),
             event_type="Build",
         )
         db.session.commit()
@@ -284,14 +298,15 @@ if app.config["DEBUG"]:
             approved=True,
             tshirt_size="Large",
         )
-        student_user.student_user_data.add_guardian(
-            guardian=Guardian.get_from(
-                name="Parent Burke",
-                phone_number="(603)555-5555",
-                email="pburke@signin.chopshoplib.info",
-                contact_order=1,
+        if sud := student_user.student_user_data:
+            sud.add_guardian(
+                Guardian.get_from(
+                    name="Parent Burke",
+                    phone_number="(603)555-5555",
+                    email="pburke@signin.chopshoplib.info",
+                    contact_order=1,
+                )
             )
-        )
 
         student_training_event = Active(
             user_id=student_user.id, event_id=expired_event.id, start=now - offset
