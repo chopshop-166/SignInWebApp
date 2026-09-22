@@ -1,11 +1,12 @@
 import requests
 from flask import Blueprint, Flask, Response, current_app, request
 from flask_login import current_user, login_required
+from werkzeug.datastructures.headers import Headers
 
 bp = Blueprint("kanboard", __name__, url_prefix="/kanboard")
 
 
-def calculate_headers(headers: dict):
+def calculate_headers(headers: Headers):
     new_headers = dict()
     for header_name in [
         "cookie",
@@ -26,9 +27,9 @@ def calculate_headers(headers: dict):
 @bp.route("/<path:path>", methods=["GET", "POST"])
 @bp.route("/", methods=["GET", "POST"])
 @login_required
-def index(path=""):
-    url = current_app.config.get("PROXY_URL") + path
-    headers = calculate_headers(request.headers)
+def index(path: str = ""):
+    url = current_app.config.get("PROXY_URL") + path  # ty:ignore[unsupported-operator]
+    headers: dict[str, str] = calculate_headers(request.headers)
 
     if request.method == "GET":
         resp = requests.get(url, params=dict(request.args), headers=headers)
@@ -55,11 +56,11 @@ def index(path=""):
         "transfer-encoding",
         "connection",
     ]
-    headers = [
-        (name, value)
+    headers = {
+        name: value
         for (name, value) in resp.raw.headers.items()
         if name.lower() not in excluded_headers
-    ]
+    }
     response = Response(resp.content, resp.status_code, headers)
     return response
 

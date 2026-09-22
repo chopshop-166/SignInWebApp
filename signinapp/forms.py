@@ -112,7 +112,9 @@ class UserForm(FlaskForm):
         validators=[Regexp(PHONE_RE)],
         render_kw={"placeholder": "555-555-5555"},
     )
-    address = StringField("Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)])
+    address = StringField(
+        "Street Address", validators=[DataRequired(), Regexp(ADDRESS_RE)]
+    )
     tshirt_size = SelectField(
         "T-Shirt Size", choices=ShirtSizes.get_size_names(), validators=[DataRequired()]
     )
@@ -125,7 +127,7 @@ class UserForm(FlaskForm):
         choices=lambda: get_form_ids(Subteam, add_null_id=True),
     )
 
-    student_data: StudentDataForm = FormField(StudentDataForm)
-    admin_data: AdminUserForm = FormField(AdminUserForm)
+    student_data = FormField(StudentDataForm)
+    admin_data = FormField(AdminUserForm)
 
     submit = SubmitField("Register")

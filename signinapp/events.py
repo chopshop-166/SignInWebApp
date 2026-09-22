@@ -73,7 +73,9 @@ class EventForm(FlaskForm):
     cost = DecimalField(label="Event Cost", default=0)
     overhead = DecimalField(
         label="Overhead Portion",
-        validators=[NumberRange(min=0.0, max=1.0, message="Must be between 0.0 and 1.0")],
+        validators=[
+            NumberRange(min=0.0, max=1.0, message="Must be between 0.0 and 1.0")
+        ],
         default=1.0,
     )
     submit = SubmitField()
@@ -155,7 +157,9 @@ def list_events():
 @mentor_required
 def previous():
     events: list[Event] = list(
-        db.session.scalars(select(Event).order_by(Event.start).where(Event.end <= func.now()))
+        db.session.scalars(
+            select(Event).order_by(Event.start).where(Event.end <= func.now())
+        )
     )
     return render_template("events.html.jinja2", prefix="Previous ", events=events)
 
@@ -175,7 +179,8 @@ def todays():
     query = select(Event).order_by(Event.start)
     if db.get_engine().name == "postgresql":
         query = query.where(
-            Event.start < func.date_trunc("day", func.now()) + func.make_interval(0, 0, 0, 1),
+            Event.start
+            < func.date_trunc("day", func.now()) + func.make_interval(0, 0, 0, 1),
             Event.end > func.date_trunc("day", func.now()),
         )
     elif db.get_engine().name == "sqlite":
@@ -214,26 +219,31 @@ def list_open():
 @bp.route("/stats")
 @mentor_required
 def stats():
-    event: Event = db.session.get(Event, request.args["event_id"])
+    event = db.session.get(Event, request.args["event_id"])
     users = defaultdict(timedelta)
     subteams = defaultdict(timedelta)
     blocks = defaultdict(list)
     total_time = timedelta()
-    for stamp in event.stamps:
-        users[stamp.user] += stamp.elapsed
-        subteams[stamp.user.subteam] += stamp.elapsed
-        total_time += stamp.elapsed
-    now = datetime.now(tz=UTC)
-    for active in event.active:
-        users[active.user] += now - correct_time_from_storage(active.start)
-        subteams[active.user.subteam] += now - correct_time_from_storage(active.start)
+    if event:
+        for stamp in event.stamps:
+            users[stamp.user] += stamp.elapsed
+            subteams[stamp.user.subteam] += stamp.elapsed
+            total_time += stamp.elapsed
+        now = datetime.now(tz=UTC)
+        for active in event.active:
+            users[active.user] += now - correct_time_from_storage(active.start)
+            subteams[active.user.subteam] += now - correct_time_from_storage(
+                active.start
+            )
 
-    for block in event.blocks:
-        for registration in block.registrations:
-            if registration.registered:
-                blocks[block].append((registration.user.name, registration.comment))
-        # Sort user names
-        blocks[block] = sorted(blocks[block], key=lambda registration: registration[0])
+        for block in event.blocks:
+            for registration in block.registrations:
+                if registration.registered:
+                    blocks[block].append((registration.user.name, registration.comment))
+            # Sort user names
+            blocks[block] = sorted(
+                blocks[block], key=lambda registration: registration[0]
+            )
 
     blocks = sorted(
         blocks.items(),
@@ -244,9 +254,11 @@ def stats():
     subteams = sorted(
         ((s, t) for s, t in subteams.items() if s), key=lambda subteam: subteam[0].name
     )
-    registration_url = parse.urljoin(
-        request.host_url, url_for("events.register", event_id=event.id)
-    )
+    registration_url = ""
+    if event:
+        registration_url = parse.urljoin(
+            request.host_url, url_for("events.register", event_id=event.id)
+        )
     return render_template(
         "event_stats.html.jinja2",
         event=event,
@@ -266,9 +278,9 @@ def bulk():
     if form.validate_on_submit():
         start_time = datetime.combine(form.start_day.data, form.start_time.data)
         end_time = datetime.combine(form.end_day.data, form.end_time.data)
-        days = rrule(WEEKLY, byweekday=[WEEKDAYS.index(d) for d in form.days.data]).between(
-            start_time, end_time, inc=True
-        )
+        days = rrule(
+            WEEKLY, byweekday=[WEEKDAYS.index(d) for d in form.days.data]
+        ).between(start_time, end_time, inc=True)
         event_type = db.session.get(EventType, form.type_id.data)
         for d in [d.date() for d in days]:
             Event.create(
@@ -313,7 +325,7 @@ def new():
 @bp.route("/edit", methods=["GET", "POST"])
 @mentor_required
 def edit():
-    event: Event = db.session.get(Event, request.args["event_id"])
+    event = db.session.get(Event, request.args["event_id"])
     if not event:
         flash("Event does not exist")
         return redirect(url_for("events.list"))
@@ -370,7 +382,9 @@ def register():
     data = {"blocks": []}
     for block in event.blocks:
         registration = db.session.scalar(
-            select(EventRegistration).filter_by(user_id=current_user.id, event_block=block)
+            select(EventRegistration).filter_by(
+                user_id=current_user.id, event_block=block
+            )
         )
         registered = registration and registration.registered
         comment = registration.comment if registration else ""

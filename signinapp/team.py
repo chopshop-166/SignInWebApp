@@ -46,7 +46,9 @@ def subteam():
 @mentor_required
 def list_students():
     include_all = request.args.get("include_all", False) == "true"
-    select_stmt = select(User).where(or_(User.role.has(name="student"), User.role.has(name="lead")))
+    select_stmt = select(User).where(
+        or_(User.role.has(name="student"), User.role.has(name="lead"))
+    )
     if not include_all:
         select_stmt = select_stmt.join(Student).where(
             Student.graduation_year.in_(get_current_graduation_years())
@@ -66,7 +68,8 @@ def list_guardians():
         users = [
             guardian
             for guardian in users
-            if any(
+            if guardian.guardian_user_data
+            and any(
                 student
                 for student in guardian.guardian_user_data.students
                 if student.graduation_year in get_current_graduation_years()

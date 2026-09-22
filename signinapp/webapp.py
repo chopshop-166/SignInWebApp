@@ -1,7 +1,11 @@
 # Entry point for the application.
+from collections.abc import Sequence
+
 import click
 from flask.cli import with_appcontext
 from sqlalchemy.future import select
+
+from signinapp.model import Base
 
 # For application discovery by the 'flask' command.
 from . import app, db, init_default_db, model
@@ -12,7 +16,7 @@ from . import app, db, init_default_db, model
 def init_db_command():
     """Clear the existing data and create new tables."""
 
-    model.db.create_all()
+    Base.metadata.create_all(db.get_engine())
     init_default_db()
 
     click.echo("Initialized the database.")
@@ -44,7 +48,7 @@ def generate_secret_command():
 @click.command("trim-stamps")
 @with_appcontext
 def trim_stamps_command():
-    all_stamps: list[model.Stamps] = db.session.scalars(select(model.Stamps))
+    all_stamps: Sequence[model.Stamps] = db.session.scalars(select(model.Stamps)).all()
     for stamp in all_stamps:
         start_time = stamp.event.adjusted_start
         if stamp.start < start_time:
@@ -54,7 +58,9 @@ def trim_stamps_command():
             stamp.start = start_time
         end_time = stamp.event.adjusted_end
         if stamp.end > end_time:
-            click.echo(f"Adjusting end stamp for event {stamp.id} from {stamp.end} to {end_time}")
+            click.echo(
+                f"Adjusting end stamp for event {stamp.id} from {stamp.end} to {end_time}"
+            )
             stamp.end = end_time
 
     db.session.commit()

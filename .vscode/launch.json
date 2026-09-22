@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Debug Server",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -25,7 +25,7 @@
         },
         {
             "name": "Production",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -41,7 +41,7 @@
         },
         {
             "name": "Init DB",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -55,7 +55,7 @@
         },
         {
             "name": "Generate Codes",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -69,7 +69,7 @@
         },
         {
             "name": "Generate Secret",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -83,7 +83,7 @@
         },
         {
             "name": "Generate Migration Revision",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -98,7 +98,7 @@
         },
         {
             "name": "Migrate DB",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {

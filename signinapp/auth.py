@@ -63,32 +63,32 @@ def register():
 
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
-        email = form.email.data
-        user = User.from_email(email)
+        if email := form.email.data:
+            user = User.from_email(email)
 
-        # if a user is found, we want to redirect back to signup page
-        # so the user can try again
-        if user:
-            flash("User already exists")
-            return redirect(url_for("auth.register"))
+            # if a user is found, we want to redirect back to signup page
+            # so the user can try again
+            if user:
+                flash("User already exists")
+                return redirect(url_for("auth.register"))
 
-        # Create a new user with the form data.
-        # Hash the password so the plaintext version isn't saved.
-        student = Student.make(
-            email=email,
-            name=form.name.data,
-            password=form.password.data,
-            graduation_year=form.student_data.graduation_year.data,
-            preferred_name=form.preferred_name.data,
-            phone_number=form.phone_number.data,
-            address=form.address.data,
-            tshirt_size=ShirtSizes[form.tshirt_size.data],
-            subteam=db.session.get(Subteam, form.subteam.data),
-            pronouns=Pronoun[form.pronouns.data],
-        )
-        student.student_user_data.update_guardians(form.student_data.guardian)
+            # Create a new user with the form data.
+            # Hash the password so the plaintext version isn't saved.
+            student = Student.make(
+                email=email,
+                name=form.name.data,
+                password=form.password.data,
+                graduation_year=form.student_data.graduation_year.data,
+                preferred_name=form.preferred_name.data,
+                phone_number=form.phone_number.data,
+                address=form.address.data,
+                tshirt_size=ShirtSizes[form.tshirt_size.data],
+                subteam=db.session.get(Subteam, form.subteam.data),
+                pronouns=Pronoun[form.pronouns.data],
+            )
+            student.student_user_data.update_guardians(form.student_data.guardian)
 
-        db.session.commit()
+            db.session.commit()
         return redirect("/login")
 
     while len(form.student_data.guardian) < 2:
@@ -111,31 +111,31 @@ def register_mentor():
 
     if form.validate_on_submit():
         # if this returns a user, then the user already exists in database
-        email = form.email.data
-        user = User.from_email(email)
+        if email := form.email.data:
+            user = User.from_email(email)
 
-        # if a user is found, we want to redirect back to signup page
-        # so the user can try again
-        if user:
-            flash("User already exists")
-            return redirect(url_for("auth.register"))
+            # if a user is found, we want to redirect back to signup page
+            # so the user can try again
+            if user:
+                flash("User already exists")
+                return redirect(url_for("auth.register"))
 
-        # Create a new user with the form data.
-        # Hash the password so the plaintext version isn't saved.
-        user = User.make(
-            email=email,
-            name=form.name.data,
-            password=form.password.data,
-            role=Role.from_name("mentor"),
-            preferred_name=form.preferred_name.data,
-            phone_number=form.phone_number.data,
-            address=form.address.data,
-            tshirt_size=ShirtSizes[form.tshirt_size.data],
-            subteam=db.session.get(Subteam, form.subteam.data),
-            pronouns=Pronoun[form.pronouns.data],
-        )
+            # Create a new user with the form data.
+            # Hash the password so the plaintext version isn't saved.
+            user = User.make(
+                email=email,
+                name=form.name.data,
+                password=form.password.data,
+                role=Role.from_name("mentor"),  # ty:ignore[invalid-argument-type]
+                preferred_name=form.preferred_name.data,
+                phone_number=form.phone_number.data,
+                address=form.address.data,
+                tshirt_size=ShirtSizes[form.tshirt_size.data],
+                subteam=db.session.get(Subteam, form.subteam.data),
+                pronouns=Pronoun[form.pronouns.data],
+            )
 
-        db.session.commit()
+            db.session.commit()
         return redirect("/login")
     return render_template(
         "auth/register.html.jinja2",
@@ -155,7 +155,9 @@ def register_guardian():
 
     if form.validate_on_submit():
         # Cannot use form.populate_data because of the password
-        user = Guardian.get_from(form.name.data, form.phone_number.data, form.email.data, 0).user
+        user = Guardian.get_from(
+            form.name.data, form.phone_number.data, form.email.data, 0
+        ).user
         user.name = form.name.data
         if form.password.data:
             user.password = generate_password_hash(form.password.data)
