@@ -30,7 +30,6 @@
           </tbody>
         </table>
         <div id="liveAlertPlaceholder"></div>
-        {%- if current_user.role.mentor -%}
           <div class="d-inline-flex justify-content-center m-auto container"
                id="mentorSelfSignIn">
             <a class="btn btn-primary"
@@ -43,7 +42,6 @@
             {%- endif -%}
             </a>
           </div>
-        {%- endif -%}
       </div>
       <div class="bg-secondary rounded-3 py-3 content-primary flex-fill float-start">
         {# justify-content-between to get QR take up only the space it needs #}
