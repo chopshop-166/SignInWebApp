@@ -25,7 +25,13 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, EqualTo, NumberRange, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    EqualTo,
+    NumberRange,
+    ReadOnly,
+    ValidationError,
+)
 
 from .model import (
     Event,
@@ -113,8 +119,8 @@ class EventSearchForm(FlaskForm):
 
 
 class EventBlockForm(Form):
-    start = DateTimeLocalField(render_kw={"readonly": True})
-    end = DateTimeLocalField(render_kw={"readonly": True})
+    start = DateTimeLocalField(validators=[ReadOnly()])
+    end = DateTimeLocalField(validators=[ReadOnly()])
     register = BooleanField()
     block_id = HiddenField()
     comment = TextAreaField(
@@ -130,9 +136,9 @@ class EventRegistrationForm(FlaskForm):
 
 
 class DeleteEventForm(FlaskForm):
-    name = StringField(validators=[DataRequired()], render_kw={"readonly": True})
-    start = DateTimeLocalField(render_kw={"readonly": True})
-    end = DateTimeLocalField(render_kw={"readonly": True})
+    name = StringField(validators=[DataRequired(), ReadOnly()])
+    start = DateTimeLocalField(validators=[ReadOnly()])
+    end = DateTimeLocalField(validators=[ReadOnly()])
     verify = StringField(
         "Confirm Name",
         validators=[DataRequired(), EqualTo("name", message="Enter the event's name")],

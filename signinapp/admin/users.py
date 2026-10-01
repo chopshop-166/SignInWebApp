@@ -3,7 +3,7 @@ from flask.templating import render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import FormField, StringField, SubmitField
-from wtforms.validators import DataRequired, EqualTo
+from wtforms.validators import DataRequired, EqualTo, ReadOnly
 
 from ..forms import GuardianDataForm, StudentDataForm, UserForm
 from ..model import Pronoun, Role, ShirtSizes, User, db
@@ -22,7 +22,7 @@ class EditStudentDataForm(FlaskForm):
 
 
 class DeleteUserForm(FlaskForm):
-    name = StringField(validators=[DataRequired()], render_kw={"readonly": True})
+    name = StringField(validators=[DataRequired(), ReadOnly()])
     verify = StringField(
         "Confirm Name",
         validators=[DataRequired(), EqualTo("name", message="Enter the user's name")],
