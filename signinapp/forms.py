@@ -77,6 +77,7 @@ class StudentDataForm(Form):
 class AdminUserForm(Form):
     role = SelectField(choices=lambda: get_form_ids(Role))
     approved = BooleanField()
+    archived = BooleanField()
 
 
 class UserForm(FlaskForm):

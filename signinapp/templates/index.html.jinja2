@@ -32,8 +32,7 @@
                     {% for event in events %}
                       <a class="btn btn-secondary"
                          href="{{ url_for('event.event', event_code=event.code)}}"
-                         role="button">{{
-                      event.name }}</a>
+                         role="button">{{ event.name }}</a>
                     {% endfor %}
                   {% else %}
                     <li>None</li>
