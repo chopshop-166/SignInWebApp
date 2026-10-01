@@ -209,6 +209,7 @@ def init_default_db():
         EventType, name="Build", description="Build Season", autoload=True
     )
     create_if_not_exists(EventType, name="Fundraiser", description="Fundraiser")
+    create_if_not_exists(EventType, name="Outreach", description="Outreach")
     create_if_not_exists(EventType, name="Competition", description="Competition")
 
     create_if_not_exists(Subteam, name="Software")
