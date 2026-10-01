@@ -11,7 +11,7 @@ from typing import Annotated
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy_lite import SQLAlchemy
-from sqlalchemy import Column, ForeignKey, MetaData, Table, and_, func
+from sqlalchemy import Column, ForeignKey, MetaData, Table, and_, func, not_
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.future import select
@@ -159,6 +159,7 @@ class User(UserMixin, Base):
     code: Mapped[str] = mapped_column(unique=True, default=gen_code)
     role_id: Mapped[int] = mapped_column(ForeignKey("account_types.id"))
     approved: Mapped[NonNullBool]
+    archived: Mapped[NonNullBool]
 
     stamps: Mapped[list[Stamps]] = relationship(
         "Stamps",
@@ -291,7 +292,13 @@ class User(UserMixin, Base):
 
     @staticmethod
     def get_visible_users() -> list[User]:
-        return list(db.session.scalars(select(User).where(User.role.has(visible=True))))
+        return list(
+            db.session.scalars(
+                select(User)
+                .where(User.role.has(visible=True))
+                .where(not_(User.archived))
+            )
+        )
 
     @staticmethod
     def make(
