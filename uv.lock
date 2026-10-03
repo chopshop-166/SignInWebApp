@@ -290,6 +290,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/af/a6/7adc0885b5178d13b7b7ee72b8999a808163f382f156dc864b9e2fd1dec5/flask_admin-2.2.1-py3-none-any.whl", hash = "sha256:a0533fd1968543fc621733316bb9c30774b501c119816f1e83d7dcedacb99895", size = 6067393, upload-time = "2026-09-21T06:11:06.542Z" },
 ]
 
+[package.optional-dependencies]
+export = [
+    { name = "tablib" },
+]
+sqlalchemy = [
+    { name = "flask-sqlalchemy" },
+    { name = "sqlalchemy" },
+]
+
 [[package]]
 name = "flask-apscheduler"
 version = "1.13.1"
@@ -983,7 +992,7 @@ dependencies = [
     { name = "cssmin" },
     { name = "email-validator" },
     { name = "flask" },
-    { name = "flask-admin" },
+    { name = "flask-admin", extra = ["export", "sqlalchemy"] },
     { name = "flask-apscheduler" },
     { name = "flask-assets" },
     { name = "flask-excel" },
@@ -1025,7 +1034,7 @@ requires-dist = [
     { name = "cssmin", specifier = ">=0.2.0,<0.3.0" },
     { name = "email-validator", specifier = ">=2.3.0,<2.4.0" },
     { name = "flask", specifier = ">=3.1.0,<3.2.0" },
-    { name = "flask-admin", specifier = ">=2.2.0,<3.0.0" },
+    { name = "flask-admin", extras = ["export", "sqlalchemy"], specifier = ">=2.2.0,<3.0.0" },
     { name = "flask-apscheduler", specifier = ">=1.13.0,<1.14.0" },
     { name = "flask-assets", specifier = ">=2.0,<3.0" },
     { name = "flask-excel", specifier = ">=0.0.7,<0.1.0" },
@@ -1119,6 +1128,15 @@ wheels = [
 [package.optional-dependencies]
 asyncio = [
     { name = "greenlet" },
+]
+
+[[package]]
+name = "tablib"
+version = "3.10.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/b9/59d9c8b9c34642e7a718e8a1a7a91af3eb9b48f79bac794263702d41519c/tablib-3.10.0.tar.gz", hash = "sha256:781cfa9a42de8f33c52aff857fd0a04e483de4fd1c53eaaa9a6aeac62bad11de", size = 127128, upload-time = "2026-07-31T17:30:15.577Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fc/0f/3ae17545ff976687f679ed3a101df7017135ee04769e858a4ccea0cc3f3e/tablib-3.10.0-py3-none-any.whl", hash = "sha256:5721bf3a52d491f8f843628a3a3200db164f6ad9e92fb6eaa64dc3f945f30ad9", size = 50170, upload-time = "2026-07-31T17:30:04.925Z" },
 ]
 
 [[package]]

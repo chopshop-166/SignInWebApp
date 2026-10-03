@@ -1,6 +1,7 @@
 from flask import abort, redirect, request, url_for
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.theme import Bootstrap4Theme
 from flask_login import current_user
 
 from .model import (
@@ -39,10 +40,10 @@ class AdminView(AdminIndexView):
 
 
 def init_app(app):
-    app.config["FLASK_ADMIN_SWATCH"] = "cyborg"
     flask_admin = Admin(
         index_view=AdminView(name="Home", url="/dbadmin", endpoint="dbadmin"),
         endpoint="dbadmin",
+        theme=Bootstrap4Theme(swatch="cyborg"),
     )
 
     flask_admin.add_views(
