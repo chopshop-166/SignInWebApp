@@ -635,7 +635,7 @@ class Event(Base):
             location=location,
             start=start,
             end=end,
-            type_=event_type,
+            type_=ev_type,
             code=code,
             registration_open=registration_open,
         )
