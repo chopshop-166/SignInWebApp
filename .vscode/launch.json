@@ -12,8 +12,6 @@
             "env": {
                 "FLASK_APP": "signinapp/webapp.py",
                 "FLASK_DEBUG": "1",
-                //"SQLALCHEMY_WARN_20": "1",
-                //"PYTHONWARNINGS": "always::DeprecationWarning",
                 "CSSIGNIN_CONFIG": "${workspaceFolder}/appdata/cssignin.yaml"
             },
             "args": [
