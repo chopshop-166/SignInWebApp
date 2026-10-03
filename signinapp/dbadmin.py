@@ -1,6 +1,7 @@
 from flask import abort, redirect, request, url_for
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.theme import Bootstrap4Theme
 from flask_login import current_user
 
 from .model import (
@@ -39,22 +40,23 @@ class AdminView(AdminIndexView):
 
 
 def init_app(app):
-    app.config["FLASK_ADMIN_SWATCH"] = "cyborg"
     flask_admin = Admin(
         index_view=AdminView(name="Home", url="/dbadmin", endpoint="dbadmin"),
         endpoint="dbadmin",
+        theme=Bootstrap4Theme(swatch="cyborg"),
     )
 
-    flask_admin.add_views(
-        AuthModelView(Badge, db.session, endpoint="admin_badge"),
-        AuthModelView(Event, db.session, endpoint="admin_event"),
-        AuthModelView(EventType, db.session, endpoint="admin_eventtype"),
-        AuthModelView(Guardian, db.session, endpoint="admin_guardian"),
-        AuthModelView(Role, db.session, endpoint="admin_role"),
-        AuthModelView(Student, db.session, endpoint="admin_student"),
-        AuthModelView(Subteam, db.session, endpoint="admin_subteam"),
-        AuthModelView(User, db.session, endpoint="admin_user"),
-        AuthModelView(Stamps, db.session, endpoint="admin_stamps"),
-    )
+    with app.app_context():
+        flask_admin.add_views(
+            AuthModelView(Badge, db, endpoint="admin_badge"),
+            AuthModelView(Event, db, endpoint="admin_event"),
+            AuthModelView(EventType, db, endpoint="admin_eventtype"),
+            AuthModelView(Guardian, db, endpoint="admin_guardian"),
+            AuthModelView(Role, db, endpoint="admin_role"),
+            AuthModelView(Student, db, endpoint="admin_student"),
+            AuthModelView(Subteam, db, endpoint="admin_subteam"),
+            AuthModelView(User, db, endpoint="admin_user"),
+            AuthModelView(Stamps, db, endpoint="admin_stamps"),
+        )
 
     flask_admin.init_app(app)
