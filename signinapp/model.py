@@ -128,6 +128,12 @@ class BadgeAward(Base):
     owner: Mapped[User] = relationship(back_populates="awards", uselist=False)
     badge: Mapped[Badge] = relationship()
 
+    def __init__(self, badge: Badge | None = None, owner: User | None = None):
+        if badge is not None:
+            self.badge = badge
+        if owner is not None:
+            self.owner = owner
+
 
 parent_child_association_table = Table(
     "parent_child_association",
