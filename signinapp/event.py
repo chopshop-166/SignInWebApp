@@ -33,7 +33,9 @@ def event():
     if not event_code or not Event.get_from_code(event_code):
         flash("Invalid event code")
         return redirect(url_for("index"))
-    return render_template("event.html.jinja2", url_base=request.host_url, event_code=event_code)
+    return render_template(
+        "event.html.jinja2", url_base=request.host_url, event_code=event_code
+    )
 
 
 @eventbp.route("/event/self")
@@ -50,7 +52,7 @@ def selfevent():
         return redirect(url_for("index"))
 
     if not current_user.is_signed_into(ev):
-        ev.sign_in(current_user)
+        ev.sign_in(current_user)  # ty:ignore[invalid-argument-type]
 
     return render_template("selfscan.html.jinja2", event=ev, event_code=ev.code)
 
@@ -69,8 +71,10 @@ def selfout():
         return redirect(url_for("index"))
 
     if current_user.is_signed_into(ev):
-        active: Active = db.session.scalar(select(Active).filter_by(user=current_user, event=ev))
-        active.convert_to_stamp()
+        if active := db.session.scalar(
+            select(Active).filter_by(user=current_user, event=ev)
+        ):
+            active.convert_to_stamp()
 
     return redirect(url_for("index"))
 
@@ -89,7 +93,9 @@ def scan():
     event = request.values.get("event_code")
 
     if not (user_code := request.values.get("user_code")):
-        return Response(f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST)
+        return Response(
+            f"Error: Not a valid QR code: {user_code}", HTTPStatus.BAD_REQUEST
+        )
     if not (user := User.from_code(user_code)):
         return Response("Error: User does not exist", HTTPStatus.NOT_FOUND)
 
@@ -123,7 +129,7 @@ def autoevent():
             HTTPStatus.FORBIDDEN,
         )
 
-    ev: Event = db.session.scalar(
+    ev = db.session.scalar(
         select(Event).filter_by(is_active=True).join(EventType).filter_by(autoload=True)
     )
 
@@ -145,14 +151,15 @@ def active():
             HTTPStatus.FORBIDDEN,
         )
 
-    ev: Event = Event.get_from_code(event)
+    ev = Event.get_from_code(event)
 
     if ev and not ev.is_active:
         return jsonify({"action": "redirect"})
 
+    users: list[Active] = ev.active if ev else []
     return jsonify(
         {
-            "users": [active.as_dict() for active in ev.active],
+            "users": [active.as_dict() for active in users],
             "action": "update",
             "message": "Updated user data",
         }
@@ -182,8 +189,8 @@ def export_stamps(
     result = [
         [
             stamp.user.human_readable,
-            correct_time_from_storage(stamp.start),
-            correct_time_from_storage(stamp.end),
+            str(correct_time_from_storage(stamp.start)),
+            str(correct_time_from_storage(stamp.end)),
             stamp.elapsed,
             stamp.event.name,
             stamp.event.type_.name,
@@ -216,7 +223,9 @@ def export():
 @login_required
 def export_subteam():
     if not current_user.can_see_subteam or not current_user.subteam_id:
-        return current_app.login_manager.unauthorized()
+        return (
+            current_app.login_manager.unauthorized()
+        )  # ty:ignore[unresolved-attribute]
 
     subteam = current_user.subteam
     return excel.make_response_from_array(export_stamps(subteam=subteam), "csv")
