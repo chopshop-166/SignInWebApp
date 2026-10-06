@@ -1,3 +1,0 @@
-FROM kanboard/kanboard:latest
-
-RUN ln -sT /var/www/app/ /var/www/app/kanboard
