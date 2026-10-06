@@ -99,8 +99,9 @@ assert app.config["AUTO_SIGNOUT_BEHAVIOR"] in (
     "None",
 ), "Invalid sign out behavior given in config"
 
+app.config.setdefault("SQLALCHEMY_DATABASE_URI", "sqlite:///" + app.config["DB_NAME"])
 app.config |= {
-    "SQLALCHEMY_ENGINES": {"default": "sqlite:///" + app.config["DB_NAME"]},
+    "SQLALCHEMY_ENGINES": {"default": app.config["SQLALCHEMY_DATABASE_URI"]},
     "SQLALCHEMY_TRACK_MODIFICATIONS": True,
 }
 
