@@ -22,7 +22,6 @@ from . import (
     event,
     events,
     finance,
-    proxy,
     qr,
     search,
     team,
@@ -138,7 +137,6 @@ dbadmin.init_app(app)
 event.init_app(app)
 events.init_app(app)
 finance.init_app(app)
-proxy.init_app(app)
 qr.init_app(app)
 search.init_app(app)
 team.init_app(app)
