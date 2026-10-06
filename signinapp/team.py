@@ -5,7 +5,7 @@ import flask_excel as excel
 from flask import Blueprint, Flask, request
 from flask.templating import render_template
 from flask_login import login_required
-from sqlalchemy import or_
+from sqlalchemy import not_, or_
 from sqlalchemy.future import select
 
 from .model import Role, ShirtSizes, Student, Subteam, User, db
@@ -46,8 +46,10 @@ def subteam():
 @mentor_required
 def list_students():
     include_all = request.args.get("include_all", False) == "true"
-    select_stmt = select(User).where(
-        or_(User.role.has(name="student"), User.role.has(name="lead"))
+    select_stmt = (
+        select(User)
+        .where(or_(User.role.has(name="student"), User.role.has(name="lead")))
+        .where(not_(User.archived))
     )
     if not include_all:
         select_stmt = select_stmt.join(Student).where(
@@ -62,7 +64,10 @@ def list_students():
 def list_guardians():
     include_all = request.args.get("include_all", False) == "true"
     users = db.session.scalars(
-        select(User).where(User.role.has(guardian=True)).order_by(User.name)
+        select(User)
+        .where(User.role.has(guardian=True))
+        .where(not_(User.archived))
+        .order_by(User.name)
     ).all()
     if not include_all:
         users = [
@@ -82,9 +87,21 @@ def list_guardians():
 @mentor_required
 def list_mentors():
     users = db.session.scalars(
-        select(User).where(User.role.has(mentor=True)).order_by(User.name)
+        select(User)
+        .where(User.role.has(mentor=True))
+        .where(not_(User.archived))
+        .order_by(User.name)
     ).all()
     return render_template("user_list.html.jinja2", role="Mentor", users=users)
+
+
+@team.route("/users/archived")
+@mentor_required
+def list_archived():
+    users = db.session.scalars(
+        select(User).where(User.archived).order_by(User.name)
+    ).all()
+    return render_template("user_list.html.jinja2", role="Archived", users=users)
 
 
 @team.route("/users/students/export")
