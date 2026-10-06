@@ -61,7 +61,6 @@ Our mission is to build teamwork and a great robot, along with fostering a love 
     PRE_EVENT_ACTIVE_TIME = 30
     POST_EVENT_ACTIVE_TIME = 120
     AUTO_SIGNOUT_BEHAVIOR = "None"  # Valid Options (Credit, Discard, None)
-    PROXY_URL = "http://localhost:8080/kanboard/"
 
 
 class DebugConfig(Config):
